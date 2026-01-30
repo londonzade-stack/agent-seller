@@ -143,13 +143,19 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                         </div>
                       )
                     }
-                    if (part.type === 'tool-invocation') {
-                      return (
-                        <div key={index} className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                          Using tool: {part.toolInvocation.toolName}
-                        </div>
-                      )
+                    if (part.type.startsWith('tool-')) {
+                      // Handle tool invocation states
+                      const toolPart = part as { type: string; toolCallId: string; toolName?: string; state?: string }
+                      if (toolPart.state === 'call' || toolPart.state === 'partial-call' || toolPart.state === 'input-streaming') {
+                        return (
+                          <div key={index} className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Using tool: {toolPart.toolName || 'processing...'}
+                          </div>
+                        )
+                      }
+                      // Tool result - don't show anything special
+                      return null
                     }
                     return null
                   })}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { DashboardSidebar } from './dashboard-sidebar'
 import { AgentChat } from './agent-chat'
@@ -13,28 +13,34 @@ interface DashboardClientProps {
 export function DashboardClient({ user }: DashboardClientProps) {
   const [activeView, setActiveView] = useState<'agent' | 'email'>('agent')
   const [isEmailConnected, setIsEmailConnected] = useState(false)
+  const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
+
+  const handleConnectionChange = useCallback((connected: boolean, email?: string) => {
+    setIsEmailConnected(connected)
+    setConnectedEmail(email || null)
+  }, [])
 
   return (
     <div className="min-h-screen bg-background flex">
-      <DashboardSidebar 
-        user={user} 
+      <DashboardSidebar
+        user={user}
         activeView={activeView}
         onViewChange={setActiveView}
         isEmailConnected={isEmailConnected}
       />
-      
+
       <main className="flex-1 flex flex-col">
         {activeView === 'agent' && (
-          <AgentChat 
-            user={user} 
+          <AgentChat
+            user={user}
             isEmailConnected={isEmailConnected}
           />
         )}
         {activeView === 'email' && (
-          <EmailConnect 
+          <EmailConnect
             isConnected={isEmailConnected}
-            onConnect={() => setIsEmailConnected(true)}
-            onDisconnect={() => setIsEmailConnected(false)}
+            connectedEmail={connectedEmail}
+            onConnectionChange={handleConnectionChange}
           />
         )}
       </main>

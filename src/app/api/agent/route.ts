@@ -6,6 +6,14 @@ import {
   stepCountIs,
 } from 'ai'
 import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
+import {
+  scanInboxForEmails,
+  getContactFromEmail,
+  createDraft,
+  analyzeEmailForLeadPotential,
+  getUserEmailConnection,
+} from '@/lib/gmail/service'
 
 export const maxDuration = 60
 
@@ -40,216 +48,348 @@ When analyzing leads:
 
 Always be helpful, accurate, and focused on driving sales success while maintaining professional ethics.`
 
-// Simulated email data for demo purposes
-const MOCK_EMAILS = [
-  {
-    id: '1',
-    from: 'dr.sarah.johnson@mercy-hospital.org',
-    subject: 'Re: Surgical Equipment Demo Request',
-    preview: 'Thank you for reaching out. Our cardiology department is currently evaluating new surgical suites...',
-    date: '2024-01-28',
-    isLead: true,
-    leadScore: 85,
-  },
-  {
-    id: '2', 
-    from: 'procurement@regional-medical.com',
-    subject: 'RFP - Medical Imaging Equipment',
-    preview: 'We are seeking proposals for upgrading our radiology department equipment...',
-    date: '2024-01-27',
-    isLead: true,
-    leadScore: 92,
-  },
-  {
-    id: '3',
-    from: 'admin@citycare-clinic.net',
-    subject: 'Budget Planning Meeting Follow-up',
-    preview: 'Following our discussion about Q2 equipment purchases, I wanted to clarify...',
-    date: '2024-01-26',
-    isLead: true,
-    leadScore: 78,
-  },
-  {
-    id: '4',
-    from: 'newsletter@medical-news.com',
-    subject: 'Weekly Industry Updates',
-    preview: 'This week in medical technology: new FDA approvals, industry trends...',
-    date: '2024-01-26',
-    isLead: false,
-    leadScore: 0,
-  },
-]
+// Create tools that use real Gmail API when connected, fall back to mock data otherwise
+function createTools(userId: string | null, isEmailConnected: boolean) {
+  return {
+    scanInboxForLeads: tool({
+      description: 'Scan the connected email inbox to identify potential sales leads from recent emails',
+      inputSchema: z.object({
+        timeframe: z.enum(['today', 'week', 'month']).describe('The timeframe to scan'),
+      }),
+      execute: async ({ timeframe }) => {
+        if (!isEmailConnected || !userId) {
+          return {
+            success: false,
+            message: 'Please connect your Gmail first to scan for leads.',
+            requiresConnection: true,
+          }
+        }
 
-const MOCK_CONTACTS = [
-  {
-    name: 'Dr. Sarah Johnson',
-    title: 'Chief of Cardiology',
-    organization: 'Mercy Hospital',
-    email: 'dr.sarah.johnson@mercy-hospital.org',
-    lastContact: '2024-01-28',
-    status: 'Active Lead',
-    notes: 'Interested in SurgicalPro X3. Demo scheduled for next week.',
-  },
-  {
-    name: 'James Mitchell',
-    title: 'Procurement Director',
-    organization: 'Regional Medical Center',
-    email: 'procurement@regional-medical.com',
-    lastContact: '2024-01-27',
-    status: 'New Lead',
-    notes: 'Submitted RFP for imaging equipment. Budget ~$2M.',
-  },
-  {
-    name: 'Lisa Chen',
-    title: 'Practice Administrator',
-    organization: 'CityCare Clinic Network',
-    email: 'admin@citycare-clinic.net',
-    lastContact: '2024-01-26',
-    status: 'Nurturing',
-    notes: 'Q2 budget discussions ongoing. Multiple clinic locations.',
-  },
-]
+        try {
+          // Calculate date based on timeframe
+          const now = new Date()
+          let afterDate: Date
+          switch (timeframe) {
+            case 'today':
+              afterDate = new Date(now.setHours(0, 0, 0, 0))
+              break
+            case 'week':
+              afterDate = new Date(now.setDate(now.getDate() - 7))
+              break
+            case 'month':
+              afterDate = new Date(now.setMonth(now.getMonth() - 1))
+              break
+          }
 
-// Define tools for the agent
-const tools = {
-  scanInboxForLeads: tool({
-    description: 'Scan the connected email inbox to identify potential sales leads from recent emails',
-    inputSchema: z.object({
-      timeframe: z.enum(['today', 'week', 'month']).describe('The timeframe to scan'),
+          // Fetch real emails from Gmail
+          const emails = await scanInboxForEmails(userId, {
+            maxResults: 30,
+            after: afterDate,
+          })
+
+          // Analyze each email for lead potential
+          const analyzedEmails = emails.map((email) => {
+            const analysis = analyzeEmailForLeadPotential({
+              from: email.from || '',
+              subject: email.subject || '',
+              preview: email.preview || email.snippet || '',
+            })
+
+            return {
+              id: email.id,
+              from: email.from,
+              subject: email.subject,
+              preview: email.snippet || email.preview,
+              date: email.date,
+              isLead: analysis.isLead,
+              leadScore: analysis.leadScore,
+              leadIndicators: analysis.indicators,
+            }
+          })
+
+          // Filter to just leads
+          const leads = analyzedEmails.filter((e) => e.isLead)
+
+          return {
+            success: true,
+            timeframe,
+            totalEmails: emails.length,
+            leadsFound: leads.length,
+            leads: leads.map((lead) => ({
+              from: lead.from,
+              subject: lead.subject,
+              preview: lead.preview,
+              leadScore: lead.leadScore,
+              date: lead.date,
+              indicators: lead.leadIndicators,
+            })),
+          }
+        } catch (error) {
+          console.error('Error scanning inbox:', error)
+          return {
+            success: false,
+            error: 'Failed to scan inbox. Please try again.',
+          }
+        }
+      },
     }),
-    execute: async ({ timeframe }) => {
-      // In production, this would connect to Gmail/Outlook API
-      const leads = MOCK_EMAILS.filter(email => email.isLead)
-      return {
-        success: true,
-        timeframe,
-        totalEmails: MOCK_EMAILS.length,
-        leadsFound: leads.length,
-        leads: leads.map(lead => ({
-          from: lead.from,
-          subject: lead.subject,
-          preview: lead.preview,
-          leadScore: lead.leadScore,
-          date: lead.date,
-        })),
-      }
-    },
-  }),
 
-  getContactDetails: tool({
-    description: 'Get detailed information about a specific contact or lead',
-    inputSchema: z.object({
-      email: z.string().describe('The email address of the contact'),
-    }),
-    execute: async ({ email }) => {
-      const contact = MOCK_CONTACTS.find(c => 
-        c.email.toLowerCase().includes(email.toLowerCase()) ||
-        email.toLowerCase().includes(c.email.split('@')[0].toLowerCase())
-      )
-      
-      if (contact) {
-        return { success: true, contact }
-      }
-      return { success: false, message: 'Contact not found' }
-    },
-  }),
+    getContactDetails: tool({
+      description: 'Get detailed information about a specific contact or lead from email history',
+      inputSchema: z.object({
+        email: z.string().describe('The email address of the contact'),
+      }),
+      execute: async ({ email }) => {
+        if (!isEmailConnected || !userId) {
+          return {
+            success: false,
+            message: 'Please connect your Gmail first to get contact details.',
+            requiresConnection: true,
+          }
+        }
 
-  draftEmail: tool({
-    description: 'Draft a professional sales email for a prospect',
-    inputSchema: z.object({
-      recipientEmail: z.string().describe('The recipient email address'),
-      recipientName: z.string().describe('The recipient name and title'),
-      purpose: z.enum(['introduction', 'follow-up', 'demo-request', 'proposal', 'check-in']).describe('The purpose of the email'),
-      context: z.string().describe('Additional context about the recipient or previous interactions'),
-      productFocus: z.string().nullable().describe('Specific product or service to highlight'),
-    }),
-    execute: async ({ recipientEmail, recipientName, purpose, context, productFocus }) => {
-      // In production, this would use the AI to generate personalized content
-      // For now, return structured data that the LLM can use
-      return {
-        success: true,
-        draft: {
-          to: recipientEmail,
-          recipient: recipientName,
-          purpose,
-          context,
-          productFocus: productFocus || 'General medical equipment solutions',
-          suggestedSubject: purpose === 'follow-up' 
-            ? `Following up: ${productFocus || 'Our conversation'}`
-            : purpose === 'demo-request'
-            ? `Demo Request: ${productFocus || 'Medical Equipment'}`
-            : `${productFocus || 'Medical Solutions'} for ${recipientName.split(' ').pop()}`,
-          note: 'Draft generated. Please review and personalize before sending.',
-        },
-      }
-    },
-  }),
+        try {
+          const contact = await getContactFromEmail(userId, email)
 
-  getSalesActivity: tool({
-    description: 'Get a summary of recent sales activity and pipeline status',
-    inputSchema: z.object({
-      period: z.enum(['daily', 'weekly', 'monthly']).describe('The reporting period'),
-    }),
-    execute: async ({ period }) => {
-      return {
-        success: true,
-        period,
-        summary: {
-          newLeads: 3,
-          activeDeals: 7,
-          emailsSent: 24,
-          emailsOpened: 18,
-          meetingsScheduled: 4,
-          proposalsSent: 2,
-          dealsClosed: 1,
-          pipelineValue: '$487,500',
-        },
-        topLeads: MOCK_CONTACTS.slice(0, 3).map(c => ({
-          name: c.name,
-          organization: c.organization,
-          status: c.status,
-        })),
-      }
-    },
-  }),
+          if (contact) {
+            return {
+              success: true,
+              contact: {
+                name: contact.name,
+                email: contact.email,
+                totalEmails: contact.totalEmails,
+                lastContact: contact.lastContact,
+                recentSubjects: contact.recentSubjects,
+              },
+            }
+          }
 
-  scheduleFollowUp: tool({
-    description: 'Schedule a follow-up reminder for a lead',
-    inputSchema: z.object({
-      contactEmail: z.string().describe('The contact email address'),
-      followUpDate: z.string().describe('The date for follow-up (YYYY-MM-DD format)'),
-      notes: z.string().describe('Notes for the follow-up'),
+          return {
+            success: false,
+            message: 'No emails found from this contact.',
+          }
+        } catch (error) {
+          console.error('Error getting contact:', error)
+          return {
+            success: false,
+            error: 'Failed to get contact details. Please try again.',
+          }
+        }
+      },
     }),
-    execute: async ({ contactEmail, followUpDate, notes }) => {
-      return {
-        success: true,
-        reminder: {
-          contact: contactEmail,
-          date: followUpDate,
-          notes,
-          message: `Follow-up reminder set for ${followUpDate}`,
-        },
-      }
-    },
-  }),
+
+    draftEmail: tool({
+      description: 'Draft a professional sales email and save it as a Gmail draft',
+      inputSchema: z.object({
+        recipientEmail: z.string().describe('The recipient email address'),
+        recipientName: z.string().describe('The recipient name and title'),
+        purpose: z.enum(['introduction', 'follow-up', 'demo-request', 'proposal', 'check-in']).describe('The purpose of the email'),
+        context: z.string().describe('Additional context about the recipient or previous interactions'),
+        productFocus: z.string().nullable().describe('Specific product or service to highlight'),
+        subject: z.string().describe('The email subject line'),
+        body: z.string().describe('The full email body text'),
+      }),
+      execute: async ({ recipientEmail, recipientName, purpose, context, productFocus, subject, body }) => {
+        if (!isEmailConnected || !userId) {
+          // Return draft details without saving to Gmail
+          return {
+            success: true,
+            savedToGmail: false,
+            message: 'Connect Gmail to save drafts directly. Here is your draft:',
+            draft: {
+              to: recipientEmail,
+              recipient: recipientName,
+              subject,
+              body,
+              purpose,
+              context,
+              productFocus: productFocus || 'General medical equipment solutions',
+            },
+          }
+        }
+
+        try {
+          // Create actual Gmail draft
+          const draft = await createDraft(userId, {
+            to: recipientEmail,
+            subject,
+            body,
+          })
+
+          return {
+            success: true,
+            savedToGmail: true,
+            draftId: draft.id,
+            message: 'Draft saved to your Gmail drafts folder.',
+            draft: {
+              to: recipientEmail,
+              recipient: recipientName,
+              subject,
+              body,
+              purpose,
+              productFocus: productFocus || 'General medical equipment solutions',
+            },
+          }
+        } catch (error) {
+          console.error('Error creating draft:', error)
+          return {
+            success: false,
+            error: 'Failed to save draft to Gmail. Here is your draft to copy manually:',
+            draft: {
+              to: recipientEmail,
+              subject,
+              body,
+            },
+          }
+        }
+      },
+    }),
+
+    getSalesActivity: tool({
+      description: 'Get a summary of recent email activity and potential pipeline',
+      inputSchema: z.object({
+        period: z.enum(['daily', 'weekly', 'monthly']).describe('The reporting period'),
+      }),
+      execute: async ({ period }) => {
+        if (!isEmailConnected || !userId) {
+          return {
+            success: false,
+            message: 'Please connect your Gmail first to get activity reports.',
+            requiresConnection: true,
+          }
+        }
+
+        try {
+          // Calculate date range
+          const now = new Date()
+          let afterDate: Date
+          switch (period) {
+            case 'daily':
+              afterDate = new Date(now.setDate(now.getDate() - 1))
+              break
+            case 'weekly':
+              afterDate = new Date(now.setDate(now.getDate() - 7))
+              break
+            case 'monthly':
+              afterDate = new Date(now.setMonth(now.getMonth() - 1))
+              break
+          }
+
+          // Get emails for the period
+          const emails = await scanInboxForEmails(userId, {
+            maxResults: 100,
+            after: afterDate,
+          })
+
+          // Analyze for leads
+          const analyzedEmails = emails.map((email) => {
+            const analysis = analyzeEmailForLeadPotential({
+              from: email.from || '',
+              subject: email.subject || '',
+              preview: email.preview || '',
+            })
+            return { ...email, ...analysis }
+          })
+
+          const leads = analyzedEmails.filter((e) => e.isLead)
+
+          // Get unique senders
+          const uniqueContacts = new Set(emails.map((e) => e.from))
+
+          return {
+            success: true,
+            period,
+            summary: {
+              totalEmails: emails.length,
+              uniqueContacts: uniqueContacts.size,
+              potentialLeads: leads.length,
+              highScoreLeads: leads.filter((l) => l.leadScore >= 60).length,
+            },
+            topLeads: leads
+              .sort((a, b) => b.leadScore - a.leadScore)
+              .slice(0, 5)
+              .map((l) => ({
+                from: l.from,
+                subject: l.subject,
+                leadScore: l.leadScore,
+              })),
+          }
+        } catch (error) {
+          console.error('Error getting activity:', error)
+          return {
+            success: false,
+            error: 'Failed to get activity summary. Please try again.',
+          }
+        }
+      },
+    }),
+
+    scheduleFollowUp: tool({
+      description: 'Schedule a follow-up reminder for a lead (note: this creates a reminder in the chat, not a calendar event)',
+      inputSchema: z.object({
+        contactEmail: z.string().describe('The contact email address'),
+        followUpDate: z.string().describe('The date for follow-up (YYYY-MM-DD format)'),
+        notes: z.string().describe('Notes for the follow-up'),
+      }),
+      execute: async ({ contactEmail, followUpDate, notes }) => {
+        // This is a reminder tool - doesn't require Gmail connection
+        return {
+          success: true,
+          reminder: {
+            contact: contactEmail,
+            date: followUpDate,
+            notes,
+            message: `Follow-up reminder set for ${followUpDate}. I'll remind you to reach out to ${contactEmail}.`,
+          },
+        }
+      },
+    }),
+  }
 }
 
 export async function POST(req: Request) {
-  const { messages, isEmailConnected }: { messages: UIMessage[]; isEmailConnected?: boolean } = await req.json()
+  try {
+    const { messages }: { messages: UIMessage[] } = await req.json()
 
-  // Enhance system prompt based on email connection status
-  const systemPrompt = isEmailConnected 
-    ? SYSTEM_PROMPT 
-    : SYSTEM_PROMPT + '\n\nNOTE: The user has not connected their email yet. Encourage them to connect their work email to unlock full functionality like lead detection and email analysis. You can still help with general sales advice, email drafting templates, and strategy discussions.'
+    // Get current user from Supabase
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  const result = streamText({
-    model: 'google/gemini-2.5-flash',
-    system: systemPrompt,
-    messages: await convertToModelMessages(messages),
-    tools,
-    stopWhen: stepCountIs(10),
-    abortSignal: req.signal,
-  })
+    const userId = user?.id || null
 
-  return result.toUIMessageStreamResponse()
+    // Check if user has Gmail connected
+    let isEmailConnected = false
+    if (userId) {
+      const connection = await getUserEmailConnection(userId)
+      isEmailConnected = !!connection
+    }
+
+    // Create tools with user context
+    const tools = createTools(userId, isEmailConnected)
+
+    // Enhance system prompt based on email connection status
+    const systemPrompt = isEmailConnected
+      ? SYSTEM_PROMPT
+      : SYSTEM_PROMPT +
+        '\n\nNOTE: The user has not connected their Gmail yet. When they try to use email-related features (scanning inbox, getting contacts, drafting emails), let them know they need to connect their Gmail first. You can still help with general sales advice, email drafting templates, and strategy discussions.'
+
+    const result = streamText({
+      model: 'google/gemini-2.5-flash',
+      system: systemPrompt,
+      messages: await convertToModelMessages(messages),
+      tools,
+      stopWhen: stepCountIs(10),
+      abortSignal: req.signal,
+    })
+
+    return result.toUIMessageStreamResponse()
+  } catch (error) {
+    console.error('Agent API error:', error)
+    return new Response(
+      JSON.stringify({ error: 'Failed to process request' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
 }
