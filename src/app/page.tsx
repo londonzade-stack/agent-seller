@@ -40,8 +40,12 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">Log in</Button>
-            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200">Get Started</Button>
+            <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" asChild>
+              <Link href="/auth/login">Log in</Link>
+            </Button>
+            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
+              <Link href="/auth/sign-up">Get Started</Link>
+            </Button>
           </div>
         </div>
       </nav>
@@ -70,11 +74,11 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
-              <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8">
-                Get Started <ArrowRight className="ml-2 h-4 w-4" />
+              <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
+                <Link href="/auth/sign-up">Get Started <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10">
-                Schedule a Demo
+              <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" asChild>
+                <Link href="/auth/sign-up">Schedule a Demo</Link>
               </Button>
             </div>
 
@@ -194,8 +198,8 @@ export default function Home() {
 
           <div className="text-center mt-10">
             <p className="text-zinc-500 mb-4">Ready to leave legacy tools behind?</p>
-            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200">
-              Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
+              <Link href="/auth/sign-up">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
         </div>
@@ -354,11 +358,11 @@ export default function Home() {
             Join medical sales professionals who are closing more deals with less busywork.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8">
-              Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+            <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
+              <Link href="/auth/sign-up">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10">
-              Schedule a Demo
+            <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" asChild>
+              <Link href="/auth/sign-up">Schedule a Demo</Link>
             </Button>
           </div>
           <p className="text-zinc-400 dark:text-zinc-600 text-sm mt-6">No credit card required. 14-day free trial.</p>
