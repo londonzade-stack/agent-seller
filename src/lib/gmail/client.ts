@@ -9,12 +9,13 @@ export function getGmailOAuth2Client() {
   )
 }
 
-// Scopes required for Gmail access
+// Scopes required for Gmail access - FULL ACCESS for all operations
 export const GMAIL_SCOPES = [
-  'https://www.googleapis.com/auth/gmail.readonly',
-  'https://www.googleapis.com/auth/gmail.compose',
-  'https://www.googleapis.com/auth/gmail.send',
-  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/gmail.modify',  // Read, send, delete, modify labels, archive, trash
+  'https://www.googleapis.com/auth/gmail.compose', // Create drafts
+  'https://www.googleapis.com/auth/gmail.send',    // Send emails
+  'https://www.googleapis.com/auth/gmail.labels',  // Create/manage labels
+  'https://www.googleapis.com/auth/userinfo.email', // Get user email
 ]
 
 // Generate OAuth URL for Gmail authorization
