@@ -30,6 +30,8 @@ import {
   Paperclip,
   Shield,
   Users,
+  RotateCcw,
+  StopCircle,
 } from 'lucide-react'
 
 interface AgentChatProps {
@@ -195,13 +197,20 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   )
 }
 
+// Timeout duration in milliseconds (45 seconds)
+const REQUEST_TIMEOUT = 45000
+
 export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
+  const [isTimedOut, setIsTimedOut] = useState(false)
+  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  const { messages, sendMessage, status, error } = useChat({
+  const { messages, sendMessage, status, error, stop, reload } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/agent',
       body: {
@@ -214,6 +223,38 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
 
   const isLoading = status === 'streaming' || status === 'submitted'
 
+  // Handle timeout
+  useEffect(() => {
+    if (isLoading && !loadingStartTime) {
+      setLoadingStartTime(Date.now())
+      setIsTimedOut(false)
+
+      // Set timeout
+      timeoutRef.current = setTimeout(() => {
+        setIsTimedOut(true)
+        // Try to stop the request
+        if (stop) {
+          stop()
+        }
+      }, REQUEST_TIMEOUT)
+    }
+
+    if (!isLoading) {
+      setLoadingStartTime(null)
+      setIsTimedOut(false)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [isLoading, loadingStartTime, stop])
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
@@ -223,13 +264,31 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
+    setIsTimedOut(false)
     sendMessage({ text: input })
     setInput('')
   }
 
   const handleSuggestionClick = (suggestion: string) => {
     if (isLoading) return
+    setIsTimedOut(false)
     sendMessage({ text: suggestion })
+  }
+
+  const handleStop = () => {
+    if (stop) {
+      stop()
+    }
+    setIsTimedOut(false)
+    setLoadingStartTime(null)
+  }
+
+  const handleRetry = () => {
+    setIsTimedOut(false)
+    setLoadingStartTime(null)
+    if (reload) {
+      reload()
+    }
   }
 
   const suggestions = [
@@ -362,13 +421,52 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                 )}
               </div>
             ))}
+
+            {/* Loading state with stop/retry */}
             {isLoading && messages[messages.length - 1]?.role === 'user' && (
               <div className="flex gap-4 justify-start">
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
                   <Brain className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <div className="bg-muted rounded-xl px-4 py-3">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleStop}
+                      className="h-7 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <StopCircle className="h-3 w-3 mr-1" />
+                      Stop
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Timeout state */}
+            {isTimedOut && (
+              <div className="flex gap-4 justify-start">
+                <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+                  <AlertCircle className="h-4 w-4 text-white" />
+                </div>
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-amber-600 dark:text-amber-400">
+                      Request timed out. The operation took too long.
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRetry}
+                      className="h-7 px-2 text-xs border-amber-500/30 hover:bg-amber-500/10"
+                    >
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      Retry
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
@@ -378,9 +476,20 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
 
       {error && (
         <div className="px-6 py-3 bg-destructive/10 border-t border-destructive/20">
-          <div className="max-w-3xl mx-auto flex items-center gap-2 text-destructive text-sm">
-            <AlertCircle className="h-4 w-4" />
-            {error.message || 'An error occurred. Please try again.'}
+          <div className="max-w-3xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2 text-destructive text-sm">
+              <AlertCircle className="h-4 w-4" />
+              {error.message || 'An error occurred. Please try again.'}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRetry}
+              className="h-7 px-2 text-xs border-destructive/30 hover:bg-destructive/10 text-destructive"
+            >
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Retry
+            </Button>
           </div>
         </div>
       )}
