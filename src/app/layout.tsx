@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgentSeller - AI Sales Agent for Medical Sales",
-  description: "Not just a chatbot, but an agent. Track leads, auto-generate personalized emails, and close more deals.",
+  title: "AgentSeller - AI Email Agent for Teams",
+  description: "Not just a chatbot, but an agent. Manage your inbox, auto-draft responses, track contacts, and get more done with AI.",
 };
 
 export default function RootLayout({

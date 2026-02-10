@@ -40,7 +40,7 @@ import {
 export const maxDuration = 120
 
 // POWERFUL AI email agent system prompt
-const SYSTEM_PROMPT = `You are AgentSeller - the most powerful AI email assistant ever built. You have COMPLETE control over the user's Gmail inbox and can perform ANY email operation they request.
+const SYSTEM_PROMPT = `You are AgentSeller - a powerful AI email agent. You have full control over the user's Gmail inbox and can perform any email operation they request.
 
 ## YOUR SUPERPOWERS:
 
@@ -101,7 +101,7 @@ const SYSTEM_PROMPT = `You are AgentSeller - the most powerful AI email assistan
 - Always show results of operations (how many archived, labeled, etc.)
 - Be conversational but efficient
 
-You are the most capable email AI ever. Help users take FULL control of their inbox!`
+Help users manage their inbox efficiently. Be direct and useful.`
 
 // Create all the powerful tools
 function createTools(userId: string | null, isEmailConnected: boolean) {

@@ -2,16 +2,19 @@
 
 import { useState, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { DashboardSidebar } from './dashboard-sidebar'
+import { DashboardSidebar, type DashboardView } from './dashboard-sidebar'
 import { AgentChat } from './agent-chat'
 import { EmailConnect } from './email-connect'
+import { DraftsView } from './drafts-view'
+import { ContactsView } from './contacts-view'
+import { AnalyticsView } from './analytics-view'
 
 interface DashboardClientProps {
   user: User
 }
 
 export function DashboardClient({ user }: DashboardClientProps) {
-  const [activeView, setActiveView] = useState<'agent' | 'email'>('agent')
+  const [activeView, setActiveView] = useState<DashboardView>('agent')
   const [isEmailConnected, setIsEmailConnected] = useState(false)
   const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
 
@@ -41,6 +44,24 @@ export function DashboardClient({ user }: DashboardClientProps) {
             isConnected={isEmailConnected}
             connectedEmail={connectedEmail}
             onConnectionChange={handleConnectionChange}
+          />
+        )}
+        {activeView === 'drafts' && (
+          <DraftsView
+            isEmailConnected={isEmailConnected}
+            onConnectEmail={() => setActiveView('email')}
+          />
+        )}
+        {activeView === 'contacts' && (
+          <ContactsView
+            isEmailConnected={isEmailConnected}
+            onConnectEmail={() => setActiveView('email')}
+          />
+        )}
+        {activeView === 'analytics' && (
+          <AnalyticsView
+            isEmailConnected={isEmailConnected}
+            onConnectEmail={() => setActiveView('email')}
           />
         )}
       </main>

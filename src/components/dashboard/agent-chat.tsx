@@ -210,7 +210,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  const { messages, sendMessage, status, error, stop, reload } = useChat({
+  const { messages, sendMessage, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/agent',
       body: {
@@ -286,8 +286,16 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const handleRetry = () => {
     setIsTimedOut(false)
     setLoadingStartTime(null)
-    if (reload) {
-      reload()
+    // Re-send the last user message
+    const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')
+    if (lastUserMessage) {
+      const text = lastUserMessage.parts
+        .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+        .map(p => p.text)
+        .join('')
+      if (text) {
+        sendMessage({ text })
+      }
     }
   }
 

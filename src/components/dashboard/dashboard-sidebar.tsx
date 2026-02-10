@@ -13,12 +13,18 @@ import {
   LogOut,
   CheckCircle2,
   Circle,
+  FileText,
+  Users,
+  BarChart3,
+  Settings,
 } from 'lucide-react'
+
+export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics'
 
 interface DashboardSidebarProps {
   user: User
-  activeView: 'agent' | 'email'
-  onViewChange: (view: 'agent' | 'email') => void
+  activeView: DashboardView
+  onViewChange: (view: DashboardView) => void
   isEmailConnected: boolean
 }
 
@@ -38,6 +44,14 @@ export function DashboardSidebar({
 
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
 
+  const navItems: { id: DashboardView; label: string; icon: typeof Brain; badge?: string }[] = [
+    { id: 'agent', label: 'AI Agent', icon: Brain },
+    { id: 'drafts', label: 'Drafts', icon: FileText },
+    { id: 'contacts', label: 'Contacts', icon: Users },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'email', label: 'Email Connection', icon: Mail },
+  ]
+
   return (
     <aside className="w-64 border-r border-border bg-card flex flex-col">
       <div className="p-4 border-b border-border flex items-center justify-between">
@@ -50,35 +64,28 @@ export function DashboardSidebar({
         <ThemeToggle />
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
-        <button
-          onClick={() => onViewChange('agent')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeView === 'agent'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}
-        >
-          <Brain className="h-4 w-4" />
-          AI Agent
-        </button>
-
-        <button
-          onClick={() => onViewChange('email')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeView === 'email'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}
-        >
-          <Mail className="h-4 w-4" />
-          Email Connection
-          {isEmailConnected ? (
-            <CheckCircle2 className="h-3 w-3 ml-auto text-emerald-500" />
-          ) : (
-            <Circle className="h-3 w-3 ml-auto" />
-          )}
-        </button>
+      <nav className="flex-1 p-4 space-y-1">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onViewChange(item.id)}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeView === item.id
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}
+          >
+            <item.icon className="h-4 w-4" />
+            {item.label}
+            {item.id === 'email' && (
+              isEmailConnected ? (
+                <CheckCircle2 className="h-3 w-3 ml-auto text-emerald-500" />
+              ) : (
+                <Circle className="h-3 w-3 ml-auto" />
+              )
+            )}
+          </button>
+        ))}
       </nav>
 
       <div className="p-4 border-t border-border space-y-4">

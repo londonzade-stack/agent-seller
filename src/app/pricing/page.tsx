@@ -195,7 +195,7 @@ export default function PricingPage() {
             Ready to get started?
           </h2>
           <p className="text-zinc-500 mb-10">
-            Join medical sales professionals who are closing more deals with less busywork.
+            Join teams that are getting more done with less email busywork.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8">
