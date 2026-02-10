@@ -197,8 +197,8 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   )
 }
 
-// Timeout duration in milliseconds (45 seconds)
-const REQUEST_TIMEOUT = 45000
+// Timeout duration in milliseconds (2 minutes - bulk operations need time)
+const REQUEST_TIMEOUT = 120000
 
 export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const [input, setInput] = useState('')
@@ -423,7 +423,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             ))}
 
             {/* Loading state with stop/retry */}
-            {isLoading && messages[messages.length - 1]?.role === 'user' && (
+            {isLoading && (
               <div className="flex gap-4 justify-start">
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
                   <Brain className="h-4 w-4 text-primary-foreground" />
@@ -431,7 +431,9 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                 <div className="bg-muted rounded-xl px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                    <span className="text-sm text-muted-foreground">
+                      {status === 'streaming' ? 'Working...' : 'Thinking...'}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"

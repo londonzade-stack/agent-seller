@@ -531,11 +531,15 @@ export async function archiveEmails(userId: string, emailIds: string[]) {
 export async function trashEmails(userId: string, emailIds: string[]) {
   const gmail = await getAuthenticatedGmailClient(userId)
 
-  await Promise.all(
+  // Use individual trash calls with allSettled so one failure doesn't kill the batch
+  const results = await Promise.allSettled(
     emailIds.map(id => gmail.users.messages.trash({ userId: 'me', id }))
   )
 
-  return { success: true, trashedCount: emailIds.length }
+  const succeeded = results.filter(r => r.status === 'fulfilled').length
+  const failed = results.filter(r => r.status === 'rejected').length
+
+  return { success: succeeded > 0, trashedCount: succeeded, failedCount: failed }
 }
 
 export async function untrashEmails(userId: string, emailIds: string[]) {

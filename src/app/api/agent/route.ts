@@ -37,7 +37,7 @@ import {
   updateDraft,
 } from '@/lib/gmail/service'
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 // POWERFUL AI email agent system prompt
 const SYSTEM_PROMPT = `You are AgentSeller - the most powerful AI email assistant ever built. You have COMPLETE control over the user's Gmail inbox and can perform ANY email operation they request.
@@ -798,7 +798,7 @@ export async function POST(req: Request) {
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
       tools,
-      stopWhen: stepCountIs(15),
+      stopWhen: stepCountIs(30),
       abortSignal: req.signal,
     })
 
