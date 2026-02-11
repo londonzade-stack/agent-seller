@@ -69,6 +69,7 @@ export async function GET(req: Request) {
     })
   } catch (error) {
     console.error('Analytics API error:', error)
-    return new Response(JSON.stringify({ error: 'Failed to fetch analytics' }), { status: 500 })
+    const message = error instanceof Error ? error.message : String(error)
+    return new Response(JSON.stringify({ error: 'Failed to fetch analytics', details: message }), { status: 500 })
   }
 }

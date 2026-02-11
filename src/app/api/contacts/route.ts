@@ -54,6 +54,7 @@ export async function GET() {
     return Response.json({ contacts })
   } catch (error) {
     console.error('Contacts API error:', error)
-    return new Response(JSON.stringify({ error: 'Failed to fetch contacts' }), { status: 500 })
+    const message = error instanceof Error ? error.message : String(error)
+    return new Response(JSON.stringify({ error: 'Failed to fetch contacts', details: message }), { status: 500 })
   }
 }
