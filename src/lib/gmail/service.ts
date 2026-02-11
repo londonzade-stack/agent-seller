@@ -866,13 +866,13 @@ export async function getInboxStats(userId: string) {
   const gmail = await getAuthenticatedGmailClient(userId)
 
   // labels.get returns exact counts - way faster than scanning messages
-  const [inbox, sent, spam, trash, starred, unread] = await Promise.all([
+  // Note: UNREAD is not a valid label ID - unread count comes from INBOX.messagesUnread
+  const [inbox, sent, spam, trash, starred] = await Promise.all([
     gmail.users.labels.get({ userId: 'me', id: 'INBOX' }),
     gmail.users.labels.get({ userId: 'me', id: 'SENT' }),
     gmail.users.labels.get({ userId: 'me', id: 'SPAM' }),
     gmail.users.labels.get({ userId: 'me', id: 'TRASH' }),
     gmail.users.labels.get({ userId: 'me', id: 'STARRED' }),
-    gmail.users.labels.get({ userId: 'me', id: 'UNREAD' }),
   ])
 
   return {
@@ -892,9 +892,6 @@ export async function getInboxStats(userId: string) {
     },
     starred: {
       total: starred.data.messagesTotal || 0,
-    },
-    unread: {
-      total: unread.data.messagesTotal || 0,
     },
   }
 }
