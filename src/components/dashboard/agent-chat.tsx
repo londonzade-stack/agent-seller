@@ -21,6 +21,7 @@ import {
   Lightbulb,
   X,
   ChevronDown,
+  ChevronRight,
   Search,
   Tag,
   Archive,
@@ -32,11 +33,131 @@ import {
   Users,
   RotateCcw,
   StopCircle,
+  CheckCircle2,
+  XCircle,
+  Wrench,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 
 interface AgentChatProps {
   user: User
   isEmailConnected: boolean
+}
+
+// Tool display names and icons
+const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
+  searchEmails: { label: 'Searching emails', icon: Search },
+  readEmail: { label: 'Reading email', icon: Eye },
+  getEmailThread: { label: 'Loading thread', icon: Eye },
+  getRecentEmails: { label: 'Getting recent emails', icon: Mail },
+  sendEmail: { label: 'Sending email', icon: Send },
+  draftEmail: { label: 'Creating draft', icon: Mail },
+  getDrafts: { label: 'Loading drafts', icon: Mail },
+  updateDraft: { label: 'Updating draft', icon: Mail },
+  sendDraft: { label: 'Sending draft', icon: Send },
+  deleteDraft: { label: 'Deleting draft', icon: Trash2 },
+  getLabels: { label: 'Getting labels', icon: Tag },
+  createLabel: { label: 'Creating label', icon: Tag },
+  applyLabels: { label: 'Applying labels', icon: Tag },
+  removeLabels: { label: 'Removing labels', icon: Tag },
+  archiveEmails: { label: 'Archiving emails', icon: Archive },
+  trashEmails: { label: 'Trashing emails', icon: Trash2 },
+  untrashEmails: { label: 'Restoring emails', icon: Archive },
+  markAsRead: { label: 'Marking as read', icon: Eye },
+  markAsUnread: { label: 'Marking as unread', icon: EyeOff },
+  starEmails: { label: 'Starring emails', icon: Star },
+  unstarEmails: { label: 'Unstarring emails', icon: Star },
+  markAsImportant: { label: 'Marking important', icon: Star },
+  markAsNotImportant: { label: 'Removing importance', icon: Star },
+  reportSpam: { label: 'Reporting spam', icon: Shield },
+  markNotSpam: { label: 'Rescuing from spam', icon: Shield },
+  getContactDetails: { label: 'Looking up contact', icon: Users },
+  getSenderHistory: { label: 'Getting sender history', icon: Users },
+  getInboxStats: { label: 'Analyzing inbox', icon: BarChart3 },
+}
+
+function getToolMeta(toolName: string) {
+  return TOOL_META[toolName] || { label: toolName, icon: Wrench }
+}
+
+// Render a single tool call block
+function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
+  const [expanded, setExpanded] = useState(false)
+  const toolName = (part.toolName as string) || 'unknown'
+  const state = part.state as string
+  const meta = getToolMeta(toolName)
+  const Icon = meta.icon
+  const input = part.input as Record<string, unknown> | undefined
+  const output = part.output as Record<string, unknown> | undefined
+  const errorText = part.errorText as string | undefined
+
+  const isRunning = state === 'input-streaming' || state === 'input-available' || state === 'call' || state === 'partial-call'
+  const isDone = state === 'output-available' || state === 'result'
+  const isError = state === 'output-error'
+
+  // Format input for display
+  const inputSummary = input ? summarizeToolInput(toolName, input) : null
+
+  return (
+    <div className="my-2 rounded-lg border border-border/50 bg-background/50 overflow-hidden">
+      {/* Tool call header */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50 transition-colors"
+      >
+        {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary shrink-0" />}
+        {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
+        {isError && <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />}
+        <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        <span className="font-medium text-foreground">{meta.label}</span>
+        {inputSummary && (
+          <span className="text-muted-foreground truncate max-w-[200px]">— {inputSummary}</span>
+        )}
+        <ChevronRight className={`h-3 w-3 ml-auto text-muted-foreground transition-transform shrink-0 ${expanded ? 'rotate-90' : ''}`} />
+      </button>
+
+      {/* Expanded details */}
+      {expanded && (
+        <div className="border-t border-border/50 px-3 py-2 space-y-2">
+          {input && Object.keys(input).length > 0 && (
+            <div>
+              <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Input</div>
+              <pre className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 overflow-x-auto max-h-32 overflow-y-auto">
+                {JSON.stringify(input, null, 2)}
+              </pre>
+            </div>
+          )}
+          {isDone && output && (
+            <div>
+              <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Result</div>
+              <pre className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 overflow-x-auto max-h-48 overflow-y-auto">
+                {JSON.stringify(output, null, 2)}
+              </pre>
+            </div>
+          )}
+          {isError && errorText && (
+            <div className="text-xs text-destructive">{errorText}</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Summarize tool input into a short string
+function summarizeToolInput(toolName: string, input: Record<string, unknown>): string | null {
+  if (input.query) return `"${String(input.query).slice(0, 40)}"`
+  if (input.emailId) return `ID: ${String(input.emailId).slice(0, 12)}...`
+  if (input.threadId) return `Thread: ${String(input.threadId).slice(0, 12)}...`
+  if (input.to && input.subject) return `To: ${input.to} — ${String(input.subject).slice(0, 30)}`
+  if (input.to) return `To: ${input.to}`
+  if (input.email) return String(input.email)
+  if (input.name) return String(input.name)
+  if (input.timeframe) return String(input.timeframe)
+  if (input.draftId) return `Draft: ${String(input.draftId).slice(0, 12)}...`
+  if (Array.isArray(input.emailIds)) return `${input.emailIds.length} emails`
+  return null
 }
 
 function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -117,15 +238,8 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-      />
-
-      {/* Dropdown */}
+      <div className="fixed inset-0 z-40" onClick={onClose} />
       <div className="absolute top-full right-0 mt-2 z-50 w-[600px] max-h-[70vh] overflow-auto rounded-2xl border border-white/20 bg-white/10 dark:bg-black/40 backdrop-blur-xl shadow-2xl">
-        {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-white/10 bg-white/5 dark:bg-black/20 backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-400" />
@@ -134,25 +248,14 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
               30+ Tools
             </Badge>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="h-8 w-8 rounded-full hover:bg-white/10"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-white/10">
             <X className="h-4 w-4" />
           </Button>
         </div>
-
-        {/* Content */}
         <div className="p-5 space-y-6">
-          {/* Capabilities Grid */}
           <div className="grid grid-cols-2 gap-4">
             {capabilities.map((category, idx) => (
-              <div
-                key={idx}
-                className="rounded-xl bg-white/5 dark:bg-white/5 border border-white/10 p-4 hover:bg-white/10 transition-colors"
-              >
+              <div key={idx} className="rounded-xl bg-white/5 dark:bg-white/5 border border-white/10 p-4 hover:bg-white/10 transition-colors">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="p-1.5 rounded-lg bg-primary/20">
                     <category.icon className="h-4 w-4 text-primary" />
@@ -170,11 +273,7 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
               </div>
             ))}
           </div>
-
-          {/* Divider */}
           <div className="border-t border-white/10" />
-
-          {/* Examples Section */}
           <div>
             <div className="flex items-center gap-2 mb-3">
               <Lightbulb className="h-4 w-4 text-amber-400" />
@@ -182,10 +281,7 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
             </div>
             <div className="flex flex-wrap gap-2">
               {examples.map((example, i) => (
-                <div
-                  key={i}
-                  className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors cursor-default"
-                >
+                <div key={i} className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors cursor-default">
                   {example}
                 </div>
               ))}
@@ -197,7 +293,6 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   )
 }
 
-// Timeout duration in milliseconds (2 minutes - bulk operations need time)
 const REQUEST_TIMEOUT = 120000
 
 export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
@@ -208,7 +303,6 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
 
   const { messages, sendMessage, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
@@ -228,17 +322,11 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     if (isLoading && !loadingStartTime) {
       setLoadingStartTime(Date.now())
       setIsTimedOut(false)
-
-      // Set timeout
       timeoutRef.current = setTimeout(() => {
         setIsTimedOut(true)
-        // Try to stop the request
-        if (stop) {
-          stop()
-        }
+        if (stop) stop()
       }, REQUEST_TIMEOUT)
     }
-
     if (!isLoading) {
       setLoadingStartTime(null)
       setIsTimedOut(false)
@@ -247,14 +335,12 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
         timeoutRef.current = null
       }
     }
-
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
   }, [isLoading, loadingStartTime, stop])
 
+  // Auto-scroll
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
@@ -276,9 +362,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   }
 
   const handleStop = () => {
-    if (stop) {
-      stop()
-    }
+    if (stop) stop()
     setIsTimedOut(false)
     setLoadingStartTime(null)
   }
@@ -286,16 +370,13 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const handleRetry = () => {
     setIsTimedOut(false)
     setLoadingStartTime(null)
-    // Re-send the last user message
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')
     if (lastUserMessage) {
       const text = lastUserMessage.parts
         .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
         .map(p => p.text)
         .join('')
-      if (text) {
-        sendMessage({ text })
-      }
+      if (text) sendMessage({ text })
     }
   }
 
@@ -318,7 +399,6 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Tips Badge */}
           <div className="relative">
             <Badge
               variant="outline"
@@ -331,7 +411,6 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             </Badge>
             <TipsDropdown isOpen={showTips} onClose={() => setShowTips(false)} />
           </div>
-
           {!isEmailConnected && (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg text-sm">
               <Mail className="h-4 w-4" />
@@ -347,9 +426,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6">
               <Brain className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h2 className="text-2xl font-semibold mb-2">
-              Hello, {userName}
-            </h2>
+            <h2 className="text-2xl font-semibold mb-2">Hello, {userName}</h2>
             <p className="text-muted-foreground mb-2 text-center max-w-md">
               {"I'm your powerful AI email assistant. I can search, send, organize, and analyze your emails."}
             </p>
@@ -360,7 +437,6 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
               <Lightbulb className="h-3.5 w-3.5" />
               See all 30+ capabilities
             </button>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl w-full">
               {suggestions.map((suggestion, i) => (
                 <Card
@@ -381,22 +457,18 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-4 ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
+                className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {message.role === 'assistant' && (
                   <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
                     <Brain className="h-4 w-4 text-primary-foreground" />
                   </div>
                 )}
-                <div
-                  className={`max-w-[80%] rounded-xl px-4 py-3 ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
-                >
+                <div className={`max-w-[80%] rounded-xl px-4 py-3 ${
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
+                }`}>
                   {message.parts.map((part, index) => {
                     if (part.type === 'text') {
                       return (
@@ -405,20 +477,12 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                         </div>
                       )
                     }
-                    if (part.type.startsWith('tool-')) {
-                      // Handle tool invocation states
-                      const toolPart = part as { type: string; toolCallId: string; toolName?: string; state?: string }
-                      if (toolPart.state === 'call' || toolPart.state === 'partial-call' || toolPart.state === 'input-streaming') {
-                        return (
-                          <div key={index} className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            Using tool: {toolPart.toolName || 'processing...'}
-                          </div>
-                        )
-                      }
-                      // Tool result - don't show anything special
-                      return null
+                    // Handle tool calls — both typed (tool-X) and dynamic-tool
+                    if (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) {
+                      return <ToolCallBlock key={index} part={part as unknown as Record<string, unknown>} />
                     }
+                    // step-start parts — skip
+                    if (part.type === 'step-start') return null
                     return null
                   })}
                 </div>
@@ -430,7 +494,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
               </div>
             ))}
 
-            {/* Loading state with stop/retry */}
+            {/* Loading state */}
             {isLoading && (
               <div className="flex gap-4 justify-start">
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
@@ -456,7 +520,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
               </div>
             )}
 
-            {/* Timeout state */}
+            {/* Timeout */}
             {isTimedOut && (
               <div className="flex gap-4 justify-start">
                 <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">

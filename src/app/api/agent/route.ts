@@ -794,7 +794,7 @@ export async function POST(req: Request) {
         '\n\n⚠️ NOTE: Gmail is not connected yet. Encourage the user to connect their Gmail to unlock all these powerful features!'
 
     const result = streamText({
-      model: 'google/gemini-2.0-flash',
+      model: 'google/gemini-2.5-flash',
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
       tools,
