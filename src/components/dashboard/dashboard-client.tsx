@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { DashboardSidebar, type DashboardView } from './dashboard-sidebar'
 import { AgentChat } from './agent-chat'
@@ -21,6 +21,23 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const handleConnectionChange = useCallback((connected: boolean, email?: string) => {
     setIsEmailConnected(connected)
     setConnectedEmail(email || null)
+  }, [])
+
+  // Check Gmail connection status on dashboard mount
+  useEffect(() => {
+    const checkGmailStatus = async () => {
+      try {
+        const res = await fetch('/api/auth/gmail/status')
+        const data = await res.json()
+        if (data.connected) {
+          setIsEmailConnected(true)
+          setConnectedEmail(data.email || null)
+        }
+      } catch (err) {
+        console.error('Failed to check Gmail status:', err)
+      }
+    }
+    checkGmailStatus()
   }, [])
 
   return (
