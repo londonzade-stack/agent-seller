@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { scanInboxForEmails } from '@/lib/gmail/service'
+import { scanInboxForEmails, getInboxStats } from '@/lib/gmail/service'
 
 export async function GET(req: Request) {
   try {
@@ -28,16 +28,20 @@ export async function GET(req: Request) {
         break
     }
 
-    const emails = await scanInboxForEmails(user.id, { maxResults: 100, after: afterDate })
+    // Get accurate counts from Gmail labels.get (single fast API call each)
+    // AND scan recent emails for sender analysis in parallel
+    const [inboxStats, emails] = await Promise.all([
+      getInboxStats(user.id),
+      scanInboxForEmails(user.id, { maxResults: 200, after: afterDate }),
+    ])
 
+    // Use scanned emails for sender breakdown and attachment analysis
     const senderCounts: Record<string, number> = {}
-    let unreadCount = 0
     let withAttachments = 0
 
     emails.forEach((e) => {
       const sender = e.from || 'Unknown'
       senderCounts[sender] = (senderCounts[sender] || 0) + 1
-      if (e.labelIds?.includes('UNREAD')) unreadCount++
       if (e.hasAttachments) withAttachments++
     })
 
@@ -48,8 +52,16 @@ export async function GET(req: Request) {
 
     return Response.json({
       stats: {
-        totalEmails: emails.length,
-        unreadEmails: unreadCount,
+        // Accurate counts from labels.get
+        totalEmails: inboxStats.inbox.total,
+        unreadEmails: inboxStats.inbox.unread,
+        totalThreads: inboxStats.inbox.threads,
+        sentEmails: inboxStats.sent.total,
+        spamEmails: inboxStats.spam.total,
+        trashedEmails: inboxStats.trash.total,
+        starredEmails: inboxStats.starred.total,
+        // From scanned emails (timeframe-filtered)
+        emailsInTimeframe: emails.length,
         emailsWithAttachments: withAttachments,
         uniqueSenders: Object.keys(senderCounts).length,
         topSenders,

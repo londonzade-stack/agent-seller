@@ -861,6 +861,44 @@ export async function updateDraft(
   }
 }
 
+// Get accurate inbox stats using Gmail labels.get (fast, single API call)
+export async function getInboxStats(userId: string) {
+  const gmail = await getAuthenticatedGmailClient(userId)
+
+  // labels.get returns exact counts - way faster than scanning messages
+  const [inbox, sent, spam, trash, starred, unread] = await Promise.all([
+    gmail.users.labels.get({ userId: 'me', id: 'INBOX' }),
+    gmail.users.labels.get({ userId: 'me', id: 'SENT' }),
+    gmail.users.labels.get({ userId: 'me', id: 'SPAM' }),
+    gmail.users.labels.get({ userId: 'me', id: 'TRASH' }),
+    gmail.users.labels.get({ userId: 'me', id: 'STARRED' }),
+    gmail.users.labels.get({ userId: 'me', id: 'UNREAD' }),
+  ])
+
+  return {
+    inbox: {
+      total: inbox.data.messagesTotal || 0,
+      unread: inbox.data.messagesUnread || 0,
+      threads: inbox.data.threadsTotal || 0,
+    },
+    sent: {
+      total: sent.data.messagesTotal || 0,
+    },
+    spam: {
+      total: spam.data.messagesTotal || 0,
+    },
+    trash: {
+      total: trash.data.messagesTotal || 0,
+    },
+    starred: {
+      total: starred.data.messagesTotal || 0,
+    },
+    unread: {
+      total: unread.data.messagesTotal || 0,
+    },
+  }
+}
+
 // Analyze email for lead potential
 export function analyzeEmailForLeadPotential(email: {
   from: string

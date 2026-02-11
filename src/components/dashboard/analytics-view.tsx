@@ -11,9 +11,12 @@ import {
   AlertCircle,
   Inbox,
   Send,
-  Clock,
   Users,
   TrendingUp,
+  Star,
+  MessageSquare,
+  ShieldAlert,
+  Trash2,
 } from 'lucide-react'
 import {
   BarChart,
@@ -31,6 +34,12 @@ import {
 interface InboxStats {
   totalEmails: number
   unreadEmails: number
+  totalThreads: number
+  sentEmails: number
+  spamEmails: number
+  trashedEmails: number
+  starredEmails: number
+  emailsInTimeframe: number
   emailsWithAttachments: number
   uniqueSenders: number
   topSenders: { sender: string; count: number }[]
@@ -140,16 +149,17 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
           </div>
         ) : (
           <div className="max-w-5xl mx-auto space-y-6">
-            {/* Stat Cards */}
+            {/* Primary Stat Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                     <Inbox className="h-4 w-4 text-blue-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Total Emails</span>
+                  <span className="text-sm text-muted-foreground">Inbox</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.totalEmails}</p>
+                <p className="text-2xl font-bold">{stats.totalEmails.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">{stats.totalThreads.toLocaleString()} threads</p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-3 mb-2">
@@ -158,25 +168,70 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                   </div>
                   <span className="text-sm text-muted-foreground">Unread</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.unreadEmails}</p>
+                <p className="text-2xl font-bold">{stats.unreadEmails.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats.totalEmails > 0 ? Math.round((stats.unreadEmails / stats.totalEmails) * 100) : 0}% of inbox
+                </p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-emerald-500" />
+                    <Send className="h-4 w-4 text-emerald-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Unique Senders</span>
+                  <span className="text-sm text-muted-foreground">Sent</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.uniqueSenders}</p>
+                <p className="text-2xl font-bold">{stats.sentEmails.toLocaleString()}</p>
               </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Starred</span>
+                </div>
+                <p className="text-2xl font-bold">{stats.starredEmails.toLocaleString()}</p>
+              </Card>
+            </div>
+
+            {/* Secondary Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
                     <TrendingUp className="h-4 w-4 text-purple-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">With Attachments</span>
+                  <span className="text-sm text-muted-foreground">This {timeframe === 'today' ? 'Day' : timeframe === 'week' ? 'Week' : 'Month'}</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.emailsWithAttachments}</p>
+                <p className="text-2xl font-bold">{stats.emailsInTimeframe}</p>
+                <p className="text-xs text-muted-foreground mt-1">emails received</p>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                    <Users className="h-4 w-4 text-cyan-500" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Unique Senders</span>
+                </div>
+                <p className="text-2xl font-bold">{stats.uniqueSenders}</p>
+                <p className="text-xs text-muted-foreground mt-1">in timeframe</p>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                    <ShieldAlert className="h-4 w-4 text-rose-500" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Spam</span>
+                </div>
+                <p className="text-2xl font-bold">{stats.spamEmails.toLocaleString()}</p>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-gray-500/10 flex items-center justify-center">
+                    <Trash2 className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">Trash</span>
+                </div>
+                <p className="text-2xl font-bold">{stats.trashedEmails.toLocaleString()}</p>
               </Card>
             </div>
 
@@ -217,14 +272,14 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
 
               {/* Email Distribution Pie Chart */}
               <Card className="p-6">
-                <h3 className="font-medium mb-4">Email Breakdown</h3>
+                <h3 className="font-medium mb-4">Inbox Breakdown</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
                       data={[
                         { name: 'Read', value: stats.totalEmails - stats.unreadEmails },
                         { name: 'Unread', value: stats.unreadEmails },
-                        { name: 'With Attachments', value: stats.emailsWithAttachments },
+                        { name: 'Starred', value: stats.starredEmails },
                       ].filter(d => d.value > 0)}
                       cx="50%"
                       cy="50%"
@@ -258,7 +313,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[2] }} />
-                    Attachments
+                    Starred
                   </div>
                 </div>
               </Card>
