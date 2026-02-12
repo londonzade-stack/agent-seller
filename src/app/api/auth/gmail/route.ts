@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getGmailAuthUrl } from '@/lib/gmail/client'
+import { sanitizeError } from '@/lib/logger'
 import { randomBytes } from 'crypto'
 
 export async function GET() {
@@ -36,7 +37,7 @@ export async function GET() {
 
     return NextResponse.json({ authUrl })
   } catch (error) {
-    console.error('Gmail auth error:', error)
+    sanitizeError('Gmail auth error', error)
     return NextResponse.json(
       { error: 'Failed to initiate Gmail authorization' },
       { status: 500 }

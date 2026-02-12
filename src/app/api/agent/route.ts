@@ -7,6 +7,8 @@ import {
 } from 'ai'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit } from '@/lib/rate-limit'
+import { sanitizeError } from '@/lib/logger'
 import {
   scanInboxForEmails,
   getContactFromEmail,
@@ -81,6 +83,10 @@ Chain tools together. You can take up to 30 steps in one turn. Examples:
 1. SENDING an email (show the draft first, wait for "send it")
 2. That's it. Everything else — just do it. No matter how many emails are involved.
 
+## EMAIL RECIPIENT SAFETY RULE
+
+NEVER send or draft an email to an address the user has not explicitly specified or clearly implied in the current conversation. If you are unsure about a recipient, ask the user to confirm the email address before proceeding. Do not infer or guess email addresses.
+
 "Delete all emails from Apple" → search from:apple → trash ALL of them → report the count. Don't ask "are you sure?" — they already told you what to do.
 
 Reading, searching, archiving, trashing, starring, labeling, drafting, analyzing — all of these you do WITHOUT asking, regardless of volume.
@@ -139,7 +145,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
             })),
           }
         } catch (error) {
-          console.error('Search error:', error)
+          sanitizeError('Search error', error)
           return { success: false, error: 'Failed to search emails.' }
         }
       },
@@ -158,7 +164,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const email = await getEmailById(userId, emailId)
           return { success: true, email }
         } catch (error) {
-          console.error('Read error:', error)
+          sanitizeError('Read error', error)
           return { success: false, error: 'Failed to read email.' }
         }
       },
@@ -177,7 +183,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const thread = await getEmailThread(userId, threadId)
           return { success: true, thread }
         } catch (error) {
-          console.error('Thread error:', error)
+          sanitizeError('Thread error', error)
           return { success: false, error: 'Failed to get thread.' }
         }
       },
@@ -207,7 +213,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
             threadId: result.threadId,
           }
         } catch (error) {
-          console.error('Send error:', error)
+          sanitizeError('Send error', error)
           return { success: false, error: 'Failed to send email.' }
         }
       },
@@ -237,7 +243,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
             draft: { to, subject, body },
           }
         } catch (error) {
-          console.error('Draft error:', error)
+          sanitizeError('Draft error', error)
           return { success: false, error: 'Failed to save draft.', draft: { to, subject, body } }
         }
       },
@@ -256,7 +262,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const drafts = await getDrafts(userId, maxResults || 20)
           return { success: true, count: drafts.length, drafts }
         } catch (error) {
-          console.error('Drafts error:', error)
+          sanitizeError('Drafts error', error)
           return { success: false, error: 'Failed to get drafts.' }
         }
       },
@@ -280,7 +286,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await updateDraft(userId, draftId, { to, subject, body, cc, bcc })
           return { success: true, message: 'Draft updated!', draftId: result.draftId }
         } catch (error) {
-          console.error('Update draft error:', error)
+          sanitizeError('Update draft error', error)
           return { success: false, error: 'Failed to update draft.' }
         }
       },
@@ -299,7 +305,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await sendDraft(userId, draftId)
           return { success: true, message: 'Draft sent!', messageId: result.id }
         } catch (error) {
-          console.error('Send draft error:', error)
+          sanitizeError('Send draft error', error)
           return { success: false, error: 'Failed to send draft.' }
         }
       },
@@ -318,7 +324,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           await deleteDraft(userId, draftId)
           return { success: true, message: 'Draft deleted!' }
         } catch (error) {
-          console.error('Delete draft error:', error)
+          sanitizeError('Delete draft error', error)
           return { success: false, error: 'Failed to delete draft.' }
         }
       },
@@ -336,7 +342,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const labels = await getLabels(userId)
           return { success: true, labels }
         } catch (error) {
-          console.error('Labels error:', error)
+          sanitizeError('Labels error', error)
           return { success: false, error: 'Failed to get labels.' }
         }
       },
@@ -357,7 +363,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const label = await createLabel(userId, name, { backgroundColor, textColor })
           return { success: true, message: `Label "${name}" created!`, label }
         } catch (error) {
-          console.error('Create label error:', error)
+          sanitizeError('Create label error', error)
           return { success: false, error: 'Failed to create label.' }
         }
       },
@@ -377,7 +383,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await applyLabels(userId, emailIds, labelIds)
           return { success: true, message: `Labels applied to ${result.modifiedCount} emails!` }
         } catch (error) {
-          console.error('Apply labels error:', error)
+          sanitizeError('Apply labels error', error)
           return { success: false, error: 'Failed to apply labels.' }
         }
       },
@@ -397,7 +403,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await removeLabels(userId, emailIds, labelIds)
           return { success: true, message: `Labels removed from ${result.modifiedCount} emails!` }
         } catch (error) {
-          console.error('Remove labels error:', error)
+          sanitizeError('Remove labels error', error)
           return { success: false, error: 'Failed to remove labels.' }
         }
       },
@@ -417,7 +423,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await archiveEmails(userId, emailIds)
           return { success: true, message: `Archived ${result.archivedCount} emails!` }
         } catch (error) {
-          console.error('Archive error:', error)
+          sanitizeError('Archive error', error)
           return { success: false, error: 'Failed to archive emails.' }
         }
       },
@@ -436,7 +442,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await trashEmails(userId, emailIds)
           return { success: true, message: `Moved ${result.trashedCount} emails to trash!` }
         } catch (error) {
-          console.error('Trash error:', error)
+          sanitizeError('Trash error', error)
           return { success: false, error: 'Failed to trash emails.' }
         }
       },
@@ -455,7 +461,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await untrashEmails(userId, emailIds)
           return { success: true, message: `Restored ${result.restoredCount} emails from trash!` }
         } catch (error) {
-          console.error('Untrash error:', error)
+          sanitizeError('Untrash error', error)
           return { success: false, error: 'Failed to restore emails.' }
         }
       },
@@ -475,7 +481,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await markAsRead(userId, emailIds)
           return { success: true, message: `Marked ${result.count} emails as read!` }
         } catch (error) {
-          console.error('Mark read error:', error)
+          sanitizeError('Mark read error', error)
           return { success: false, error: 'Failed to mark as read.' }
         }
       },
@@ -494,7 +500,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await markAsUnread(userId, emailIds)
           return { success: true, message: `Marked ${result.count} emails as unread!` }
         } catch (error) {
-          console.error('Mark unread error:', error)
+          sanitizeError('Mark unread error', error)
           return { success: false, error: 'Failed to mark as unread.' }
         }
       },
@@ -513,7 +519,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await starEmails(userId, emailIds)
           return { success: true, message: `Starred ${result.count} emails!` }
         } catch (error) {
-          console.error('Star error:', error)
+          sanitizeError('Star error', error)
           return { success: false, error: 'Failed to star emails.' }
         }
       },
@@ -532,7 +538,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await unstarEmails(userId, emailIds)
           return { success: true, message: `Unstarred ${result.count} emails!` }
         } catch (error) {
-          console.error('Unstar error:', error)
+          sanitizeError('Unstar error', error)
           return { success: false, error: 'Failed to unstar emails.' }
         }
       },
@@ -551,7 +557,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await markAsImportant(userId, emailIds)
           return { success: true, message: `Marked ${result.count} emails as important!` }
         } catch (error) {
-          console.error('Important error:', error)
+          sanitizeError('Important error', error)
           return { success: false, error: 'Failed to mark as important.' }
         }
       },
@@ -570,7 +576,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await markAsNotImportant(userId, emailIds)
           return { success: true, message: `Removed important flag from ${result.count} emails!` }
         } catch (error) {
-          console.error('Not important error:', error)
+          sanitizeError('Not important error', error)
           return { success: false, error: 'Failed to mark as not important.' }
         }
       },
@@ -590,7 +596,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await reportSpam(userId, emailIds)
           return { success: true, message: `Reported ${result.count} emails as spam!` }
         } catch (error) {
-          console.error('Spam error:', error)
+          sanitizeError('Spam error', error)
           return { success: false, error: 'Failed to report spam.' }
         }
       },
@@ -609,7 +615,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await markNotSpam(userId, emailIds)
           return { success: true, message: `Rescued ${result.count} emails from spam!` }
         } catch (error) {
-          console.error('Not spam error:', error)
+          sanitizeError('Not spam error', error)
           return { success: false, error: 'Failed to mark as not spam.' }
         }
       },
@@ -629,7 +635,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const contact = await getContactFromEmail(userId, email)
           return contact ? { success: true, contact } : { success: false, message: `No emails found from ${email}` }
         } catch (error) {
-          console.error('Contact error:', error)
+          sanitizeError('Contact error', error)
           return { success: false, error: 'Failed to get contact details.' }
         }
       },
@@ -648,7 +654,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const history = await getSenderHistory(userId, email)
           return { success: true, history }
         } catch (error) {
-          console.error('History error:', error)
+          sanitizeError('History error', error)
           return { success: false, error: 'Failed to get sender history.' }
         }
       },
@@ -708,7 +714,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
             },
           }
         } catch (error) {
-          console.error('Stats error:', error)
+          sanitizeError('Stats error', error)
           return { success: false, error: 'Failed to get inbox stats.' }
         }
       },
@@ -741,7 +747,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
             })),
           }
         } catch (error) {
-          console.error('Find unsubscribable error:', error)
+          sanitizeError('Find unsubscribable error', error)
           return { success: false, error: 'Failed to scan for unsubscribable emails.' }
         }
       },
@@ -760,7 +766,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           const result = await unsubscribeFromEmail(userId, emailId)
           return result
         } catch (error) {
-          console.error('Unsubscribe error:', error)
+          sanitizeError('Unsubscribe error', error)
           return { success: false, method: 'error', message: 'Failed to unsubscribe.' }
         }
       },
@@ -785,7 +791,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
             results: result.results,
           }
         } catch (error) {
-          console.error('Bulk unsubscribe error:', error)
+          sanitizeError('Bulk unsubscribe error', error)
           return { success: false, error: 'Failed to bulk unsubscribe.' }
         }
       },
@@ -842,7 +848,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
             })),
           }
         } catch (error) {
-          console.error('Recent error:', error)
+          sanitizeError('Recent error', error)
           return { success: false, error: 'Failed to get recent emails.' }
         }
       },
@@ -852,14 +858,36 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
 
 export async function POST(req: Request) {
   try {
-    const { messages }: { messages: UIMessage[] } = await req.json()
-
     const supabase = await createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
     const userId = user?.id || null
+
+    // Rate limit: 20 requests per minute per user (or per IP for unauthenticated)
+    const rateLimitKey = userId || req.headers.get('x-forwarded-for') || 'anonymous'
+    const rateLimitResult = rateLimit(rateLimitKey, 20, 60 * 1000)
+
+    if (!rateLimitResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: 'Too many requests. Please wait before trying again.',
+          retryAfterMs: rateLimitResult.resetMs,
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(Math.ceil(rateLimitResult.resetMs / 1000)),
+            'X-RateLimit-Limit': String(rateLimitResult.limit),
+            'X-RateLimit-Remaining': String(rateLimitResult.remaining),
+          },
+        }
+      )
+    }
+
+    const { messages }: { messages: UIMessage[] } = await req.json()
 
     let isEmailConnected = false
     if (userId) {
@@ -885,7 +913,7 @@ export async function POST(req: Request) {
 
     return result.toUIMessageStreamResponse()
   } catch (error) {
-    console.error('Agent API error:', error)
+    sanitizeError('Agent API error', error)
     return new Response(
       JSON.stringify({ error: 'Failed to process request' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { deleteDraft } from '@/lib/gmail/service'
+import { sanitizeError } from '@/lib/logger'
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     await deleteDraft(user.id, draftId)
     return Response.json({ success: true })
   } catch (error) {
-    console.error('Delete draft API error:', error)
+    sanitizeError('Delete draft API error', error)
     return new Response(JSON.stringify({ error: 'Failed to delete draft' }), { status: 500 })
   }
 }

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { scanInboxForEmails, getInboxStats } from '@/lib/gmail/service'
+import { sanitizeError } from '@/lib/logger'
 
 export async function GET(req: Request) {
   try {
@@ -68,8 +69,7 @@ export async function GET(req: Request) {
       },
     })
   } catch (error) {
-    console.error('Analytics API error:', error)
-    const message = error instanceof Error ? error.message : String(error)
-    return new Response(JSON.stringify({ error: 'Failed to fetch analytics', details: message }), { status: 500 })
+    sanitizeError('Analytics API error', error)
+    return new Response(JSON.stringify({ error: 'Failed to fetch analytics' }), { status: 500 })
   }
 }

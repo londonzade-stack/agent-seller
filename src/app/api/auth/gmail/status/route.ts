@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeError } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -39,7 +40,7 @@ export async function GET() {
       connectedAt: connection.created_at,
     })
   } catch (error) {
-    console.error('Gmail status error:', error)
+    sanitizeError('Gmail status error', error)
     return NextResponse.json(
       { error: 'Failed to check Gmail status' },
       { status: 500 }
@@ -77,7 +78,7 @@ export async function DELETE() {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Gmail disconnect error:', error)
+    sanitizeError('Gmail disconnect error', error)
     return NextResponse.json(
       { error: 'Failed to disconnect Gmail' },
       { status: 500 }

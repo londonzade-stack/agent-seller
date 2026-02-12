@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { exchangeCodeForTokens, getGmailClient } from '@/lib/gmail/client'
+import { sanitizeError } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   // Handle OAuth errors
   if (error) {
-    console.error('Gmail OAuth error:', error)
+    sanitizeError('Gmail OAuth error', error)
     return NextResponse.redirect(
       new URL(`/dashboard?error=gmail_auth_denied`, request.url)
     )
@@ -113,7 +114,7 @@ export async function GET(request: NextRequest) {
       new URL(`/dashboard?gmail_connected=true`, request.url)
     )
   } catch (error) {
-    console.error('Gmail callback error:', error)
+    sanitizeError('Gmail callback error', error)
     return NextResponse.redirect(
       new URL(`/dashboard?error=gmail_auth_failed`, request.url)
     )

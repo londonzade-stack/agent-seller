@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { scanInboxForEmails } from '@/lib/gmail/service'
+import { sanitizeError } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -53,8 +54,7 @@ export async function GET() {
 
     return Response.json({ contacts })
   } catch (error) {
-    console.error('Contacts API error:', error)
-    const message = error instanceof Error ? error.message : String(error)
-    return new Response(JSON.stringify({ error: 'Failed to fetch contacts', details: message }), { status: 500 })
+    sanitizeError('Contacts API error', error)
+    return new Response(JSON.stringify({ error: 'Failed to fetch contacts' }), { status: 500 })
   }
 }

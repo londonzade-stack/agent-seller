@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getDrafts } from '@/lib/gmail/service'
+import { sanitizeError } from '@/lib/logger'
 
 export async function GET() {
   try {
@@ -13,7 +14,7 @@ export async function GET() {
     const drafts = await getDrafts(user.id, 50)
     return Response.json({ drafts })
   } catch (error) {
-    console.error('Drafts API error:', error)
+    sanitizeError('Drafts API error', error)
     return new Response(JSON.stringify({ error: 'Failed to fetch drafts' }), { status: 500 })
   }
 }

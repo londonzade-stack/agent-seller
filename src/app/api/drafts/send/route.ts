@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { sendDraft } from '@/lib/gmail/service'
+import { sanitizeError } from '@/lib/logger'
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     const result = await sendDraft(user.id, draftId)
     return Response.json({ success: true, messageId: result.id })
   } catch (error) {
-    console.error('Send draft API error:', error)
+    sanitizeError('Send draft API error', error)
     return new Response(JSON.stringify({ error: 'Failed to send draft' }), { status: 500 })
   }
 }

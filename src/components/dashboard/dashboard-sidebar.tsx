@@ -16,7 +16,7 @@ import {
   FileText,
   Users,
   BarChart3,
-  Settings,
+  X,
 } from 'lucide-react'
 
 export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics'
@@ -26,6 +26,8 @@ interface DashboardSidebarProps {
   activeView: DashboardView
   onViewChange: (view: DashboardView) => void
   isEmailConnected: boolean
+  mobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
 export function DashboardSidebar({
@@ -33,6 +35,8 @@ export function DashboardSidebar({
   activeView,
   onViewChange,
   isEmailConnected,
+  mobileOpen,
+  onMobileClose,
 }: DashboardSidebarProps) {
   const router = useRouter()
 
@@ -40,6 +44,11 @@ export function DashboardSidebar({
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/')
+  }
+
+  const handleNavClick = (view: DashboardView) => {
+    onViewChange(view)
+    onMobileClose?.()
   }
 
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
@@ -52,27 +61,40 @@ export function DashboardSidebar({
     { id: 'email', label: 'Email Connection', icon: Mail },
   ]
 
-  return (
-    <aside className="w-64 border-r border-border bg-card flex flex-col">
-      <div className="p-4 border-b border-border flex items-center justify-between">
+  const sidebarContent = (
+    <>
+      <div className="p-4 border-b border-zinc-200 dark:border-white/10 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
             <Target className="h-5 w-5" />
           </div>
           <span className="text-lg font-semibold">AgentSeller</span>
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          {/* Close button visible only on mobile overlay */}
+          {onMobileClose && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onMobileClose}
+              className="lg:hidden h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-3 space-y-1">
         {navItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onViewChange(item.id)}
+            onClick={() => handleNavClick(item.id)}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeView === item.id
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
+                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
             }`}
           >
             <item.icon className="h-4 w-4" />
@@ -88,14 +110,14 @@ export function DashboardSidebar({
         ))}
       </nav>
 
-      <div className="p-4 border-t border-border space-y-4">
+      <div className="p-4 border-t border-zinc-200 dark:border-white/10 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
+          <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-medium">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{userName}</p>
-            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{user.email}</p>
           </div>
         </div>
 
@@ -103,12 +125,36 @@ export function DashboardSidebar({
           variant="ghost"
           size="sm"
           onClick={handleSignOut}
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          className="w-full justify-start text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
         >
           <LogOut className="h-4 w-4 mr-2" />
           Sign out
         </Button>
       </div>
-    </aside>
+    </>
+  )
+
+  return (
+    <>
+      {/* Desktop sidebar - always visible on lg+ */}
+      <aside className="hidden lg:flex w-64 border-r border-zinc-200 dark:border-white/10 bg-white dark:bg-black flex-col shrink-0">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      {mobileOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+            onClick={onMobileClose}
+          />
+          {/* Drawer */}
+          <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-black border-r border-zinc-200 dark:border-white/10 flex flex-col lg:hidden shadow-2xl">
+            {sidebarContent}
+          </aside>
+        </>
+      )}
+    </>
   )
 }

@@ -219,12 +219,12 @@ export default function PricingPage() {
               <span className="text-lg font-semibold">AgentSeller</span>
             </Link>
             <div className="flex items-center gap-8 text-sm text-zinc-500">
-              <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
+              <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</Link>
+              <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
-              &copy; 2025 AgentSeller. All rights reserved.
+              &copy; 2026 AgentSeller. All rights reserved.
             </div>
           </div>
         </div>

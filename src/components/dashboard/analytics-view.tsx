@@ -14,7 +14,6 @@ import {
   Users,
   TrendingUp,
   Star,
-  MessageSquare,
   ShieldAlert,
   Trash2,
 } from 'lucide-react'
@@ -80,15 +79,15 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
 
   if (!isEmailConnected) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6">
-          <BarChart3 className="h-8 w-8 text-muted-foreground" />
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8">
+        <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-6">
+          <BarChart3 className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
         </div>
         <h2 className="text-2xl font-semibold mb-2">Inbox Analytics</h2>
-        <p className="text-muted-foreground mb-6 text-center max-w-md">
+        <p className="text-zinc-500 dark:text-zinc-400 mb-6 text-center max-w-md">
           Connect your email to see analytics about your inbox activity, top senders, and trends.
         </p>
-        <Button onClick={onConnectEmail}>
+        <Button onClick={onConnectEmail} className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200">
           <Mail className="h-4 w-4 mr-2" />
           Connect Email
         </Button>
@@ -97,148 +96,148 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
-      <header className="border-b border-border px-6 py-4 flex items-center justify-between bg-card">
+    <div className="flex-1 flex flex-col h-full">
+      <header className="border-b border-zinc-200 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-black">
         <div>
-          <h1 className="text-xl font-semibold">Analytics</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-lg sm:text-xl font-semibold">Analytics</h1>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
             Inbox insights and email activity
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border border-border overflow-hidden">
+          <div className="flex rounded-lg border border-zinc-200 dark:border-white/10 overflow-hidden">
             {(['today', 'week', 'month'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTimeframe(t)}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-colors ${
                   timeframe === t
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-card text-muted-foreground hover:text-foreground'
+                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
+                    : 'bg-white dark:bg-black text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
-                {t === 'today' ? 'Today' : t === 'week' ? 'This Week' : 'This Month'}
+                {t === 'today' ? 'Today' : t === 'week' ? 'Week' : 'Month'}
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" onClick={fetchStats} disabled={loading}>
+          <Button variant="outline" size="sm" onClick={fetchStats} disabled={loading} className="border-zinc-200 dark:border-white/10">
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </header>
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-3 sm:p-6">
         {loading && !stats ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <AlertCircle className="h-8 w-8 text-destructive mb-4" />
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button variant="outline" onClick={fetchStats}>Try Again</Button>
+            <AlertCircle className="h-8 w-8 text-red-500 mb-4" />
+            <p className="text-zinc-500 dark:text-zinc-400 mb-4">{error}</p>
+            <Button variant="outline" onClick={fetchStats} className="border-zinc-200 dark:border-white/10">Try Again</Button>
           </div>
         ) : !stats ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-6">
-              <BarChart3 className="h-8 w-8 text-muted-foreground" />
+            <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-6">
+              <BarChart3 className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
             </div>
             <h3 className="text-lg font-medium mb-2">No data yet</h3>
-            <p className="text-muted-foreground text-sm">Analytics will appear once we scan your inbox.</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Analytics will appear once we scan your inbox.</p>
           </div>
         ) : (
-          <div className="max-w-5xl mx-auto space-y-6">
+          <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
             {/* Primary Stat Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Inbox className="h-4 w-4 text-blue-500" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Inbox className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Inbox</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Inbox</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.totalEmails.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stats.totalThreads.toLocaleString()} threads</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.totalEmails.toLocaleString()}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{stats.totalThreads.toLocaleString()} threads</p>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Mail className="h-4 w-4 text-amber-500" />
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Unread</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Unread</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.unreadEmails.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xl sm:text-2xl font-bold">{stats.unreadEmails.toLocaleString()}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                   {stats.totalEmails > 0 ? Math.round((stats.unreadEmails / stats.totalEmails) * 100) : 0}% of inbox
                 </p>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                    <Send className="h-4 w-4 text-emerald-500" />
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                    <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Sent</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Sent</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.sentEmails.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.sentEmails.toLocaleString()}</p>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                    <Star className="h-4 w-4 text-yellow-500" />
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Starred</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Starred</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.starredEmails.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.starredEmails.toLocaleString()}</p>
               </Card>
             </div>
 
             {/* Secondary Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-purple-500" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                    <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">This {timeframe === 'today' ? 'Day' : timeframe === 'week' ? 'Week' : 'Month'}</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">This {timeframe === 'today' ? 'Day' : timeframe === 'week' ? 'Week' : 'Month'}</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.emailsInTimeframe}</p>
-                <p className="text-xs text-muted-foreground mt-1">emails received</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.emailsInTimeframe}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">received</p>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
-                    <Users className="h-4 w-4 text-cyan-500" />
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                    <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Unique Senders</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Senders</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.uniqueSenders}</p>
-                <p className="text-xs text-muted-foreground mt-1">in timeframe</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.uniqueSenders}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">unique</p>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
-                    <ShieldAlert className="h-4 w-4 text-rose-500" />
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                    <ShieldAlert className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Spam</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Spam</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.spamEmails.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.spamEmails.toLocaleString()}</p>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-gray-500/10 flex items-center justify-center">
-                    <Trash2 className="h-4 w-4 text-gray-500" />
+              <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gray-500/10 flex items-center justify-center">
+                    <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500" />
                   </div>
-                  <span className="text-sm text-muted-foreground">Trash</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Trash</span>
                 </div>
-                <p className="text-2xl font-bold">{stats.trashedEmails.toLocaleString()}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.trashedEmails.toLocaleString()}</p>
               </Card>
             </div>
 
             {/* Charts Row */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Top Senders Bar Chart */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <h3 className="font-medium mb-4">Top Senders</h3>
                 {stats.topSenders.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
@@ -248,9 +247,9 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                       <YAxis
                         type="category"
                         dataKey="sender"
-                        width={140}
+                        width={120}
                         tick={{ fontSize: 11 }}
-                        tickFormatter={(v: string) => v.length > 20 ? v.slice(0, 20) + '...' : v}
+                        tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '...' : v}
                       />
                       <Tooltip
                         contentStyle={{
@@ -264,14 +263,14 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
+                  <div className="h-[300px] flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-sm">
                     No sender data available
                   </div>
                 )}
               </Card>
 
               {/* Email Distribution Pie Chart */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <h3 className="font-medium mb-4">Inbox Breakdown</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -302,7 +301,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="flex justify-center gap-6 mt-2">
+                <div className="flex justify-center gap-4 sm:gap-6 mt-2">
                   <div className="flex items-center gap-2 text-xs">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[0] }} />
                     Read
@@ -321,19 +320,20 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
 
             {/* Top Senders Table */}
             {stats.topSenders.length > 0 && (
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <h3 className="font-medium mb-4">All Top Senders</h3>
                 <div className="space-y-2">
                   {stats.topSenders.map((sender, i) => (
-                    <div key={i} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
+                    <div key={i} className="flex items-center gap-3 py-2 border-b border-zinc-200 dark:border-white/10 last:border-0">
+                      <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium">
                         {sender.sender.charAt(0).toUpperCase()}
                       </div>
                       <span className="flex-1 text-sm truncate">{sender.sender}</span>
-                      <span className="text-sm text-muted-foreground">{sender.count} emails</span>
-                      <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:inline">{sender.count} emails</span>
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400 sm:hidden">{sender.count}</span>
+                      <div className="w-16 sm:w-24 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary rounded-full"
+                          className="h-full bg-zinc-900 dark:bg-white rounded-full"
                           style={{ width: `${(sender.count / stats.topSenders[0].count) * 100}%` }}
                         />
                       </div>
