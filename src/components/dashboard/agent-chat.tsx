@@ -84,26 +84,73 @@ function getToolMeta(toolName: string) {
   return TOOL_META[toolName] || { label: toolName, icon: Wrench }
 }
 
-// Markdown renderer with full GFM support (tables, strikethrough, task lists, autolinks)
+// Styled markdown components for ChatGPT-style tables and clean rendering
+const markdownComponents = {
+  table: ({ children, ...props }: React.ComponentPropsWithoutRef<'table'>) => (
+    <div className="my-3 overflow-x-auto rounded-lg border border-border">
+      <table className="w-full border-collapse text-sm" {...props}>{children}</table>
+    </div>
+  ),
+  thead: ({ children, ...props }: React.ComponentPropsWithoutRef<'thead'>) => (
+    <thead className="bg-muted/80" {...props}>{children}</thead>
+  ),
+  th: ({ children, ...props }: React.ComponentPropsWithoutRef<'th'>) => (
+    <th className="border-b border-border px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground" {...props}>{children}</th>
+  ),
+  td: ({ children, ...props }: React.ComponentPropsWithoutRef<'td'>) => (
+    <td className="border-b border-border/50 px-3 py-2 text-sm" {...props}>{children}</td>
+  ),
+  tr: ({ children, ...props }: React.ComponentPropsWithoutRef<'tr'>) => (
+    <tr className="even:bg-muted/30 hover:bg-muted/50 transition-colors" {...props}>{children}</tr>
+  ),
+  p: ({ children, ...props }: React.ComponentPropsWithoutRef<'p'>) => (
+    <p className="my-1.5 leading-relaxed" {...props}>{children}</p>
+  ),
+  strong: ({ children, ...props }: React.ComponentPropsWithoutRef<'strong'>) => (
+    <strong className="font-semibold text-foreground" {...props}>{children}</strong>
+  ),
+  a: ({ children, ...props }: React.ComponentPropsWithoutRef<'a'>) => (
+    <a className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
+  ),
+  ul: ({ children, ...props }: React.ComponentPropsWithoutRef<'ul'>) => (
+    <ul className="my-1.5 ml-4 list-disc space-y-0.5" {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }: React.ComponentPropsWithoutRef<'ol'>) => (
+    <ol className="my-1.5 ml-4 list-decimal space-y-0.5" {...props}>{children}</ol>
+  ),
+  li: ({ children, ...props }: React.ComponentPropsWithoutRef<'li'>) => (
+    <li className="text-sm" {...props}>{children}</li>
+  ),
+  h1: ({ children, ...props }: React.ComponentPropsWithoutRef<'h1'>) => (
+    <h1 className="text-lg font-semibold mt-3 mb-1.5" {...props}>{children}</h1>
+  ),
+  h2: ({ children, ...props }: React.ComponentPropsWithoutRef<'h2'>) => (
+    <h2 className="text-base font-semibold mt-3 mb-1.5" {...props}>{children}</h2>
+  ),
+  h3: ({ children, ...props }: React.ComponentPropsWithoutRef<'h3'>) => (
+    <h3 className="text-sm font-semibold mt-2 mb-1" {...props}>{children}</h3>
+  ),
+  code: ({ children, className, ...props }: React.ComponentPropsWithoutRef<'code'>) => {
+    const isInline = !className
+    return isInline
+      ? <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono" {...props}>{children}</code>
+      : <code className={className} {...props}>{children}</code>
+  },
+  pre: ({ children, ...props }: React.ComponentPropsWithoutRef<'pre'>) => (
+    <pre className="my-2 bg-muted rounded-lg p-3 overflow-x-auto text-xs" {...props}>{children}</pre>
+  ),
+  blockquote: ({ children, ...props }: React.ComponentPropsWithoutRef<'blockquote'>) => (
+    <blockquote className="my-2 border-l-2 border-primary/50 bg-muted/30 pl-3 py-1 text-sm" {...props}>{children}</blockquote>
+  ),
+  hr: (props: React.ComponentPropsWithoutRef<'hr'>) => (
+    <hr className="my-3 border-border" {...props} />
+  ),
+}
+
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="prose prose-sm dark:prose-invert max-w-none
-      prose-table:w-full prose-table:border-collapse prose-table:text-sm
-      prose-th:border prose-th:border-border prose-th:bg-muted/60 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:font-semibold prose-th:text-xs prose-th:uppercase prose-th:tracking-wider
-      prose-td:border prose-td:border-border prose-td:px-3 prose-td:py-2 prose-td:text-sm
-      prose-tr:even:bg-muted/20
-      prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
-      prose-pre:bg-muted prose-pre:rounded-lg prose-pre:p-3
-      prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-      prose-strong:text-foreground
-      prose-li:marker:text-muted-foreground
-      prose-headings:text-foreground prose-headings:font-semibold
-      prose-h1:text-lg prose-h2:text-base prose-h3:text-sm
-      prose-p:leading-relaxed prose-p:my-1.5
-      prose-ul:my-1.5 prose-ol:my-1.5
-      prose-blockquote:border-l-primary/50 prose-blockquote:bg-muted/30 prose-blockquote:py-1 prose-blockquote:not-italic
-    ">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+    <div className="max-w-none text-sm">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{content}</ReactMarkdown>
     </div>
   )
 }
