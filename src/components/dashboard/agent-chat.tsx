@@ -111,7 +111,12 @@ function MarkdownContent({ content }: { content: string }) {
 // Tool call block — shows what the agent is doing
 function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const [expanded, setExpanded] = useState(false)
-  const toolName = (part.toolName as string) || 'unknown'
+  // For static tools: type is 'tool-searchEmails' → extract 'searchEmails'
+  // For dynamic tools: type is 'dynamic-tool' → use toolName property
+  const partType = part.type as string
+  const toolName = partType === 'dynamic-tool'
+    ? (part.toolName as string) || 'unknown'
+    : partType.startsWith('tool-') ? partType.slice(5) : (part.toolName as string) || 'unknown'
   const state = part.state as string
   const meta = getToolMeta(toolName)
   const Icon = meta.icon
@@ -290,7 +295,10 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     })
     if (runningTools.length === 0) return null
     const lastRunning = runningTools[runningTools.length - 1] as unknown as Record<string, unknown>
-    const toolName = (lastRunning.toolName as string) || 'unknown'
+    const pType = lastRunning.type as string
+    const toolName = pType === 'dynamic-tool'
+      ? (lastRunning.toolName as string) || 'unknown'
+      : pType.startsWith('tool-') ? pType.slice(5) : (lastRunning.toolName as string) || 'unknown'
     return getToolMeta(toolName)
   }, [messages, isLoading])
 

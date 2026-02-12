@@ -793,7 +793,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
     getRecentEmails: tool({
       description: 'Quick way to get recent emails.',
       inputSchema: z.object({
-        timeframe: z.enum(['today', 'week', 'month']).describe('How far back'),
+        timeframe: z.enum(['today', 'week', 'month']).default('today').describe('How far back. Defaults to today.'),
         maxResults: z.number().optional().default(25),
         unreadOnly: z.boolean().optional().default(false),
       }),
