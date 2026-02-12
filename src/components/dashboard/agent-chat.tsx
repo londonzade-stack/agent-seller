@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   Send,
   Brain,
@@ -28,7 +29,6 @@ import {
   Trash2,
   Star,
   BarChart3,
-  Paperclip,
   Shield,
   Users,
   RotateCcw,
@@ -84,7 +84,31 @@ function getToolMeta(toolName: string) {
   return TOOL_META[toolName] || { label: toolName, icon: Wrench }
 }
 
-// Render a single tool call block
+// Markdown renderer with full GFM support (tables, strikethrough, task lists, autolinks)
+function MarkdownContent({ content }: { content: string }) {
+  return (
+    <div className="prose prose-sm dark:prose-invert max-w-none
+      prose-table:w-full prose-table:border-collapse prose-table:text-sm
+      prose-th:border prose-th:border-border prose-th:bg-muted/60 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:font-semibold prose-th:text-xs prose-th:uppercase prose-th:tracking-wider
+      prose-td:border prose-td:border-border prose-td:px-3 prose-td:py-2 prose-td:text-sm
+      prose-tr:even:bg-muted/20
+      prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+      prose-pre:bg-muted prose-pre:rounded-lg prose-pre:p-3
+      prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+      prose-strong:text-foreground
+      prose-li:marker:text-muted-foreground
+      prose-headings:text-foreground prose-headings:font-semibold
+      prose-h1:text-lg prose-h2:text-base prose-h3:text-sm
+      prose-p:leading-relaxed prose-p:my-1.5
+      prose-ul:my-1.5 prose-ol:my-1.5
+      prose-blockquote:border-l-primary/50 prose-blockquote:bg-muted/30 prose-blockquote:py-1 prose-blockquote:not-italic
+    ">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+    </div>
+  )
+}
+
+// Tool call block — shows what the agent is doing
 function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const [expanded, setExpanded] = useState(false)
   const toolName = (part.toolName as string) || 'unknown'
@@ -99,12 +123,14 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const isDone = state === 'output-available' || state === 'result'
   const isError = state === 'output-error'
 
-  // Format input for display
   const inputSummary = input ? summarizeToolInput(toolName, input) : null
 
   return (
-    <div className="my-2 rounded-lg border border-border/50 bg-background/50 overflow-hidden">
-      {/* Tool call header */}
+    <div className={`my-2 rounded-lg border overflow-hidden transition-colors ${
+      isRunning ? 'border-primary/30 bg-primary/5' :
+      isError ? 'border-destructive/30 bg-destructive/5' :
+      'border-border/50 bg-background/50'
+    }`}>
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-muted/50 transition-colors"
@@ -113,14 +139,14 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
         {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
         {isError && <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />}
         <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        <span className="font-medium text-foreground">{meta.label}</span>
+        <span className={`font-medium ${isRunning ? 'text-primary' : 'text-foreground'}`}>{meta.label}</span>
         {inputSummary && (
-          <span className="text-muted-foreground truncate max-w-[200px]">— {inputSummary}</span>
+          <span className="text-muted-foreground truncate max-w-[250px]">— {inputSummary}</span>
         )}
+        {isRunning && <span className="text-[10px] text-primary/70 ml-1 animate-pulse">running</span>}
         <ChevronRight className={`h-3 w-3 ml-auto text-muted-foreground transition-transform shrink-0 ${expanded ? 'rotate-90' : ''}`} />
       </button>
 
-      {/* Expanded details */}
       {expanded && (
         <div className="border-t border-border/50 px-3 py-2 space-y-2">
           {input && Object.keys(input).length > 0 && (
@@ -148,7 +174,6 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   )
 }
 
-// Summarize tool input into a short string
 function summarizeToolInput(toolName: string, input: Record<string, unknown>): string | null {
   if (input.query) return `"${String(input.query).slice(0, 40)}"`
   if (input.emailId) return `ID: ${String(input.emailId).slice(0, 12)}...`
@@ -167,76 +192,21 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   if (!isOpen) return null
 
   const capabilities = [
-    {
-      icon: Mail,
-      title: 'Email Operations',
-      items: [
-        'sendEmail - Send emails directly',
-        'draftEmail - Create drafts',
-        'getDrafts - View all drafts',
-        'updateDraft - Edit drafts',
-        'sendDraft - Send saved drafts',
-        'deleteDraft - Delete drafts',
-      ],
-    },
-    {
-      icon: Search,
-      title: 'Search & Read',
-      items: [
-        'searchEmails - Power search with Gmail syntax',
-        'readEmail - Read full email content',
-        'getEmailThread - Read conversation threads',
-        'getRecentEmails - Quick inbox overview',
-      ],
-    },
-    {
-      icon: Tag,
-      title: 'Labels & Organization',
-      items: [
-        'getLabels - List all labels',
-        'createLabel - Create custom labels',
-        'applyLabels - Apply labels (bulk!)',
-        'removeLabels - Remove labels (bulk!)',
-      ],
-    },
-    {
-      icon: Archive,
-      title: 'Inbox Management',
-      items: [
-        'archiveEmails - Archive emails',
-        'trashEmails - Move to trash',
-        'untrashEmails - Restore from trash',
-        'markAsRead / markAsUnread',
-        'starEmails / unstarEmails',
-        'markAsImportant / markAsNotImportant',
-      ],
-    },
-    {
-      icon: Shield,
-      title: 'Spam Management',
-      items: [
-        'reportSpam - Report as spam',
-        'markNotSpam - Rescue from spam',
-      ],
-    },
-    {
-      icon: BarChart3,
-      title: 'Analytics & Insights',
-      items: [
-        'getInboxStats - Email analytics',
-        'getContactDetails - Contact info',
-        'getSenderHistory - Interaction history',
-      ],
-    },
+    { icon: Mail, title: 'Email Operations', items: ['sendEmail - Send emails directly', 'draftEmail - Create drafts', 'getDrafts - View all drafts', 'updateDraft - Edit drafts', 'sendDraft - Send saved drafts', 'deleteDraft - Delete drafts'] },
+    { icon: Search, title: 'Search & Read', items: ['searchEmails - Power search with Gmail syntax', 'readEmail - Read full email content', 'getEmailThread - Read conversation threads', 'getRecentEmails - Quick inbox overview'] },
+    { icon: Tag, title: 'Labels & Organization', items: ['getLabels - List all labels', 'createLabel - Create custom labels', 'applyLabels - Apply labels (bulk!)', 'removeLabels - Remove labels (bulk!)'] },
+    { icon: Archive, title: 'Inbox Management', items: ['archiveEmails - Archive emails', 'trashEmails - Move to trash', 'untrashEmails - Restore from trash', 'markAsRead / markAsUnread', 'starEmails / unstarEmails', 'markAsImportant / markAsNotImportant'] },
+    { icon: Shield, title: 'Spam & Unsubscribe', items: ['reportSpam - Report as spam', 'markNotSpam - Rescue from spam', 'findUnsubscribableEmails - Find newsletters', 'bulkUnsubscribe - Unsubscribe in bulk'] },
+    { icon: BarChart3, title: 'Analytics & Insights', items: ['getInboxStats - Email analytics', 'getContactDetails - Contact info', 'getSenderHistory - Interaction history'] },
   ]
 
   const examples = [
     '"Archive all promotional emails older than 30 days"',
     '"Star all emails from my boss"',
-    '"Send an email to john@example.com..."',
+    '"Unsubscribe me from all newsletters"',
     '"Show me my conversation with sarah@company.com"',
     '"Clean up my inbox"',
-    '"Create an Urgent label and apply it"',
+    '"Give me a table of my top senders this week"',
   ]
 
   return (
@@ -247,29 +217,22 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-400" />
             <h3 className="font-semibold text-lg">Agent Capabilities</h3>
-            <Badge variant="secondary" className="ml-2 bg-primary/20 text-primary border-0">
-              30+ Tools
-            </Badge>
+            <Badge variant="secondary" className="ml-2 bg-primary/20 text-primary border-0">33 Tools</Badge>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-white/10">
-            <X className="h-4 w-4" />
-          </Button>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-white/10"><X className="h-4 w-4" /></Button>
         </div>
         <div className="p-5 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             {capabilities.map((category, idx) => (
               <div key={idx} className="rounded-xl bg-white/5 dark:bg-white/5 border border-white/10 p-4 hover:bg-white/10 transition-colors">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 rounded-lg bg-primary/20">
-                    <category.icon className="h-4 w-4 text-primary" />
-                  </div>
+                  <div className="p-1.5 rounded-lg bg-primary/20"><category.icon className="h-4 w-4 text-primary" /></div>
                   <h4 className="font-medium text-sm">{category.title}</h4>
                 </div>
                 <ul className="space-y-1.5">
                   {category.items.map((item, i) => (
                     <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                      <span className="text-primary mt-0.5">•</span>
-                      <span>{item}</span>
+                      <span className="text-primary mt-0.5">•</span><span>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -278,15 +241,10 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           </div>
           <div className="border-t border-white/10" />
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="h-4 w-4 text-amber-400" />
-              <h4 className="font-medium text-sm">Try saying:</h4>
-            </div>
+            <div className="flex items-center gap-2 mb-3"><Lightbulb className="h-4 w-4 text-amber-400" /><h4 className="font-medium text-sm">Try saying:</h4></div>
             <div className="flex flex-wrap gap-2">
               {examples.map((example, i) => (
-                <div key={i} className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors cursor-default">
-                  {example}
-                </div>
+                <div key={i} className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground hover:bg-white/10 hover:text-foreground transition-colors cursor-default">{example}</div>
               ))}
             </div>
           </div>
@@ -310,15 +268,31 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const { messages, sendMessage, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/agent',
-      body: {
-        userId: user.id,
-        userEmail: user.email,
-        isEmailConnected,
-      },
+      body: { userId: user.id, userEmail: user.email, isEmailConnected },
     }),
   })
 
   const isLoading = status === 'streaming' || status === 'submitted'
+
+  // Figure out what the agent is actively doing right now (for the streaming indicator)
+  const activeToolInfo = useMemo(() => {
+    if (!isLoading) return null
+    // Look at the last assistant message's parts for any running tool calls
+    const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
+    if (!lastAssistant) return null
+    const runningTools = lastAssistant.parts.filter(p => {
+      if (p.type === 'dynamic-tool' || p.type.startsWith('tool-')) {
+        const part = p as unknown as Record<string, unknown>
+        const state = part.state as string
+        return state === 'input-streaming' || state === 'input-available' || state === 'call' || state === 'partial-call'
+      }
+      return false
+    })
+    if (runningTools.length === 0) return null
+    const lastRunning = runningTools[runningTools.length - 1] as unknown as Record<string, unknown>
+    const toolName = (lastRunning.toolName as string) || 'unknown'
+    return getToolMeta(toolName)
+  }, [messages, isLoading])
 
   // Handle timeout
   useEffect(() => {
@@ -333,22 +307,17 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     if (!isLoading) {
       setLoadingStartTime(null)
       setIsTimedOut(false)
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
+      if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null }
     }
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
   }, [isLoading, loadingStartTime, stop])
 
-  // Auto-scroll
+  // Auto-scroll on new content
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
     }
-  }, [messages])
+  }, [messages, status])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -364,21 +333,14 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     sendMessage({ text: suggestion })
   }
 
-  const handleStop = () => {
-    if (stop) stop()
-    setIsTimedOut(false)
-    setLoadingStartTime(null)
-  }
+  const handleStop = () => { if (stop) stop(); setIsTimedOut(false); setLoadingStartTime(null) }
 
   const handleRetry = () => {
     setIsTimedOut(false)
     setLoadingStartTime(null)
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')
     if (lastUserMessage) {
-      const text = lastUserMessage.parts
-        .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-        .map(p => p.text)
-        .join('')
+      const text = lastUserMessage.parts.filter((p): p is { type: 'text'; text: string } => p.type === 'text').map(p => p.text).join('')
       if (text) sendMessage({ text })
     }
   }
@@ -392,14 +354,22 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
 
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
 
+  // Check if the last assistant message has any running tool — if so, don't show separate loading bubble
+  const lastMessage = messages[messages.length - 1]
+  const lastMsgHasRunningTool = lastMessage?.role === 'assistant' && lastMessage.parts.some(p => {
+    if (p.type === 'dynamic-tool' || p.type.startsWith('tool-')) {
+      const state = (p as unknown as Record<string, unknown>).state as string
+      return state === 'input-streaming' || state === 'input-available' || state === 'call' || state === 'partial-call'
+    }
+    return false
+  })
+
   return (
     <div className="flex-1 flex flex-col h-screen">
       <header className="border-b border-border px-6 py-4 flex items-center justify-between bg-card">
         <div>
           <h1 className="text-xl font-semibold">AI Email Agent</h1>
-          <p className="text-sm text-muted-foreground">
-            Your powerful email assistant with 30+ capabilities
-          </p>
+          <p className="text-sm text-muted-foreground">Your powerful email assistant with 33 tools</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -416,8 +386,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
           </div>
           {!isEmailConnected && (
             <div className="flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg text-sm">
-              <Mail className="h-4 w-4" />
-              Connect your email
+              <Mail className="h-4 w-4" />Connect your email
             </div>
           )}
         </div>
@@ -431,22 +400,14 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             </div>
             <h2 className="text-2xl font-semibold mb-2">Hello, {userName}</h2>
             <p className="text-muted-foreground mb-2 text-center max-w-md">
-              {"I'm your powerful AI email assistant. I can search, send, organize, and analyze your emails."}
+              {"I'm your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
             </p>
-            <button
-              onClick={() => setShowTips(true)}
-              className="text-sm text-primary hover:underline mb-8 flex items-center gap-1"
-            >
-              <Lightbulb className="h-3.5 w-3.5" />
-              See all 30+ capabilities
+            <button onClick={() => setShowTips(true)} className="text-sm text-primary hover:underline mb-8 flex items-center gap-1">
+              <Lightbulb className="h-3.5 w-3.5" />See all 33 capabilities
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl w-full">
               {suggestions.map((suggestion, i) => (
-                <Card
-                  key={i}
-                  className="p-4 cursor-pointer hover:bg-muted/50 transition-colors border-border"
-                  onClick={() => handleSuggestionClick(suggestion)}
-                >
+                <Card key={i} className="p-4 cursor-pointer hover:bg-muted/50 transition-colors border-border" onClick={() => handleSuggestionClick(suggestion)}>
                   <div className="flex items-start gap-3">
                     <Sparkles className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <span className="text-sm">{suggestion}</span>
@@ -458,33 +419,25 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
         ) : (
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+              <div key={message.id} className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {message.role === 'assistant' && (
                   <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
                     <Brain className="h-4 w-4 text-primary-foreground" />
                   </div>
                 )}
-                <div className={`max-w-[80%] rounded-xl px-4 py-3 ${
-                  message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+                <div className={`max-w-[85%] rounded-xl px-4 py-3 ${
+                  message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
                 }`}>
                   {message.parts.map((part, index) => {
                     if (part.type === 'text') {
-                      return (
-                        <div key={index} className="prose prose-sm dark:prose-invert max-w-none">
-                          <ReactMarkdown>{part.text}</ReactMarkdown>
-                        </div>
-                      )
+                      if (message.role === 'user') {
+                        return <span key={index}>{part.text}</span>
+                      }
+                      return <MarkdownContent key={index} content={part.text} />
                     }
-                    // Handle tool calls — both typed (tool-X) and dynamic-tool
                     if (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) {
                       return <ToolCallBlock key={index} part={part as unknown as Record<string, unknown>} />
                     }
-                    // step-start parts — skip
                     if (part.type === 'step-start') return null
                     return null
                   })}
@@ -497,33 +450,26 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
               </div>
             ))}
 
-            {/* Loading state */}
-            {isLoading && (
+            {/* Show loading only if the last message doesn't already have a running tool visible */}
+            {isLoading && !lastMsgHasRunningTool && (
               <div className="flex gap-4 justify-start">
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
                   <Brain className="h-4 w-4 text-primary-foreground" />
                 </div>
                 <div className="bg-muted rounded-xl px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     <span className="text-sm text-muted-foreground">
-                      {status === 'streaming' ? 'Working...' : 'Thinking...'}
+                      {activeToolInfo ? activeToolInfo.label + '...' : status === 'streaming' ? 'Working...' : 'Thinking...'}
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleStop}
-                      className="h-7 px-2 text-xs hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <StopCircle className="h-3 w-3 mr-1" />
-                      Stop
+                    <Button variant="ghost" size="sm" onClick={handleStop} className="h-7 px-2 text-xs hover:bg-destructive/10 hover:text-destructive">
+                      <StopCircle className="h-3 w-3 mr-1" />Stop
                     </Button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Timeout */}
             {isTimedOut && (
               <div className="flex gap-4 justify-start">
                 <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
@@ -531,17 +477,9 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                 </div>
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-amber-600 dark:text-amber-400">
-                      Request timed out. The operation took too long.
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRetry}
-                      className="h-7 px-2 text-xs border-amber-500/30 hover:bg-amber-500/10"
-                    >
-                      <RotateCcw className="h-3 w-3 mr-1" />
-                      Retry
+                    <span className="text-sm text-amber-600 dark:text-amber-400">Request timed out.</span>
+                    <Button variant="outline" size="sm" onClick={handleRetry} className="h-7 px-2 text-xs border-amber-500/30 hover:bg-amber-500/10">
+                      <RotateCcw className="h-3 w-3 mr-1" />Retry
                     </Button>
                   </div>
                 </div>
@@ -555,17 +493,10 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
         <div className="px-6 py-3 bg-destructive/10 border-t border-destructive/20">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2 text-destructive text-sm">
-              <AlertCircle className="h-4 w-4" />
-              {error.message || 'An error occurred. Please try again.'}
+              <AlertCircle className="h-4 w-4" />{error.message || 'An error occurred. Please try again.'}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRetry}
-              className="h-7 px-2 text-xs border-destructive/30 hover:bg-destructive/10 text-destructive"
-            >
-              <RotateCcw className="h-3 w-3 mr-1" />
-              Retry
+            <Button variant="outline" size="sm" onClick={handleRetry} className="h-7 px-2 text-xs border-destructive/30 hover:bg-destructive/10 text-destructive">
+              <RotateCcw className="h-3 w-3 mr-1" />Retry
             </Button>
           </div>
         </div>
@@ -582,17 +513,8 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
               className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-foreground placeholder:text-muted-foreground"
               disabled={isLoading}
             />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={isLoading || !input.trim()}
-              className="rounded-lg"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="rounded-lg">
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
         </form>
