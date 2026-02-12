@@ -35,6 +35,9 @@ import {
   deleteDraft,
   sendDraft,
   updateDraft,
+  findUnsubscribableEmails,
+  unsubscribeFromEmail,
+  bulkUnsubscribe,
 } from '@/lib/gmail/service'
 
 export const maxDuration = 120
@@ -66,7 +69,7 @@ If the user mentions an email, a sender, or a subject — go search for it, read
 
 Chain tools together. You can take up to 30 steps in one turn. Examples:
 
-- "Clean up my inbox" → search old promos → archive them → search newsletters → archive those → report count
+- "Clean up my inbox" → search old promos → archive them → find newsletters → unsubscribe from junk → report count
 - "Help me with that client email" → search → read the thread → draft a reply based on context
 - "Star everything from my boss" → search from:boss → star all results
 - "What's going on with the Johnson deal?" → search Johnson → read the thread → get sender history → give a full briefing
@@ -93,7 +96,9 @@ Reading, searching, archiving, trashing, starring, labeling, drafting, analyzing
 
 - When searching, default to recent emails (newer_than:7d) unless the user specifies otherwise.
 - When the user says "emails" without context, check recent unread first.
-- For "clean up" requests: archive read promotional emails older than 30 days, then report what you did.
+- For "clean up" requests: archive read promotional emails older than 30 days, find newsletters to unsubscribe from, then report what you did.
+- For "unsubscribe" requests: scan for newsletters/promotions, show the list, then auto-unsubscribe from all of them using one-click when available.
+- When unsubscribing, use bulkUnsubscribe for multiple at once. If one-click isn't available, provide the unsubscribe link.
 - For vague requests like "help me with email" — pull their recent unread and summarize what needs attention.
 - When drafting replies, read the original thread first so you write something contextually relevant.
 - Match the tone of the original email in your drafts (formal → formal, casual → casual).`
@@ -703,6 +708,83 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
         } catch (error) {
           console.error('Stats error:', error)
           return { success: false, error: 'Failed to get inbox stats.' }
+        }
+      },
+    }),
+
+    // ============ UNSUBSCRIBE ============
+    findUnsubscribableEmails: tool({
+      description: 'Scan inbox for emails that have unsubscribe options (newsletters, marketing, promotions). Returns a deduplicated list by sender domain.',
+      inputSchema: z.object({
+        query: z.string().optional().describe('Optional search query to narrow down. Default searches promotions/updates/social categories.'),
+        maxResults: z.number().optional().default(50).describe('Max emails to scan (default 50)'),
+      }),
+      execute: async ({ query, maxResults }) => {
+        if (!isEmailConnected || !userId) {
+          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+        }
+        try {
+          const emails = await findUnsubscribableEmails(userId, { maxResults: maxResults || 50, query: query || undefined })
+          return {
+            success: true,
+            totalFound: emails.length,
+            emails: emails.map(e => ({
+              id: e.id,
+              from: e.from,
+              subject: e.subject,
+              date: e.date,
+              canAutoUnsubscribe: e.canAutoUnsubscribe,
+              hasOneClickUnsubscribe: e.hasOneClickUnsubscribe,
+              unsubscribeUrl: e.unsubscribeUrl,
+            })),
+          }
+        } catch (error) {
+          console.error('Find unsubscribable error:', error)
+          return { success: false, error: 'Failed to scan for unsubscribable emails.' }
+        }
+      },
+    }),
+
+    unsubscribeFromEmail: tool({
+      description: 'Unsubscribe from a specific email sender. Uses RFC 8058 one-click unsubscribe when available, otherwise returns the unsubscribe link.',
+      inputSchema: z.object({
+        emailId: z.string().describe('The email ID to unsubscribe from'),
+      }),
+      execute: async ({ emailId }) => {
+        if (!isEmailConnected || !userId) {
+          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+        }
+        try {
+          const result = await unsubscribeFromEmail(userId, emailId)
+          return result
+        } catch (error) {
+          console.error('Unsubscribe error:', error)
+          return { success: false, method: 'error', message: 'Failed to unsubscribe.' }
+        }
+      },
+    }),
+
+    bulkUnsubscribe: tool({
+      description: 'Unsubscribe from multiple email senders at once. Pass an array of email IDs.',
+      inputSchema: z.object({
+        emailIds: z.array(z.string()).describe('Array of email IDs to unsubscribe from'),
+      }),
+      execute: async ({ emailIds }) => {
+        if (!isEmailConnected || !userId) {
+          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+        }
+        try {
+          const result = await bulkUnsubscribe(userId, emailIds)
+          return {
+            success: true,
+            message: `Unsubscribed from ${result.succeeded} senders. ${result.failed > 0 ? `${result.failed} failed.` : ''}`,
+            succeeded: result.succeeded,
+            failed: result.failed,
+            results: result.results,
+          }
+        } catch (error) {
+          console.error('Bulk unsubscribe error:', error)
+          return { success: false, error: 'Failed to bulk unsubscribe.' }
         }
       },
     }),

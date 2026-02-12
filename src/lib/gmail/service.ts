@@ -69,7 +69,7 @@ export async function getAuthenticatedGmailClient(userId: string) {
 // Parse email headers to get common fields
 function parseEmailHeaders(headers: gmail_v1.Schema$MessagePartHeader[]) {
   const result: Record<string, string> = {}
-  const fields = ['From', 'To', 'Subject', 'Date', 'Cc', 'Bcc', 'Reply-To', 'Message-ID', 'In-Reply-To', 'References']
+  const fields = ['From', 'To', 'Subject', 'Date', 'Cc', 'Bcc', 'Reply-To', 'Message-ID', 'In-Reply-To', 'References', 'List-Unsubscribe', 'List-Unsubscribe-Post']
 
   for (const header of headers) {
     if (header.name && fields.includes(header.name)) {
@@ -894,6 +894,197 @@ export async function getInboxStats(userId: string) {
       total: starred.data.messagesTotal || 0,
     },
   }
+}
+
+// Parse List-Unsubscribe header into actionable URLs/mailto
+function parseUnsubscribeHeader(header: string): { urls: string[]; mailto: string | null } {
+  const urls: string[] = []
+  let mailto: string | null = null
+
+  // Header format: <https://example.com/unsub>, <mailto:unsub@example.com>
+  const matches = header.match(/<([^>]+)>/g)
+  if (matches) {
+    for (const match of matches) {
+      const value = match.slice(1, -1) // Remove < >
+      if (value.startsWith('mailto:')) {
+        mailto = value
+      } else if (value.startsWith('http://') || value.startsWith('https://')) {
+        urls.push(value)
+      }
+    }
+  }
+
+  return { urls, mailto }
+}
+
+// Scan emails for unsubscribe options
+export async function findUnsubscribableEmails(
+  userId: string,
+  options: { maxResults?: number; query?: string } = {}
+) {
+  const gmail = await getAuthenticatedGmailClient(userId)
+  const { maxResults = 50, query = '' } = options
+
+  // Search for emails with List-Unsubscribe header (common in newsletters/marketing)
+  const searchQuery = query || 'category:promotions OR category:updates OR category:social'
+
+  const response = await gmail.users.messages.list({
+    userId: 'me',
+    maxResults,
+    q: searchQuery,
+  })
+
+  if (!response.data.messages) return []
+
+  const results = await Promise.allSettled(
+    response.data.messages.map(async (msg) => {
+      const message = await gmail.users.messages.get({
+        userId: 'me',
+        id: msg.id!,
+        format: 'metadata',
+        metadataHeaders: ['From', 'Subject', 'Date', 'List-Unsubscribe', 'List-Unsubscribe-Post'],
+      })
+
+      const headers: Record<string, string> = {}
+      for (const h of message.data.payload?.headers || []) {
+        if (h.name && h.value) headers[h.name.toLowerCase()] = h.value
+      }
+
+      const unsubHeader = headers['list-unsubscribe']
+      if (!unsubHeader) return null
+
+      const parsed = parseUnsubscribeHeader(unsubHeader)
+      const hasOneClick = !!headers['list-unsubscribe-post']
+
+      return {
+        id: message.data.id,
+        from: headers.from || 'Unknown',
+        subject: headers.subject || '(no subject)',
+        date: headers.date || '',
+        unsubscribeUrl: parsed.urls[0] || null,
+        unsubscribeMailto: parsed.mailto,
+        hasOneClickUnsubscribe: hasOneClick,
+        canAutoUnsubscribe: hasOneClick && parsed.urls.length > 0,
+      }
+    })
+  )
+
+  // Filter to only emails that have unsubscribe headers
+  const unsubscribable = results
+    .filter(r => r.status === 'fulfilled' && r.value !== null)
+    .map(r => (r as PromiseFulfilledResult<NonNullable<unknown>>).value) as Array<{
+      id: string | null | undefined
+      from: string
+      subject: string
+      date: string
+      unsubscribeUrl: string | null
+      unsubscribeMailto: string | null
+      hasOneClickUnsubscribe: boolean
+      canAutoUnsubscribe: boolean
+    }>
+
+  // Deduplicate by sender domain
+  const seen = new Set<string>()
+  const deduped = []
+  for (const email of unsubscribable) {
+    const senderMatch = String(email.from).match(/@([^\s>]+)/)
+    const domain = senderMatch ? senderMatch[1].toLowerCase() : String(email.from)
+    if (!seen.has(domain)) {
+      seen.add(domain)
+      deduped.push(email)
+    }
+  }
+
+  return deduped
+}
+
+// Execute one-click unsubscribe (RFC 8058)
+export async function unsubscribeFromEmail(
+  userId: string,
+  emailId: string
+): Promise<{ success: boolean; method: string; message: string }> {
+  const gmail = await getAuthenticatedGmailClient(userId)
+
+  const message = await gmail.users.messages.get({
+    userId: 'me',
+    id: emailId,
+    format: 'metadata',
+    metadataHeaders: ['From', 'Subject', 'List-Unsubscribe', 'List-Unsubscribe-Post'],
+  })
+
+  const headers: Record<string, string> = {}
+  for (const h of message.data.payload?.headers || []) {
+    if (h.name && h.value) headers[h.name.toLowerCase()] = h.value
+  }
+
+  const unsubHeader = headers['list-unsubscribe']
+  if (!unsubHeader) {
+    return { success: false, method: 'none', message: 'This email does not have an unsubscribe option.' }
+  }
+
+  const parsed = parseUnsubscribeHeader(unsubHeader)
+  const hasOneClick = !!headers['list-unsubscribe-post']
+  const from = headers.from || 'Unknown sender'
+
+  // Method 1: RFC 8058 One-Click Unsubscribe (HTTP POST)
+  if (hasOneClick && parsed.urls.length > 0) {
+    try {
+      const res = await fetch(parsed.urls[0], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'List-Unsubscribe=One-Click',
+      })
+      if (res.ok || res.status === 200 || res.status === 202) {
+        return { success: true, method: 'one-click', message: `Unsubscribed from ${from} via one-click.` }
+      }
+    } catch {
+      // Fall through to next method
+    }
+  }
+
+  // Method 2: HTTP GET unsubscribe link (less reliable but common)
+  if (parsed.urls.length > 0) {
+    return {
+      success: true,
+      method: 'link',
+      message: `Unsubscribe link for ${from}: ${parsed.urls[0]}`,
+    }
+  }
+
+  // Method 3: Mailto unsubscribe
+  if (parsed.mailto) {
+    return {
+      success: true,
+      method: 'mailto',
+      message: `To unsubscribe from ${from}, send an email to: ${parsed.mailto.replace('mailto:', '')}`,
+    }
+  }
+
+  return { success: false, method: 'none', message: `Could not find a working unsubscribe method for ${from}.` }
+}
+
+// Bulk unsubscribe from multiple emails
+export async function bulkUnsubscribe(
+  userId: string,
+  emailIds: string[]
+): Promise<{ succeeded: number; failed: number; results: Array<{ from: string; success: boolean; method: string; message: string }> }> {
+  const results = []
+  let succeeded = 0
+  let failed = 0
+
+  for (const emailId of emailIds) {
+    try {
+      const result = await unsubscribeFromEmail(userId, emailId)
+      results.push({ from: '', ...result })
+      if (result.success) succeeded++
+      else failed++
+    } catch {
+      failed++
+      results.push({ from: '', success: false, method: 'error', message: 'Failed to process unsubscribe.' })
+    }
+  }
+
+  return { succeeded, failed, results }
 }
 
 // Analyze email for lead potential

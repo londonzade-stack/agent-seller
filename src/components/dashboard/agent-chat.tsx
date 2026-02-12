@@ -75,6 +75,9 @@ const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
   getContactDetails: { label: 'Looking up contact', icon: Users },
   getSenderHistory: { label: 'Getting sender history', icon: Users },
   getInboxStats: { label: 'Analyzing inbox', icon: BarChart3 },
+  findUnsubscribableEmails: { label: 'Scanning for unsubscribe options', icon: Mail },
+  unsubscribeFromEmail: { label: 'Unsubscribing', icon: Mail },
+  bulkUnsubscribe: { label: 'Bulk unsubscribing', icon: Mail },
 }
 
 function getToolMeta(toolName: string) {
