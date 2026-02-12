@@ -64,6 +64,8 @@ If the user mentions an email, a sender, or a subject — go search for it, read
 "What did John send me?" → searchEmails(from:john) → readEmail → answer with the actual content
 "Reply to that invoice email" → searchEmails(subject:invoice newer_than:7d) → readEmail → draft a smart reply based on the content
 "What's in my inbox?" → getRecentEmails(today) → summarize the actual emails
+"Show me my last 10 emails" → getRecentEmails(timeframe: "all", maxResults: 10) → present in a table
+"Show me a table of my last 10 emails" → getRecentEmails(timeframe: "all", maxResults: 10) → format as a markdown table
 
 ## MULTI-STEP IS YOUR SUPERPOWER
 
@@ -791,9 +793,9 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
 
     // ============ QUICK ACTIONS ============
     getRecentEmails: tool({
-      description: 'Quick way to get recent emails.',
+      description: 'Get recent emails. Use timeframe "all" when user asks for "last N emails" without a specific date range.',
       inputSchema: z.object({
-        timeframe: z.enum(['today', 'week', 'month']).default('today').describe('How far back. Defaults to today.'),
+        timeframe: z.enum(['today', 'week', 'month', 'all']).default('all').describe('How far back. Use "all" for "last N emails" requests. Defaults to "all".'),
         maxResults: z.number().optional().default(25),
         unreadOnly: z.boolean().optional().default(false),
       }),
@@ -802,18 +804,20 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }
         try {
-          const now = new Date()
-          let afterDate: Date
-          switch (timeframe) {
-            case 'today':
-              afterDate = new Date(now.setHours(0, 0, 0, 0))
-              break
-            case 'week':
-              afterDate = new Date(now.setDate(now.getDate() - 7))
-              break
-            case 'month':
-              afterDate = new Date(now.setMonth(now.getMonth() - 1))
-              break
+          let afterDate: Date | undefined
+          if (timeframe !== 'all') {
+            const now = new Date()
+            switch (timeframe) {
+              case 'today':
+                afterDate = new Date(now.setHours(0, 0, 0, 0))
+                break
+              case 'week':
+                afterDate = new Date(now.setDate(now.getDate() - 7))
+                break
+              case 'month':
+                afterDate = new Date(now.setMonth(now.getMonth() - 1))
+                break
+            }
           }
 
           const query = unreadOnly ? 'is:unread' : ''
