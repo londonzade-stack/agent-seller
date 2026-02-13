@@ -89,11 +89,19 @@ export default function PricingPage() {
                 ))}
               </div>
 
-              <Button className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" size="lg">
-                Get Started <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/auth/sign-up">
+                <Button className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" size="lg">
+                  Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
               <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
                 14-day free trial. No credit card required.
+              </p>
+              <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-2">
+                Already have an account?{" "}
+                <Link href="/dashboard" className="underline hover:text-zinc-600 dark:hover:text-zinc-400">
+                  Go to Billing in your dashboard
+                </Link>
               </p>
             </Card>
           </div>
@@ -198,9 +206,11 @@ export default function PricingPage() {
             Join teams that are getting more done with less email busywork.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8">
-              Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Link href="/auth/sign-up">
+              <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8">
+                Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
             <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10">
               Schedule a Demo
             </Button>

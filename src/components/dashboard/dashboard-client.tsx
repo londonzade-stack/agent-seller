@@ -8,6 +8,7 @@ import { EmailConnect } from './email-connect'
 import { DraftsView } from './drafts-view'
 import { ContactsView } from './contacts-view'
 import { AnalyticsView } from './analytics-view'
+import { BillingView } from './billing-view'
 import { Target, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -107,6 +108,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
             />
+          )}
+          {activeView === 'billing' && (
+            <BillingView />
           )}
         </main>
       </div>

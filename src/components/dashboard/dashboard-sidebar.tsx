@@ -16,10 +16,11 @@ import {
   FileText,
   Users,
   BarChart3,
+  CreditCard,
   X,
 } from 'lucide-react'
 
-export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics'
+export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'billing'
 
 interface DashboardSidebarProps {
   user: User
@@ -59,6 +60,7 @@ export function DashboardSidebar({
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'email', label: 'Email Connection', icon: Mail },
+    { id: 'billing', label: 'Billing', icon: CreditCard },
   ]
 
   const sidebarContent = (
@@ -150,7 +152,7 @@ export function DashboardSidebar({
             onClick={onMobileClose}
           />
           {/* Drawer */}
-          <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-black border-r border-zinc-200 dark:border-white/10 flex flex-col lg:hidden shadow-2xl">
+          <aside className="fixed inset-y-0 left-0 z-50 w-[85vw] max-w-64 bg-white dark:bg-black border-r border-zinc-200 dark:border-white/10 flex flex-col lg:hidden shadow-2xl">
             {sidebarContent}
           </aside>
         </>

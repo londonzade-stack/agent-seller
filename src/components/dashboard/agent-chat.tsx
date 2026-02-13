@@ -193,7 +193,7 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
         <Icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
         <span className={`font-medium ${isRunning ? 'text-zinc-900 dark:text-white' : 'text-zinc-900 dark:text-white'}`}>{meta.label}</span>
         {inputSummary && (
-          <span className="text-zinc-500 dark:text-zinc-400 truncate max-w-[200px] sm:max-w-[250px]">— {inputSummary}</span>
+          <span className="text-zinc-500 dark:text-zinc-400 truncate max-w-[120px] sm:max-w-[250px]">— {inputSummary}</span>
         )}
         {isRunning && <span className="text-[10px] text-zinc-500 dark:text-zinc-400 ml-1 animate-pulse">running</span>}
         <ChevronRight className={`h-3 w-3 ml-auto text-zinc-400 transition-transform shrink-0 ${expanded ? 'rotate-90' : ''}`} />
@@ -294,7 +294,7 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
       {/* Mobile: full-screen modal. Desktop: positioned dropdown */}
-      <div className="fixed inset-2 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[600px] max-h-[90vh] sm:max-h-[70vh] overflow-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-black/90 backdrop-blur-xl shadow-2xl">
+      <div className="fixed inset-3 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[600px] max-h-[90vh] sm:max-h-[70vh] overflow-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-black/90 backdrop-blur-xl shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-black/90 backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-400" />
@@ -501,7 +501,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                 <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors border-zinc-200 dark:border-white/10 bg-white dark:bg-black" onClick={() => handleSuggestionClick(suggestion)}>
                   <div className="flex items-start gap-2 sm:gap-3">
                     <Sparkles className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" />
-                    <span className="text-sm">{suggestion}</span>
+                    <span className="text-sm break-words">{suggestion}</span>
                   </div>
                 </Card>
               ))}

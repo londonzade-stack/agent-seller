@@ -199,7 +199,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
                     <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500" />
                   </div>
-                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">This {timeframe === 'today' ? 'Day' : timeframe === 'week' ? 'Week' : 'Month'}</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 truncate">This {timeframe === 'today' ? 'Day' : timeframe === 'week' ? 'Week' : 'Month'}</span>
                 </div>
                 <p className="text-xl sm:text-2xl font-bold">{stats.emailsInTimeframe}</p>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">received</p>
@@ -247,9 +247,9 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                       <YAxis
                         type="category"
                         dataKey="sender"
-                        width={120}
-                        tick={{ fontSize: 11 }}
-                        tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '...' : v}
+                        width={80}
+                        tick={{ fontSize: 10 }}
+                        tickFormatter={(v: string) => v.length > 12 ? v.slice(0, 12) + '...' : v}
                       />
                       <Tooltip
                         contentStyle={{
@@ -301,7 +301,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="flex justify-center gap-4 sm:gap-6 mt-2">
+                <div className="flex justify-center gap-3 sm:gap-6 mt-2 flex-wrap">
                   <div className="flex items-center gap-2 text-xs">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[0] }} />
                     Read

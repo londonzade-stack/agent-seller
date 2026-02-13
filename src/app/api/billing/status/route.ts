@@ -1,0 +1,35 @@
+import { createClient } from '@/lib/supabase/server'
+import { sanitizeError } from '@/lib/logger'
+
+export async function GET() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+    }
+
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('status, trial_end, current_period_end')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!subscription) {
+      return Response.json({ status: 'none', trialEnd: null, currentPeriodEnd: null })
+    }
+
+    return Response.json({
+      status: subscription.status,
+      trialEnd: subscription.trial_end,
+      currentPeriodEnd: subscription.current_period_end,
+    })
+  } catch (error) {
+    sanitizeError('Billing status error', error)
+    return new Response(
+      JSON.stringify({ error: 'Failed to fetch billing status' }),
+      { status: 500 },
+    )
+  }
+}
