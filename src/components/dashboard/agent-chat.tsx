@@ -406,6 +406,8 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     'Draft a follow-up email for a prospect',
     'Archive all emails older than 30 days',
     'Get my inbox stats for this week',
+    'Go find all emails with receipt attachments and put them into a new folder called SAP Concur',
+    'Make a folder for all emails from today only and then provide me a Gmail URL for it',
   ]
 
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
