@@ -149,7 +149,7 @@ const markdownComponents = {
 
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="max-w-none text-sm">
+    <div className="max-w-none text-sm break-words overflow-hidden">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{content}</ReactMarkdown>
     </div>
   )
