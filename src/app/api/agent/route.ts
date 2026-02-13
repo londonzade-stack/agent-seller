@@ -100,6 +100,27 @@ Reading, searching, archiving, trashing, starring, labeling, drafting, analyzing
 - Be concise. No filler. No "Great question!" or "I'd be happy to help!"
 - When you draft an email, show the full draft (to, subject, body) so the user can review it.
 
+## GMAIL SEARCH SYNTAX — IMPORTANT
+
+NEVER use "after:today" or "before:today" — those are NOT valid Gmail queries and will return 0 results.
+Use these instead:
+- "Today's emails" → newer_than:1d
+- "This week" → newer_than:7d
+- "Last 30 days" → newer_than:30d
+- "Specific date" → after:2026/02/12 (YYYY/MM/DD format only)
+- "Date range" → after:2026/01/01 before:2026/02/01
+
+Common useful operators:
+- from:sender@example.com
+- to:recipient@example.com
+- subject:keyword
+- has:attachment
+- filename:pdf (or filename:xlsx, filename:docx)
+- is:unread / is:read / is:starred
+- label:name
+- newer_than:Nd / newer_than:Nm / newer_than:Ny (days/months/years)
+- larger:5M / smaller:1M
+
 ## SMART DEFAULTS
 
 - When searching, default to recent emails (newer_than:7d) unless the user specifies otherwise.
@@ -116,9 +137,9 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
   return {
     // ============ SEARCH & READ ============
     searchEmails: tool({
-      description: 'Power search Gmail with any query. Supports full Gmail search syntax.',
+      description: 'Power search Gmail with any query. Supports full Gmail search syntax. IMPORTANT: For "today" use newer_than:1d (NOT after:today which is invalid). For date ranges use after:YYYY/MM/DD format.',
       inputSchema: z.object({
-        query: z.string().describe('Gmail search query - supports from:, to:, subject:, has:attachment, is:unread, after:, before:, label:, etc.'),
+        query: z.string().describe('Gmail search query. Use newer_than:1d for today, newer_than:7d for this week. NEVER use after:today. Date format: after:YYYY/MM/DD'),
         maxResults: z.number().optional().default(20).describe('Max emails to return (default 20, max 100)'),
       }),
       execute: async ({ query, maxResults }) => {
