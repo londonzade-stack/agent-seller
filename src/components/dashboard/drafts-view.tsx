@@ -41,7 +41,15 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
       const res = await fetch('/api/drafts')
       if (!res.ok) throw new Error('Failed to fetch drafts')
       const data = await res.json()
-      setDrafts(data.drafts || [])
+      // Map backend field names to frontend interface
+      const mapped = (data.drafts || []).map((d: Record<string, string>) => ({
+        id: d.draftId || d.id,
+        to: d.to || '',
+        subject: d.subject || '',
+        body: d.body || d.snippet || '',
+        date: d.date || '',
+      }))
+      setDrafts(mapped)
     } catch {
       setError('Failed to load drafts. Try again.')
     } finally {
