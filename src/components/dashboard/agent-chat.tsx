@@ -244,21 +244,50 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   if (!isOpen) return null
 
   const capabilities = [
-    { icon: Mail, title: 'Email Operations', items: ['sendEmail - Send emails directly', 'draftEmail - Create drafts', 'getDrafts - View all drafts', 'updateDraft - Edit drafts', 'sendDraft - Send saved drafts', 'deleteDraft - Delete drafts'] },
-    { icon: Search, title: 'Search & Read', items: ['searchEmails - Power search with Gmail syntax', 'readEmail - Read full email content', 'getEmailThread - Read conversation threads', 'getRecentEmails - Quick inbox overview'] },
-    { icon: Tag, title: 'Labels & Organization', items: ['getLabels - List all labels', 'createLabel - Create custom labels', 'applyLabels - Apply labels (bulk!)', 'removeLabels - Remove labels (bulk!)'] },
-    { icon: Archive, title: 'Inbox Management', items: ['archiveEmails - Archive emails', 'trashEmails - Move to trash', 'untrashEmails - Restore from trash', 'markAsRead / markAsUnread', 'starEmails / unstarEmails', 'markAsImportant / markAsNotImportant'] },
-    { icon: Shield, title: 'Spam & Unsubscribe', items: ['reportSpam - Report as spam', 'markNotSpam - Rescue from spam', 'findUnsubscribableEmails - Find newsletters', 'bulkUnsubscribe - Unsubscribe in bulk'] },
-    { icon: BarChart3, title: 'Analytics & Insights', items: ['getInboxStats - Email analytics', 'getContactDetails - Contact info', 'getSenderHistory - Interaction history'] },
+    { icon: Mail, title: 'Send & Draft Emails', items: [
+      'Send emails to anyone on your behalf',
+      'Draft emails for you to review before sending',
+      'Edit, update, or delete saved drafts',
+      'Reply to emails with context-aware responses',
+    ]},
+    { icon: Search, title: 'Search & Read', items: [
+      'Find any email by sender, subject, date, or keyword',
+      'Read full email threads and conversations',
+      'Pull up your recent inbox at a glance',
+      'Search with filters like "has attachment" or "is unread"',
+    ]},
+    { icon: Tag, title: 'Labels & Folders', items: [
+      'Create new labels to organize your inbox',
+      'Sort emails into labels automatically',
+      'Apply or remove labels in bulk',
+      'Build custom folders like "Receipts" or "Clients"',
+    ]},
+    { icon: Archive, title: 'Inbox Cleanup', items: [
+      'Archive old emails you don\'t need in your inbox',
+      'Trash or restore emails',
+      'Mark emails as read, unread, starred, or important',
+      'Bulk clean — e.g. "archive all promos older than 30 days"',
+    ]},
+    { icon: Shield, title: 'Spam & Unsubscribe', items: [
+      'Find all newsletters and subscriptions in your inbox',
+      'One-click unsubscribe from junk mail in bulk',
+      'Report spam or rescue emails from spam folder',
+      'Clean up your inbox by removing unwanted senders',
+    ]},
+    { icon: BarChart3, title: 'Analytics & Insights', items: [
+      'See your inbox stats — how many emails, top senders, etc.',
+      'Look up contact details and sender history',
+      'Get a breakdown of your email activity for any time period',
+    ]},
   ]
 
   const examples = [
-    '"Archive all promotional emails older than 30 days"',
-    '"Star all emails from my boss"',
-    '"Unsubscribe me from all newsletters"',
-    '"Show me my conversation with sarah@company.com"',
-    '"Clean up my inbox"',
-    '"Give me a table of my top senders this week"',
+    { text: 'Clean up my inbox', desc: 'Archives old promos, unsubscribes from junk' },
+    { text: 'Unsubscribe me from all newsletters', desc: 'Finds and bulk-unsubscribes in one shot' },
+    { text: 'Show me everything from Amazon this month', desc: 'Searches by sender and date range' },
+    { text: 'Draft a follow-up to that client email', desc: 'Reads the thread, then writes a smart reply' },
+    { text: 'Create a "Receipts" folder and move all receipts there', desc: 'Creates label + searches + organizes' },
+    { text: 'Give me a table of my top 10 senders this week', desc: 'Analyzes your inbox and formats results' },
   ]
 
   return (
@@ -269,8 +298,8 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
         <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-black/90 backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-400" />
-            <h3 className="font-semibold text-base sm:text-lg">Agent Capabilities</h3>
-            <Badge variant="secondary" className="ml-1 sm:ml-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white border-0 text-xs">33 Tools</Badge>
+            <h3 className="font-semibold text-base sm:text-lg">What I Can Do</h3>
+            <Badge variant="secondary" className="ml-1 sm:ml-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white border-0 text-xs">33 abilities</Badge>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><X className="h-4 w-4" /></Button>
         </div>
@@ -294,10 +323,13 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
           </div>
           <div className="border-t border-zinc-200 dark:border-white/10" />
           <div>
-            <div className="flex items-center gap-2 mb-3"><Lightbulb className="h-4 w-4 text-amber-400" /><h4 className="font-medium text-sm">Try saying:</h4></div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-2 mb-3"><Lightbulb className="h-4 w-4 text-amber-400" /><h4 className="font-medium text-sm">Try saying things like:</h4></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {examples.map((example, i) => (
-                <div key={i} className="text-xs px-3 py-1.5 rounded-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-default">{example}</div>
+                <div key={i} className="rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-default">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-white">&ldquo;{example.text}&rdquo;</p>
+                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{example.desc}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -462,7 +494,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
               {"I'm your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
             </p>
             <button onClick={() => setShowTips(true)} className="text-sm text-zinc-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
-              <Lightbulb className="h-3.5 w-3.5" />See all 33 capabilities
+              <Lightbulb className="h-3.5 w-3.5" />See everything I can do
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-2xl w-full px-2">
               {suggestions.map((suggestion, i) => (
