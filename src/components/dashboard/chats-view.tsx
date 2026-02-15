@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Plus,
   Zap,
+  Trash2,
 } from 'lucide-react'
 
 interface ChatSession {
@@ -27,6 +28,7 @@ export function ChatsView({ onOpenChat }: ChatsViewProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
 
   const fetchSessions = async () => {
     setLoading(true)
@@ -40,6 +42,26 @@ export function ChatsView({ onOpenChat }: ChatsViewProps) {
       setError('Failed to load recent chats.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeleteChat = async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation() // Don't open the chat
+    try {
+      const res = await fetch(`/api/chats/${sessionId}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete')
+      // Trigger slide-out animation, then remove after transition
+      setDeletingIds(prev => new Set(prev).add(sessionId))
+      setTimeout(() => {
+        setSessions(prev => prev.filter(s => s.id !== sessionId))
+        setDeletingIds(prev => {
+          const next = new Set(prev)
+          next.delete(sessionId)
+          return next
+        })
+      }, 450)
+    } catch {
+      setError('Failed to delete chat.')
     }
   }
 
@@ -183,7 +205,15 @@ export function ChatsView({ onOpenChat }: ChatsViewProps) {
                   {group.sessions.map((session) => (
                     <Card
                       key={session.id}
-                      className="p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer shadow-sm dark:shadow-none group"
+                      className={`p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-stone-50 dark:hover:bg-zinc-800/50 cursor-pointer shadow-sm dark:shadow-none group overflow-hidden ${
+                        deletingIds.has(session.id)
+                          ? 'opacity-0 -translate-x-20 scale-[0.98] max-h-0 !my-0 !py-0'
+                          : 'opacity-100 translate-x-0 scale-100'
+                      }`}
+                      style={deletingIds.has(session.id)
+                        ? { marginTop: 0, marginBottom: 0, maxHeight: 0, padding: 0, transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' }
+                        : { maxHeight: '200px', transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' }
+                      }
                       onClick={() => onOpenChat(session.id)}
                     >
                       <div className="flex items-center gap-3">
@@ -201,7 +231,12 @@ export function ChatsView({ onOpenChat }: ChatsViewProps) {
                             </span>
                           </div>
                         </div>
-                        <MessageSquare className="h-4 w-4 text-stone-300 dark:text-zinc-600 shrink-0 group-hover:text-stone-400 dark:group-hover:text-zinc-500 transition-colors" />
+                        <button
+                          onClick={(e) => handleDeleteChat(e, session.id)}
+                          className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-all text-stone-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 shrink-0"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     </Card>
                   ))}
