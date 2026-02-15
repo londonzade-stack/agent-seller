@@ -79,7 +79,7 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
           next.delete(draftId)
           return next
         })
-      }, 350)
+      }, 450)
     } catch {
       setError('Failed to send draft.')
     }
@@ -102,7 +102,7 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
           next.delete(draftId)
           return next
         })
-      }, 350)
+      }, 450)
     } catch {
       setError('Failed to delete draft.')
     }
@@ -167,12 +167,12 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
             {drafts.map((draft) => (
               <Card
                 key={draft.id}
-                className={`p-0 overflow-hidden border-zinc-200 dark:border-white/10 bg-white dark:bg-black transition-all duration-300 ease-in-out ${
+                className={`p-0 overflow-hidden border-zinc-200 dark:border-white/10 bg-white dark:bg-black ${
                   deletingIds.has(draft.id)
-                    ? 'opacity-0 -translate-x-16 scale-[0.98] max-h-0 !my-0 !py-0 overflow-hidden'
+                    ? 'opacity-0 -translate-x-20 scale-[0.98] max-h-0 !my-0 !py-0'
                     : 'opacity-100 translate-x-0 scale-100'
                 }`}
-                style={deletingIds.has(draft.id) ? { marginTop: 0, marginBottom: 0, maxHeight: 0, transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)' } : { maxHeight: '500px', transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+                style={deletingIds.has(draft.id) ? { marginTop: 0, marginBottom: 0, maxHeight: 0, padding: 0, transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' } : { maxHeight: '500px', transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' }}
               >
                 <div className="border-b border-zinc-200 dark:border-white/10 p-3 sm:p-4 flex items-center justify-between">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
