@@ -113,7 +113,7 @@ function extractEmailBody(payload: gmail_v1.Schema$MessagePart): string {
 }
 
 // Extract attachments info from message
-function extractAttachments(payload: gmail_v1.Schema$MessagePart, messageId: string): Array<{
+function extractAttachments(payload: gmail_v1.Schema$MessagePart, _messageId: string): Array<{
   filename: string
   mimeType: string
   size: number
@@ -764,7 +764,8 @@ export async function getDrafts(userId: string, maxResults: number = 20) {
       })
 
       const headers = parseEmailHeaders(fullDraft.data.message?.payload?.headers || [])
-      const body = extractEmailBody(fullDraft.data.message?.payload!)
+      const payload = fullDraft.data.message?.payload
+      const body = payload ? extractEmailBody(payload) : ''
 
       return {
         draftId: draft.id,

@@ -13,11 +13,16 @@ import {
   Zap,
   Clock,
   FileText,
+  Building,
+  Headphones,
+  Settings,
+  UserCog,
+  BadgePercent,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function PricingPage() {
-  const features = [
+  const individualFeatures = [
     "Unlimited AI-generated email drafts",
     "Smart lead detection from inbox",
     "Custom persona templates",
@@ -26,6 +31,17 @@ export default function PricingPage() {
     "Email integration (Gmail, Outlook)",
     "Quick actions & automations",
     "Priority support",
+  ];
+
+  const businessFeatures = [
+    { icon: BadgePercent, text: "Volume discounts on per-user pricing" },
+    { icon: Headphones, text: "Dedicated account manager" },
+    { icon: Settings, text: "Custom integrations & API access" },
+    { icon: UserCog, text: "Team management & admin controls" },
+    { icon: Shield, text: "SSO & advanced security" },
+    { icon: Brain, text: "Custom AI model training" },
+    { icon: FileText, text: "Onboarding & training sessions" },
+    { icon: Zap, text: "SLA-backed uptime guarantee" },
   ];
 
   return (
@@ -61,13 +77,14 @@ export default function PricingPage() {
               Simple, transparent pricing
             </h1>
             <p className="text-zinc-500 max-w-2xl mx-auto text-lg">
-              One plan with everything you need. No hidden fees, no complicated tiers.
+              Start with a simple per-user plan, or talk to us about custom pricing for your team.
             </p>
           </div>
 
-          {/* Pricing Card */}
-          <div className="flex justify-center">
-            <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 max-w-md w-full">
+          {/* Pricing Cards */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Individual Plan */}
+            <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8">
               <div className="text-center mb-8">
                 <Badge variant="secondary" className="mb-4 bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10">
                   <Users className="mr-2 h-3 w-3" />
@@ -81,7 +98,7 @@ export default function PricingPage() {
               </div>
 
               <div className="space-y-4 mb-8">
-                {features.map((feature, i) => (
+                {individualFeatures.map((feature, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
                     <span className="text-sm">{feature}</span>
@@ -102,6 +119,42 @@ export default function PricingPage() {
                 <Link href="/dashboard" className="underline hover:text-zinc-600 dark:hover:text-zinc-400">
                   Go to Billing in your dashboard
                 </Link>
+              </p>
+            </Card>
+
+            {/* Business Plan */}
+            <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-zinc-300 dark:border-white/20 p-8 relative">
+              <div className="text-center mb-8">
+                <Badge variant="secondary" className="mb-4 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-900 dark:hover:bg-white">
+                  <Building className="mr-2 h-3 w-3" />
+                  Business
+                </Badge>
+                <div className="flex items-baseline justify-center gap-2 mb-2">
+                  <span className="text-5xl md:text-6xl font-bold">Custom</span>
+                </div>
+                <p className="text-zinc-500 text-sm">tailored to your team</p>
+              </div>
+
+              <p className="text-zinc-500 text-sm text-center mb-6">
+                Get a discounted per-user rate with volume pricing, plus dedicated support and custom integrations for your team.
+              </p>
+
+              <div className="space-y-4 mb-8">
+                {businessFeatures.map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <feature.icon className="h-5 w-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                    <span className="text-sm">{feature.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <a href="mailto:sales@agentseller.com">
+                <Button variant="outline" className="w-full border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" size="lg">
+                  Contact Sales <Mail className="ml-2 h-4 w-4" />
+                </Button>
+              </a>
+              <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
+                We&apos;ll get back to you within one business day.
               </p>
             </Card>
           </div>
@@ -185,6 +238,10 @@ export default function PricingPage() {
               {
                 q: "Is my data secure?",
                 a: "Absolutely. We use enterprise-grade encryption and never store your email content permanently. Your data is processed securely and you maintain full control."
+              },
+              {
+                q: "How does Business pricing work?",
+                a: "Business plans offer discounted per-user rates based on team size, along with dedicated support, custom integrations, and advanced admin controls. Contact our sales team and we'll put together a plan tailored to your organization."
               },
             ].map((faq, i) => (
               <Card key={i} className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6">

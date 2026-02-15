@@ -88,7 +88,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex">
+    <div className="min-h-screen bg-[#faf8f5] dark:bg-[#111113] flex">
       <DashboardSidebar
         user={user}
         activeView={activeView}
@@ -101,7 +101,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile header bar - visible only on small screens */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-md lg:hidden">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-stone-200 dark:border-zinc-800 bg-[#faf8f5]/80 dark:bg-[#111113]/80 backdrop-blur-md lg:hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -111,7 +111,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <Menu className="h-5 w-5" />
           </Button>
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 dark:bg-zinc-800">
               <Target className="h-4 w-4" />
             </div>
             <span className="text-base font-semibold">AgentSeller</span>

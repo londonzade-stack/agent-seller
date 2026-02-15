@@ -49,7 +49,7 @@ export async function POST(req: Request) {
         const periodStart = rawStart ? new Date(rawStart * 1000).toISOString() : null
         const periodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : null
 
-        await supabase
+        const { error: createError } = await supabase
           .from('subscriptions')
           .update({
             stripe_subscription_id: subscription.id,
@@ -58,6 +58,10 @@ export async function POST(req: Request) {
             current_period_end: periodEnd,
           })
           .eq('stripe_customer_id', customerId)
+        if (createError) {
+          sanitizeError('Stripe webhook: failed to update subscription on create', createError)
+          return new Response(JSON.stringify({ error: 'Database write failed' }), { status: 500 })
+        }
         break
       }
 
@@ -80,7 +84,7 @@ export async function POST(req: Request) {
         const updatedPeriodStart = updRawStart ? new Date(updRawStart * 1000).toISOString() : null
         const updatedPeriodEnd = updRawEnd ? new Date(updRawEnd * 1000).toISOString() : null
 
-        await supabase
+        const { error: updateError } = await supabase
           .from('subscriptions')
           .update({
             stripe_subscription_id: subscription.id,
@@ -89,6 +93,10 @@ export async function POST(req: Request) {
             current_period_end: updatedPeriodEnd,
           })
           .eq('stripe_customer_id', customerId)
+        if (updateError) {
+          sanitizeError('Stripe webhook: failed to update subscription', updateError)
+          return new Response(JSON.stringify({ error: 'Database write failed' }), { status: 500 })
+        }
         break
       }
 
@@ -99,10 +107,14 @@ export async function POST(req: Request) {
             ? subscription.customer
             : subscription.customer.id
 
-        await supabase
+        const { error: deleteError } = await supabase
           .from('subscriptions')
           .update({ status: 'canceled' })
           .eq('stripe_customer_id', customerId)
+        if (deleteError) {
+          sanitizeError('Stripe webhook: failed to cancel subscription', deleteError)
+          return new Response(JSON.stringify({ error: 'Database write failed' }), { status: 500 })
+        }
         break
       }
 
@@ -114,10 +126,14 @@ export async function POST(req: Request) {
             : invoice.customer?.id
 
         if (customerId) {
-          await supabase
+          const { error: paySuccessError } = await supabase
             .from('subscriptions')
             .update({ status: 'active' })
             .eq('stripe_customer_id', customerId)
+          if (paySuccessError) {
+            sanitizeError('Stripe webhook: failed to update on payment success', paySuccessError)
+            return new Response(JSON.stringify({ error: 'Database write failed' }), { status: 500 })
+          }
         }
         break
       }
@@ -130,10 +146,14 @@ export async function POST(req: Request) {
             : invoice.customer?.id
 
         if (customerId) {
-          await supabase
+          const { error: payFailError } = await supabase
             .from('subscriptions')
             .update({ status: 'past_due' })
             .eq('stripe_customer_id', customerId)
+          if (payFailError) {
+            sanitizeError('Stripe webhook: failed to update on payment failure', payFailError)
+            return new Response(JSON.stringify({ error: 'Database write failed' }), { status: 500 })
+          }
         }
         break
       }

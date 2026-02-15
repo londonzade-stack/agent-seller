@@ -18,7 +18,6 @@ import {
   MessageSquare,
   FileText,
   Target,
-  Clock,
   BarChart3,
   Inbox,
 } from "lucide-react";

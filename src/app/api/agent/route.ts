@@ -886,6 +886,14 @@ export async function POST(req: Request) {
 
     const userId = user?.id || null
 
+    // Authentication required — reject unauthenticated requests
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required. Please log in to use the AI agent.' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Check billing status — block usage if no valid subscription
     if (userId) {
       const { data: subscription } = await supabase

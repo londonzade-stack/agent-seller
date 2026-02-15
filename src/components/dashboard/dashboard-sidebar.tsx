@@ -68,9 +68,9 @@ export function DashboardSidebar({
 
   const sidebarContent = (
     <>
-      <div className="p-4 border-b border-zinc-200 dark:border-white/10 flex items-center justify-between">
+      <div className="p-4 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 dark:bg-zinc-800">
             <Target className="h-5 w-5" />
           </div>
           <span className="text-lg font-semibold">AgentSeller</span>
@@ -101,10 +101,10 @@ export function DashboardSidebar({
               disabled={isLocked}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeView === item.id
-                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
+                  ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-black'
                   : isLocked
-                    ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed'
-                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                    ? 'text-stone-300 dark:text-zinc-600 cursor-not-allowed'
+                    : 'text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800'
               }`}
             >
               <item.icon className="h-4 w-4" />
@@ -124,14 +124,14 @@ export function DashboardSidebar({
         })}
       </nav>
 
-      <div className="p-4 border-t border-zinc-200 dark:border-white/10 space-y-4">
+      <div className="p-4 border-t border-stone-200 dark:border-zinc-800 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-medium">
+          <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-medium">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{userName}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{user.email}</p>
+            <p className="text-xs text-stone-500 dark:text-zinc-400 truncate">{user.email}</p>
           </div>
         </div>
 
@@ -139,7 +139,7 @@ export function DashboardSidebar({
           variant="ghost"
           size="sm"
           onClick={handleSignOut}
-          className="w-full justify-start text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+          className="w-full justify-start text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white"
         >
           <LogOut className="h-4 w-4 mr-2" />
           Sign out
@@ -151,7 +151,7 @@ export function DashboardSidebar({
   return (
     <>
       {/* Desktop sidebar - always visible on lg+ */}
-      <aside className="hidden lg:flex w-64 border-r border-zinc-200 dark:border-white/10 bg-white dark:bg-black flex-col shrink-0">
+      <aside className="hidden lg:flex w-64 border-r border-stone-200 dark:border-zinc-800 bg-[#faf8f5] dark:bg-[#111113] flex-col shrink-0">
         {sidebarContent}
       </aside>
 
@@ -164,7 +164,7 @@ export function DashboardSidebar({
             onClick={onMobileClose}
           />
           {/* Drawer */}
-          <aside className="fixed inset-y-0 left-0 z-50 w-[85vw] max-w-64 bg-white dark:bg-black border-r border-zinc-200 dark:border-white/10 flex flex-col lg:hidden shadow-2xl">
+          <aside className="fixed inset-y-0 left-0 z-50 w-[85vw] max-w-64 bg-[#faf8f5] dark:bg-[#111113] border-r border-stone-200 dark:border-zinc-800 flex flex-col lg:hidden shadow-2xl">
             {sidebarContent}
           </aside>
         </>

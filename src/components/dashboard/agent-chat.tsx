@@ -84,33 +84,33 @@ function getToolMeta(toolName: string) {
   return TOOL_META[toolName] || { label: toolName, icon: Wrench }
 }
 
-// Styled markdown components for ChatGPT-style tables and clean rendering
+// ─── Styled markdown — Style A warm tones ───────────────────────────
 const markdownComponents = {
   table: ({ children, ...props }: React.ComponentPropsWithoutRef<'table'>) => (
-    <div className="my-3 overflow-x-auto rounded-lg border border-zinc-200 dark:border-white/10">
+    <div className="my-3 overflow-x-auto rounded-lg border border-stone-200 dark:border-zinc-800">
       <table className="w-full border-collapse text-sm" {...props}>{children}</table>
     </div>
   ),
   thead: ({ children, ...props }: React.ComponentPropsWithoutRef<'thead'>) => (
-    <thead className="bg-zinc-50 dark:bg-zinc-900/50" {...props}>{children}</thead>
+    <thead className="bg-stone-50 dark:bg-zinc-800/50" {...props}>{children}</thead>
   ),
   th: ({ children, ...props }: React.ComponentPropsWithoutRef<'th'>) => (
-    <th className="border-b border-zinc-200 dark:border-white/10 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400" {...props}>{children}</th>
+    <th className="border-b border-stone-200 dark:border-zinc-800 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-zinc-500" {...props}>{children}</th>
   ),
   td: ({ children, ...props }: React.ComponentPropsWithoutRef<'td'>) => (
-    <td className="border-b border-zinc-100 dark:border-white/5 px-3 py-2 text-sm" {...props}>{children}</td>
+    <td className="border-b border-stone-100 dark:border-zinc-800/50 px-3 py-2 text-sm" {...props}>{children}</td>
   ),
   tr: ({ children, ...props }: React.ComponentPropsWithoutRef<'tr'>) => (
-    <tr className="even:bg-zinc-50/50 dark:even:bg-zinc-900/20 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-colors" {...props}>{children}</tr>
+    <tr className="even:bg-stone-50/50 dark:even:bg-zinc-800/20 hover:bg-stone-50 dark:hover:bg-zinc-800/40 transition-colors" {...props}>{children}</tr>
   ),
   p: ({ children, ...props }: React.ComponentPropsWithoutRef<'p'>) => (
     <p className="my-1.5 leading-relaxed" {...props}>{children}</p>
   ),
   strong: ({ children, ...props }: React.ComponentPropsWithoutRef<'strong'>) => (
-    <strong className="font-semibold text-zinc-900 dark:text-white" {...props}>{children}</strong>
+    <strong className="font-semibold text-stone-900 dark:text-white" {...props}>{children}</strong>
   ),
   a: ({ children, ...props }: React.ComponentPropsWithoutRef<'a'>) => (
-    <a className="text-zinc-900 dark:text-white underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
+    <a className="text-stone-900 dark:text-white underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
   ),
   ul: ({ children, ...props }: React.ComponentPropsWithoutRef<'ul'>) => (
     <ul className="my-1.5 ml-4 list-disc space-y-0.5" {...props}>{children}</ul>
@@ -133,17 +133,17 @@ const markdownComponents = {
   code: ({ children, className, ...props }: React.ComponentPropsWithoutRef<'code'>) => {
     const isInline = !className
     return isInline
-      ? <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-xs font-mono" {...props}>{children}</code>
+      ? <code className="bg-stone-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-xs font-mono" {...props}>{children}</code>
       : <code className={className} {...props}>{children}</code>
   },
   pre: ({ children, ...props }: React.ComponentPropsWithoutRef<'pre'>) => (
-    <pre className="my-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 overflow-x-auto text-xs" {...props}>{children}</pre>
+    <pre className="my-2 bg-stone-100 dark:bg-zinc-800 rounded-lg p-3 overflow-x-auto text-xs" {...props}>{children}</pre>
   ),
   blockquote: ({ children, ...props }: React.ComponentPropsWithoutRef<'blockquote'>) => (
-    <blockquote className="my-2 border-l-2 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900/30 pl-3 py-1 text-sm" {...props}>{children}</blockquote>
+    <blockquote className="my-2 border-l-2 border-stone-300 dark:border-zinc-600 bg-stone-50 dark:bg-zinc-900/30 pl-3 py-1 text-sm" {...props}>{children}</blockquote>
   ),
   hr: (props: React.ComponentPropsWithoutRef<'hr'>) => (
-    <hr className="my-3 border-zinc-200 dark:border-white/10" {...props} />
+    <hr className="my-3 border-stone-200 dark:border-zinc-800" {...props} />
   ),
 }
 
@@ -155,11 +155,9 @@ function MarkdownContent({ content }: { content: string }) {
   )
 }
 
-// Tool call block — shows what the agent is doing
+// ─── Tool call block — Style A amber-tinted card ────────────────────
 function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const [expanded, setExpanded] = useState(false)
-  // For static tools: type is 'tool-searchEmails' -> extract 'searchEmails'
-  // For dynamic tools: type is 'dynamic-tool' -> use toolName property
   const partType = part.type as string
   const toolName = partType === 'dynamic-tool'
     ? (part.toolName as string) || 'unknown'
@@ -179,40 +177,42 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
 
   return (
     <div className={`my-2 rounded-lg border overflow-hidden transition-colors ${
-      isRunning ? 'border-zinc-300 dark:border-white/20 bg-zinc-50 dark:bg-zinc-900/30' :
-      isError ? 'border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-900/10' :
-      'border-zinc-200 dark:border-white/10 bg-white dark:bg-black/20'
+      isRunning
+        ? 'border-amber-300 dark:border-amber-700/40 bg-amber-50/60 dark:bg-amber-950/20'
+        : isError
+          ? 'border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-900/10'
+          : 'border-amber-200/60 dark:border-amber-800/30 bg-amber-50/40 dark:bg-amber-950/15'
     }`}>
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-amber-50/60 dark:hover:bg-amber-950/30 transition-colors"
       >
-        {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-900 dark:text-white shrink-0" />}
-        {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
+        {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />}
+        {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />}
         {isError && <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />}
-        <Icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />
-        <span className={`font-medium ${isRunning ? 'text-zinc-900 dark:text-white' : 'text-zinc-900 dark:text-white'}`}>{meta.label}</span>
+        <Icon className="h-3.5 w-3.5 text-amber-700/60 dark:text-amber-500/60 shrink-0" />
+        <span className="font-medium text-amber-900 dark:text-amber-200">{meta.label}</span>
         {inputSummary && (
-          <span className="text-zinc-500 dark:text-zinc-400 truncate max-w-[120px] sm:max-w-[250px]">— {inputSummary}</span>
+          <span className="text-amber-700/50 dark:text-amber-400/50 truncate max-w-[120px] sm:max-w-[250px]">— {inputSummary}</span>
         )}
-        {isRunning && <span className="text-[10px] text-zinc-500 dark:text-zinc-400 ml-1 animate-pulse">running</span>}
-        <ChevronRight className={`h-3 w-3 ml-auto text-zinc-400 transition-transform shrink-0 ${expanded ? 'rotate-90' : ''}`} />
+        {isRunning && <span className="text-[10px] text-amber-600 dark:text-amber-400 ml-1 animate-pulse">running</span>}
+        <ChevronRight className={`h-3 w-3 ml-auto text-amber-400 dark:text-amber-600 transition-transform shrink-0 ${expanded ? 'rotate-90' : ''}`} />
       </button>
 
       {expanded && (
-        <div className="border-t border-zinc-200 dark:border-white/10 px-3 py-2 space-y-2">
+        <div className="border-t border-amber-200/60 dark:border-amber-800/20 px-3 py-2 space-y-2 bg-amber-50/20 dark:bg-amber-950/10">
           {input && Object.keys(input).length > 0 && (
             <div>
-              <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Input</div>
-              <pre className="text-[11px] text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/30 rounded p-2 overflow-x-auto max-h-32 overflow-y-auto">
+              <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">Input</div>
+              <pre className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 overflow-x-auto max-h-32 overflow-y-auto">
                 {JSON.stringify(input, null, 2)}
               </pre>
             </div>
           )}
           {isDone && output && (
             <div>
-              <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Result</div>
-              <pre className="text-[11px] text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/30 rounded p-2 overflow-x-auto max-h-48 overflow-y-auto">
+              <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">Result</div>
+              <pre className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 overflow-x-auto max-h-48 overflow-y-auto">
                 {JSON.stringify(output, null, 2)}
               </pre>
             </div>
@@ -293,42 +293,41 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
-      {/* Mobile: full-screen modal. Desktop: positioned dropdown */}
-      <div className="fixed inset-3 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[600px] max-h-[90vh] sm:max-h-[70vh] overflow-auto rounded-2xl border border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-black/90 backdrop-blur-xl shadow-2xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-black/90 backdrop-blur-xl">
+      <div className="fixed inset-3 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[600px] max-h-[90vh] sm:max-h-[70vh] overflow-auto rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-amber-400" />
             <h3 className="font-semibold text-base sm:text-lg">What I Can Do</h3>
-            <Badge variant="secondary" className="ml-1 sm:ml-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white border-0 text-xs">33 abilities</Badge>
+            <Badge variant="secondary" className="ml-1 sm:ml-2 bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-white border-0 text-xs">33 abilities</Badge>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"><X className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-stone-100 dark:hover:bg-zinc-800"><X className="h-4 w-4" /></Button>
         </div>
         <div className="p-4 sm:p-5 space-y-5 sm:space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {capabilities.map((category, idx) => (
-              <div key={idx} className="rounded-xl bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 p-3 sm:p-4 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
+              <div key={idx} className="rounded-xl bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 p-3 sm:p-4 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors">
                 <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <div className="p-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800"><category.icon className="h-4 w-4 text-zinc-600 dark:text-zinc-300" /></div>
+                  <div className="p-1.5 rounded-lg bg-stone-200 dark:bg-zinc-700"><category.icon className="h-4 w-4 text-stone-600 dark:text-zinc-300" /></div>
                   <h4 className="font-medium text-sm">{category.title}</h4>
                 </div>
                 <ul className="space-y-1 sm:space-y-1.5">
                   {category.items.map((item, i) => (
-                    <li key={i} className="text-xs text-zinc-500 dark:text-zinc-400 flex items-start gap-1.5">
-                      <span className="text-zinc-400 dark:text-zinc-500 mt-0.5">&#8226;</span><span>{item}</span>
+                    <li key={i} className="text-xs text-stone-500 dark:text-zinc-400 flex items-start gap-1.5">
+                      <span className="text-stone-400 dark:text-zinc-500 mt-0.5">&#8226;</span><span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
           </div>
-          <div className="border-t border-zinc-200 dark:border-white/10" />
+          <div className="border-t border-stone-200 dark:border-zinc-800" />
           <div>
             <div className="flex items-center gap-2 mb-3"><Lightbulb className="h-4 w-4 text-amber-400" /><h4 className="font-medium text-sm">Try saying things like:</h4></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {examples.map((example, i) => (
-                <div key={i} className="rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 px-3 py-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-default">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-white">&ldquo;{example.text}&rdquo;</p>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{example.desc}</p>
+                <div key={i} className="rounded-lg bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 px-3 py-2.5 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors cursor-default">
+                  <p className="text-sm font-medium text-stone-900 dark:text-white">&ldquo;{example.text}&rdquo;</p>
+                  <p className="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">{example.desc}</p>
                 </div>
               ))}
             </div>
@@ -362,7 +361,6 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   // Figure out what the agent is actively doing right now (for the streaming indicator)
   const activeToolInfo = useMemo(() => {
     if (!isLoading) return null
-    // Look at the last assistant message's parts for any running tool calls
     const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
     if (!lastAssistant) return null
     const runningTools = lastAssistant.parts.filter(p => {
@@ -456,16 +454,17 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      <header className="border-b border-zinc-200 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white dark:bg-black">
+      {/* Header — Style A warm tones */}
+      <header className="border-b border-stone-200 dark:border-zinc-800 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113]">
         <div className="min-w-0">
-          <h1 className="text-lg sm:text-xl font-semibold truncate">AI Email Agent</h1>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">Your powerful email assistant with 33 tools</p>
+          <h1 className="text-lg sm:text-xl font-semibold text-stone-900 dark:text-white truncate tracking-tight">AI Email Agent</h1>
+          <p className="text-xs sm:text-sm text-stone-400 dark:text-zinc-500 hidden sm:block">Your powerful email assistant with 33 tools</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="relative">
             <Badge
               variant="outline"
-              className="cursor-pointer px-2 py-1 sm:px-3 sm:py-1.5 gap-1.5 sm:gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors border-zinc-300 dark:border-white/20 bg-zinc-50 dark:bg-zinc-900/30"
+              className="cursor-pointer px-2 py-1 sm:px-3 sm:py-1.5 gap-1.5 sm:gap-2 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800/50"
               onClick={() => setShowTips(!showTips)}
             >
               <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
@@ -476,32 +475,33 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             <TipsDropdown isOpen={showTips} onClose={() => setShowTips(false)} />
           </div>
           {!isEmailConnected && (
-            <div className="hidden sm:flex items-center gap-2 text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-lg text-sm">
+            <div className="hidden sm:flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg text-sm border border-amber-200/60 dark:border-amber-800/30">
               <Mail className="h-4 w-4" />Connect your email
             </div>
           )}
         </div>
       </header>
 
-      <div className="flex-1 overflow-auto px-3 py-4 sm:p-6" ref={scrollAreaRef}>
+      {/* Messages area — Style A cream background */}
+      <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-5 sm:mb-6">
-              <Brain className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-500 dark:text-zinc-400" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-stone-200 dark:bg-zinc-800 flex items-center justify-center mb-5 sm:mb-6">
+              <Brain className="h-7 w-7 sm:h-8 sm:w-8 text-stone-500 dark:text-zinc-400" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold mb-2">Hello, {userName}</h2>
-            <p className="text-zinc-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">Hello, {userName}</h2>
+            <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
               {"I'm your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
             </p>
-            <button onClick={() => setShowTips(true)} className="text-sm text-zinc-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
+            <button onClick={() => setShowTips(true)} className="text-sm text-stone-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
               <Lightbulb className="h-3.5 w-3.5" />See everything I can do
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-2xl w-full px-2">
               {suggestions.map((suggestion, i) => (
-                <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors border-zinc-200 dark:border-white/10 bg-white dark:bg-black" onClick={() => handleSuggestionClick(suggestion)}>
+                <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion)}>
                   <div className="flex items-start gap-2 sm:gap-3">
-                    <Sparkles className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" />
-                    <span className="text-sm break-words">{suggestion}</span>
+                    <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                    <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion}</span>
                   </div>
                 </Card>
               ))}
@@ -512,14 +512,14 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             {messages.map((message) => (
               <div key={message.id} className={`flex gap-2 sm:gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {message.role === 'assistant' && (
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center shrink-0">
-                    <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white dark:text-black" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-800 dark:bg-zinc-200 flex items-center justify-center shrink-0">
+                    <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white dark:text-zinc-900" />
                   </div>
                 )}
                 <div className={`max-w-[90%] sm:max-w-[85%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
                   message.role === 'user'
-                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
-                    : 'bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10'
+                    ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
+                    : 'bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none text-stone-700 dark:text-zinc-300'
                 }`}>
                   {message.parts.map((part, index) => {
                     if (part.type === 'text') {
@@ -536,8 +536,8 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                   })}
                 </div>
                 {message.role === 'user' && (
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                    <UserIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                    <UserIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-stone-600 dark:text-zinc-400" />
                   </div>
                 )}
               </div>
@@ -546,13 +546,13 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             {/* Show loading only if the last message doesn't already have a running tool visible */}
             {isLoading && !lastMsgHasRunningTool && (
               <div className="flex gap-2 sm:gap-4 justify-start">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-900 dark:bg-white flex items-center justify-center shrink-0">
-                  <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white dark:text-black" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-800 dark:bg-zinc-200 flex items-center justify-center shrink-0">
+                  <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white dark:text-zinc-900" />
                 </div>
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 rounded-xl px-3 py-2 sm:px-4 sm:py-3">
+                <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm dark:shadow-none">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <Loader2 className="h-4 w-4 animate-spin text-zinc-900 dark:text-white" />
-                    <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <Loader2 className="h-4 w-4 animate-spin text-stone-800 dark:text-white" />
+                    <span className="text-sm text-stone-500 dark:text-zinc-400">
                       {activeToolInfo ? activeToolInfo.label + '...' : status === 'streaming' ? 'Working...' : 'Thinking...'}
                     </span>
                     <Button variant="ghost" size="sm" onClick={handleStop} className="h-7 px-2 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500">
@@ -568,10 +568,10 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
                   <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                 </div>
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 sm:px-4 sm:py-3">
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl px-3 py-2 sm:px-4 sm:py-3">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-sm text-amber-600 dark:text-amber-400">Request timed out.</span>
-                    <Button variant="outline" size="sm" onClick={handleRetry} className="h-7 px-2 text-xs border-amber-500/30 hover:bg-amber-500/10">
+                    <Button variant="outline" size="sm" onClick={handleRetry} className="h-7 px-2 text-xs border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20">
                       <RotateCcw className="h-3 w-3 mr-1" />Retry
                     </Button>
                   </div>
@@ -583,30 +583,31 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
       </div>
 
       {error && (
-        <div className="px-3 sm:px-6 py-3 bg-red-50 dark:bg-red-900/10 border-t border-red-200 dark:border-red-500/20">
+        <div className="px-3 sm:px-6 py-3 bg-red-50 dark:bg-red-900/10 border-t border-red-200 dark:border-red-800/30">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2 text-red-500 text-sm">
               <AlertCircle className="h-4 w-4" />{error.message || 'An error occurred. Please try again.'}
             </div>
-            <Button variant="outline" size="sm" onClick={handleRetry} className="h-7 px-2 text-xs border-red-300 dark:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
+            <Button variant="outline" size="sm" onClick={handleRetry} className="h-7 px-2 text-xs border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500">
               <RotateCcw className="h-3 w-3 mr-1" />Retry
             </Button>
           </div>
         </div>
       )}
 
-      <div className="border-t border-zinc-200 dark:border-white/10 p-3 sm:p-4 bg-white dark:bg-black">
+      {/* Input — Style A bottom bar */}
+      <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113]">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-2 sm:gap-3 bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-white/10 rounded-xl p-1.5 sm:p-2">
+          <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask your AI email agent anything..."
-              className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-sm"
+              className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-sm"
               disabled={isLoading}
             />
-            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 h-8 w-8 sm:h-9 sm:w-9 shrink-0">
+            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="rounded-lg bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-stone-700 dark:hover:bg-zinc-300 h-8 w-8 sm:h-9 sm:w-9 shrink-0">
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
