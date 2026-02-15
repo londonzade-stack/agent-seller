@@ -19,13 +19,6 @@ interface DashboardClientProps {
   user: User
 }
 
-// Read ?chat= param from URL on initial load
-function getInitialChatId(): string | undefined {
-  if (typeof window === 'undefined') return undefined
-  const params = new URLSearchParams(window.location.search)
-  return params.get('chat') || undefined
-}
-
 // Update the URL ?chat= param without a full navigation
 function updateChatUrl(sessionId: string | undefined) {
   if (typeof window === 'undefined') return
@@ -39,16 +32,16 @@ function updateChatUrl(sessionId: string | undefined) {
 }
 
 export function DashboardClient({ user }: DashboardClientProps) {
-  const initialChatId = getInitialChatId()
-  const [activeView, setActiveView] = useState<DashboardView>(initialChatId ? 'agent' : 'agent')
+  const [activeView, setActiveView] = useState<DashboardView>('agent')
   const [isEmailConnected, setIsEmailConnected] = useState(false)
   const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  const [chatSessionId, setChatSessionId] = useState<string | undefined>(initialChatId)
+  const [chatSessionId, setChatSessionId] = useState<string | undefined>(undefined)
   const [chatKey, setChatKey] = useState(0)
   const [billingStatus, setBillingStatus] = useState<string | null>(null)
   const [billingLoaded, setBillingLoaded] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const [urlChatRestored, setUrlChatRestored] = useState(false)
 
   // Whether the user has a valid subscription (active or trialing)
   const hasValidBilling = billingStatus === 'active' || billingStatus === 'trialing'
@@ -58,10 +51,24 @@ export function DashboardClient({ user }: DashboardClientProps) {
     setConnectedEmail(email || null)
   }, [])
 
-  // Sync URL whenever chatSessionId changes
+  // On mount: read ?chat= from URL and restore that session
   useEffect(() => {
-    updateChatUrl(chatSessionId)
-  }, [chatSessionId])
+    const params = new URLSearchParams(window.location.search)
+    const chatId = params.get('chat')
+    if (chatId) {
+      setChatSessionId(chatId)
+      setChatKey(k => k + 1)
+      setActiveView('agent')
+    }
+    setUrlChatRestored(true)
+  }, [])
+
+  // Sync URL whenever chatSessionId changes (but only after initial restore)
+  useEffect(() => {
+    if (urlChatRestored) {
+      updateChatUrl(chatSessionId)
+    }
+  }, [chatSessionId, urlChatRestored])
 
   // Handle view changes — block non-billing views if billing isn't set up
   const handleViewChange = useCallback((view: DashboardView) => {
