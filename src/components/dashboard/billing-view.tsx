@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -11,6 +13,7 @@ import {
   Clock,
   ExternalLink,
   RefreshCw,
+  LogOut,
 } from 'lucide-react'
 
 interface BillingStatus {
@@ -24,10 +27,17 @@ interface BillingViewProps {
 }
 
 export function BillingView({ onStatusChange }: BillingViewProps) {
+  const router = useRouter()
   const [billing, setBilling] = useState<BillingStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+  }
 
   const fetchBillingStatus = async () => {
     setLoading(true)
@@ -51,10 +61,14 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
 
   const handleCheckout = async () => {
     setActionLoading(true)
+    setError(null)
     try {
       const res = await fetch('/api/billing/checkout', { method: 'POST' })
-      if (!res.ok) throw new Error('Failed to create checkout session')
       const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to start checkout. Please try again.')
+        return
+      }
       if (data.url) {
         window.location.href = data.url
       }
@@ -391,6 +405,17 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                 )}
               </div>
             </Card>
+
+            {/* Sign out link — always visible, helpful when billing-gated on mobile */}
+            <div className="text-center pt-2">
+              <button
+                onClick={handleSignOut}
+                className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors inline-flex items-center gap-1.5"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                Sign out
+              </button>
+            </div>
           </div>
         ) : null}
       </div>

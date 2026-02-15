@@ -84,8 +84,9 @@ export async function POST() {
     return Response.json({ url: session.url })
   } catch (error) {
     sanitizeError('Billing checkout error', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return new Response(
-      JSON.stringify({ error: 'Failed to create checkout session' }),
+      JSON.stringify({ error: `Checkout failed: ${message}` }),
       { status: 500 },
     )
   }
