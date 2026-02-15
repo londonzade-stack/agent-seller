@@ -433,21 +433,8 @@ export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentCha
       }
       loadHistory()
     } else {
-      // Create new session — wait for it before rendering inner component
-      const createSession = async () => {
-        try {
-          const res = await fetch('/api/chats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
-          if (res.ok) {
-            const data = await res.json()
-            setSessionId(data.session.id)
-          }
-        } catch (err) {
-          console.error('Failed to create chat session:', err)
-        } finally {
-          setReady(true)
-        }
-      }
-      createSession()
+      // New chat — no session needed until first message is sent
+      setReady(true)
     }
   }, [initialSessionId])
 
@@ -505,7 +492,8 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [sessionId] = useState<string | null>(initialSessionId)
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId)
+  const sessionCreatingRef = useRef(false)
 
   const historyMessageCount = initialMessages.length
 
@@ -560,11 +548,37 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
   }, [isLoading, loadingStartTime, stop])
 
-  // Save message helper (fire-and-forget)
-  const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string) => {
-    if (!sessionId || !content.trim()) return
+  // Lazily create a session if one doesn't exist yet, returns the session ID
+  const ensureSession = useCallback(async (): Promise<string | null> => {
+    if (sessionId) return sessionId
+    if (sessionCreatingRef.current) return null // already in progress
+    sessionCreatingRef.current = true
     try {
-      await fetch(`/api/chats/${sessionId}/messages`, {
+      const res = await fetch('/api/chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSessionId(data.session.id)
+        return data.session.id
+      }
+    } catch (err) {
+      console.error('Failed to create chat session:', err)
+    } finally {
+      sessionCreatingRef.current = false
+    }
+    return null
+  }, [sessionId])
+
+  // Save message helper — creates session on first call if needed
+  const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string) => {
+    if (!content.trim()) return
+    const sid = await ensureSession()
+    if (!sid) return
+    try {
+      await fetch(`/api/chats/${sid}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, content }),
@@ -572,7 +586,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     } catch (err) {
       console.error('Failed to save message:', err)
     }
-  }, [sessionId])
+  }, [ensureSession])
 
   // Save assistant message when streaming completes
   useEffect(() => {
