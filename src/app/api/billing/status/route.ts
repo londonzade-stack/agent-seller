@@ -12,18 +12,19 @@ export async function GET() {
 
     const { data: subscription } = await supabase
       .from('subscriptions')
-      .select('status, trial_end, current_period_end')
+      .select('status, trial_end, current_period_end, stripe_customer_id')
       .eq('user_id', user.id)
       .single()
 
     if (!subscription) {
-      return Response.json({ status: 'none', trialEnd: null, currentPeriodEnd: null })
+      return Response.json({ status: 'none', trialEnd: null, currentPeriodEnd: null, hasStripeCustomer: false })
     }
 
     return Response.json({
       status: subscription.status,
       trialEnd: subscription.trial_end,
       currentPeriodEnd: subscription.current_period_end,
+      hasStripeCustomer: !!subscription.stripe_customer_id,
     })
   } catch (error) {
     sanitizeError('Billing status error', error)

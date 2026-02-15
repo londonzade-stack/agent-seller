@@ -20,6 +20,7 @@ interface BillingStatus {
   status: string
   trialEnd: string | null
   currentPeriodEnd: string | null
+  hasStripeCustomer: boolean
 }
 
 interface BillingViewProps {
@@ -388,7 +389,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                   </Button>
                 )}
 
-                {(billing.status === 'active' || billing.status === 'past_due') && (
+                {(billing.status === 'active' || billing.status === 'past_due') && billing.hasStripeCustomer && (
                   <Button
                     onClick={handlePortal}
                     disabled={actionLoading}
