@@ -45,6 +45,7 @@ interface AgentChatProps {
   isEmailConnected: boolean
   initialSessionId?: string
   onOpenCommandPalette?: () => void
+  onSessionCreated?: (sessionId: string) => void
 }
 
 interface SavedMessage {
@@ -406,7 +407,7 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 const REQUEST_TIMEOUT = 120000
 
 // Wrapper that loads history / creates session before rendering the actual chat
-export function AgentChat({ user, isEmailConnected, initialSessionId, onOpenCommandPalette }: AgentChatProps) {
+export function AgentChat({ user, isEmailConnected, initialSessionId, onOpenCommandPalette, onSessionCreated }: AgentChatProps) {
   const [ready, setReady] = useState(false)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
@@ -475,6 +476,7 @@ export function AgentChat({ user, isEmailConnected, initialSessionId, onOpenComm
       sessionId={sessionId}
       initialMessages={initialMessages}
       onOpenCommandPalette={onOpenCommandPalette}
+      onSessionCreated={onSessionCreated}
     />
   )
 }
@@ -485,9 +487,10 @@ interface AgentChatInnerProps {
   sessionId: string | null
   initialMessages: UIMessage[]
   onOpenCommandPalette?: () => void
+  onSessionCreated?: (sessionId: string) => void
 }
 
-function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, onOpenCommandPalette }: AgentChatInnerProps) {
+function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, onOpenCommandPalette, onSessionCreated }: AgentChatInnerProps) {
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -565,6 +568,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       if (res.ok) {
         const data = await res.json()
         setSessionId(data.session.id)
+        onSessionCreated?.(data.session.id)
         return data.session.id
       }
     } catch (err) {
@@ -573,7 +577,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       sessionCreatingRef.current = false
     }
     return null
-  }, [sessionId])
+  }, [sessionId, onSessionCreated])
 
   // Save message helper — creates session on first call if needed
   const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string) => {
