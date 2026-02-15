@@ -243,30 +243,97 @@ interface ApprovalData {
   details: string | null
 }
 
+// Destructive action keywords that trigger the approval card
+const DESTRUCTIVE_PATTERNS = [
+  /should I (?:move|trash|delete|remove|archive|send|forward|reply)/i,
+  /want me to (?:move|trash|delete|remove|archive|send|forward|reply|proceed)/i,
+  /shall I (?:move|trash|delete|remove|archive|send|forward|reply|proceed)/i,
+  /would you like (?:me to |to )(?:move|trash|delete|remove|archive|send|forward|reply|proceed)/i,
+  /ready to (?:send|trash|delete|archive|move)/i,
+  /confirm.*(?:trash|delete|archive|send|move)/i,
+  /proceed with (?:trashing|deleting|archiving|sending|moving)/i,
+]
+
+// Detect the action type from the text
+function detectActionType(text: string): string {
+  const lower = text.toLowerCase()
+  if (lower.includes('trash') || lower.includes('delete') || lower.includes('remove')) return 'Trash emails'
+  if (lower.includes('archive')) return 'Archive emails'
+  if (lower.includes('send') || lower.includes('forward') || lower.includes('reply')) return 'Send email'
+  if (lower.includes('unsubscribe')) return 'Unsubscribe'
+  if (lower.includes('draft')) return 'Create draft'
+  if (lower.includes('spam')) return 'Report spam'
+  return 'Action'
+}
+
+// Extract details like email count from text
+function extractDetails(text: string): string | null {
+  const parts: string[] = []
+  // Match "N emails" pattern
+  const countMatch = text.match(/(\d+)\s*emails?/i)
+  if (countMatch) parts.push(`${countMatch[1]} emails`)
+  // Match "from X" pattern
+  const fromMatch = text.match(/from\s+([A-Za-z0-9._@\s]+?)(?:\.|,|\?|$)/i)
+  if (fromMatch) parts.push(`from ${fromMatch[1].trim()}`)
+  return parts.length > 0 ? parts.join(', ') : null
+}
+
 function parseApprovalBlock(text: string): { before: string; approval: ApprovalData; after: string } | null {
+  // First try: structured [APPROVAL_REQUIRED] block
   const startTag = '[APPROVAL_REQUIRED]'
   const endTag = '[/APPROVAL_REQUIRED]'
   const startIdx = text.indexOf(startTag)
   const endIdx = text.indexOf(endTag)
-  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return null
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    const before = text.slice(0, startIdx).trim()
+    const after = text.slice(endIdx + endTag.length).trim()
+    const block = text.slice(startIdx + startTag.length, endIdx).trim()
 
-  const before = text.slice(0, startIdx).trim()
-  const after = text.slice(endIdx + endTag.length).trim()
-  const block = text.slice(startIdx + startTag.length, endIdx).trim()
+    let action = ''
+    let description = ''
+    let details: string | null = null
 
-  let action = ''
-  let description = ''
-  let details: string | null = null
+    for (const line of block.split('\n')) {
+      const trimmed = line.trim()
+      if (trimmed.startsWith('action:')) action = trimmed.slice(7).trim()
+      else if (trimmed.startsWith('description:')) description = trimmed.slice(12).trim()
+      else if (trimmed.startsWith('details:')) details = trimmed.slice(8).trim()
+    }
 
-  for (const line of block.split('\n')) {
-    const trimmed = line.trim()
-    if (trimmed.startsWith('action:')) action = trimmed.slice(7).trim()
-    else if (trimmed.startsWith('description:')) description = trimmed.slice(12).trim()
-    else if (trimmed.startsWith('details:')) details = trimmed.slice(8).trim()
+    if (action || description) {
+      return { before, approval: { action, description, details }, after }
+    }
   }
 
-  if (!action && !description) return null
-  return { before, approval: { action, description, details }, after }
+  // Fallback: detect plain-text approval questions
+  for (const pattern of DESTRUCTIVE_PATTERNS) {
+    if (pattern.test(text)) {
+      // Split at the question — everything before is context, the question itself is the description
+      const sentences = text.split(/(?<=[.!])\s+/)
+      const questionSentences: string[] = []
+      const contextSentences: string[] = []
+
+      for (const s of sentences) {
+        if (DESTRUCTIVE_PATTERNS.some(p => p.test(s)) || s.includes('?')) {
+          questionSentences.push(s)
+        } else {
+          contextSentences.push(s)
+        }
+      }
+
+      const description = questionSentences.join(' ').replace(/\?$/, '').trim() || text.split('?')[0].trim()
+      const action = detectActionType(text)
+      const details = extractDetails(text)
+
+      return {
+        before: contextSentences.join(' ').trim(),
+        approval: { action, description, details },
+        after: '',
+      }
+    }
+  }
+
+  return null
 }
 
 function ApprovalCard({ approval, onApprove, onDeny, responded }: {
