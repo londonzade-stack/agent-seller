@@ -21,6 +21,7 @@ import {
   BarChart3,
   Inbox,
 } from "lucide-react";
+import { ScrollReveal } from "@/components/scroll-reveal";
 
 export default function Home() {
   return (
@@ -143,26 +144,26 @@ export default function Home() {
       <section className="py-20 px-6 border-y border-zinc-200 dark:border-white/10">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
+            <ScrollReveal delay={0}>
               <div className="text-4xl md:text-5xl font-bold mb-2">30+</div>
               <div className="text-zinc-500 text-sm">AI-powered tools</div>
               <div className="text-zinc-400 dark:text-zinc-600 text-xs mt-1 uppercase tracking-wide">Built In</div>
-            </div>
-            <div>
+            </ScrollReveal>
+            <ScrollReveal delay={100}>
               <div className="text-4xl md:text-5xl font-bold mb-2">3x</div>
               <div className="text-zinc-500 text-sm">faster email workflows</div>
               <div className="text-zinc-400 dark:text-zinc-600 text-xs mt-1 uppercase tracking-wide">AI-Powered</div>
-            </div>
-            <div>
+            </ScrollReveal>
+            <ScrollReveal delay={200}>
               <div className="text-4xl md:text-5xl font-bold mb-2">100%</div>
               <div className="text-zinc-500 text-sm">human review before send</div>
               <div className="text-zinc-400 dark:text-zinc-600 text-xs mt-1 uppercase tracking-wide">You Stay In Control</div>
-            </div>
-            <div>
+            </ScrollReveal>
+            <ScrollReveal delay={300}>
               <div className="text-4xl md:text-5xl font-bold mb-2">5min</div>
               <div className="text-zinc-500 text-sm">setup time</div>
               <div className="text-zinc-400 dark:text-zinc-600 text-xs mt-1 uppercase tracking-wide">Connect & Go</div>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -170,14 +171,17 @@ export default function Home() {
       {/* Comparison Section */}
       <section className="py-20 px-6">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-12">
-            <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">The Difference</p>
-            <h2 className="text-4xl md:text-5xl font-bold">AgentSeller vs the old way</h2>
-            <p className="text-zinc-500 mt-4 max-w-2xl mx-auto">
-              Stop switching between tabs. Let an AI agent handle your email workflow.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">The Difference</p>
+              <h2 className="text-4xl md:text-5xl font-bold">AgentSeller vs the old way</h2>
+              <p className="text-zinc-500 mt-4 max-w-2xl mx-auto">
+                Stop switching between tabs. Let an AI agent handle your email workflow.
+              </p>
+            </div>
+          </ScrollReveal>
 
+          <ScrollReveal delay={150}>
           <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 overflow-hidden">
             <div className="grid grid-cols-3 border-b border-zinc-200 dark:border-white/10">
               <div className="p-6 text-zinc-500 dark:text-zinc-400">Feature</div>
@@ -210,19 +214,22 @@ export default function Home() {
               </div>
             ))}
           </Card>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* Features Section */}
       <section id="features" className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">Platform Features</p>
-            <h2 className="text-4xl md:text-5xl font-bold">Everything you need to own your inbox</h2>
-            <p className="text-zinc-500 mt-4 max-w-2xl mx-auto">
-              A full dashboard with AI agent, contact pipeline, draft queue, and analytics.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">Platform Features</p>
+              <h2 className="text-4xl md:text-5xl font-bold">Everything you need to own your inbox</h2>
+              <p className="text-zinc-500 mt-4 max-w-2xl mx-auto">
+                A full dashboard with AI agent, contact pipeline, draft queue, and analytics.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -257,13 +264,15 @@ export default function Home() {
                 description: "Every AI-generated email goes through you first. Full control over what gets sent. No surprises."
               },
             ].map((feature, i) => (
-              <Card key={i} className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-zinc-500 text-sm">{feature.description}</p>
-              </Card>
+              <ScrollReveal key={i} delay={i * 80}>
+                <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 transition-colors h-full">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mb-4">
+                    <feature.icon className="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-zinc-500 text-sm">{feature.description}</p>
+                </Card>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -272,36 +281,44 @@ export default function Home() {
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">How It Works</p>
-            <h2 className="text-4xl md:text-5xl font-bold">Three steps to inbox zero</h2>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">How It Works</p>
+              <h2 className="text-4xl md:text-5xl font-bold">Three steps to inbox zero</h2>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
-                <Mail className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
+            <ScrollReveal delay={0}>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
+                  <Mail className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
+                </div>
+                <div className="text-zinc-400 dark:text-zinc-600 text-sm mb-2">Step 1</div>
+                <h3 className="text-xl font-semibold mb-2">Connect Your Email</h3>
+                <p className="text-zinc-500 text-sm">Link your Gmail account. AgentSeller securely connects and starts analyzing your inbox.</p>
               </div>
-              <div className="text-zinc-400 dark:text-zinc-600 text-sm mb-2">Step 1</div>
-              <h3 className="text-xl font-semibold mb-2">Connect Your Email</h3>
-              <p className="text-zinc-500 text-sm">Link your Gmail account. AgentSeller securely connects and starts analyzing your inbox.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
-                <Brain className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
+            </ScrollReveal>
+            <ScrollReveal delay={150}>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
+                  <Brain className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
+                </div>
+                <div className="text-zinc-400 dark:text-zinc-600 text-sm mb-2">Step 2</div>
+                <h3 className="text-xl font-semibold mb-2">AI Does The Work</h3>
+                <p className="text-zinc-500 text-sm">Ask your agent to search, draft, organize, or analyze. It handles the heavy lifting.</p>
               </div>
-              <div className="text-zinc-400 dark:text-zinc-600 text-sm mb-2">Step 2</div>
-              <h3 className="text-xl font-semibold mb-2">AI Does The Work</h3>
-              <p className="text-zinc-500 text-sm">Ask your agent to search, draft, organize, or analyze. It handles the heavy lifting.</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
-                <Send className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
+            </ScrollReveal>
+            <ScrollReveal delay={300}>
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex items-center justify-center mx-auto mb-6">
+                  <Send className="h-8 w-8 text-zinc-500 dark:text-zinc-400" />
+                </div>
+                <div className="text-zinc-400 dark:text-zinc-600 text-sm mb-2">Step 3</div>
+                <h3 className="text-xl font-semibold mb-2">Review & Send</h3>
+                <p className="text-zinc-500 text-sm">Every draft is presented for your review. Edit if needed, then send with confidence.</p>
               </div>
-              <div className="text-zinc-400 dark:text-zinc-600 text-sm mb-2">Step 3</div>
-              <h3 className="text-xl font-semibold mb-2">Review & Send</h3>
-              <p className="text-zinc-500 text-sm">Every draft is presented for your review. Edit if needed, then send with confidence.</p>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -309,6 +326,7 @@ export default function Home() {
       {/* Email Preview Demo */}
       <section className="py-20 px-6">
         <div className="mx-auto max-w-4xl">
+          <ScrollReveal>
           <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 overflow-hidden">
             <div className="border-b border-zinc-200 dark:border-white/10 p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -353,28 +371,31 @@ export default function Home() {
               </div>
             </div>
           </Card>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to take control of your inbox?
-          </h2>
-          <p className="text-zinc-500 mb-10 text-lg">
-            Join teams that are getting more done with less email busywork.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
-              <Link href="/auth/sign-up">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" asChild>
-              <Link href="/pricing">View Pricing</Link>
-            </Button>
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Ready to take control of your inbox?
+            </h2>
+            <p className="text-zinc-500 mb-10 text-lg">
+              Join teams that are getting more done with less email busywork.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
+                <Link href="/auth/sign-up">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+              <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" asChild>
+                <Link href="/pricing">View Pricing</Link>
+              </Button>
+            </div>
+            <p className="text-zinc-400 dark:text-zinc-600 text-sm mt-6">No credit card required. 14-day free trial.</p>
           </div>
-          <p className="text-zinc-400 dark:text-zinc-600 text-sm mt-6">No credit card required. 14-day free trial.</p>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* Footer */}

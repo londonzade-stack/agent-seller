@@ -32,6 +32,7 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
   const [drafts, setDrafts] = useState<Draft[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
 
   const fetchDrafts = async () => {
     if (!isEmailConnected) return
@@ -69,7 +70,16 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
         body: JSON.stringify({ draftId }),
       })
       if (!res.ok) throw new Error('Failed to send')
-      setDrafts(prev => prev.filter(d => d.id !== draftId))
+      // Trigger slide-out animation, then remove after transition
+      setDeletingIds(prev => new Set(prev).add(draftId))
+      setTimeout(() => {
+        setDrafts(prev => prev.filter(d => d.id !== draftId))
+        setDeletingIds(prev => {
+          const next = new Set(prev)
+          next.delete(draftId)
+          return next
+        })
+      }, 350)
     } catch {
       setError('Failed to send draft.')
     }
@@ -83,7 +93,16 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
         body: JSON.stringify({ draftId }),
       })
       if (!res.ok) throw new Error('Failed to delete')
-      setDrafts(prev => prev.filter(d => d.id !== draftId))
+      // Trigger slide-out animation, then remove after transition
+      setDeletingIds(prev => new Set(prev).add(draftId))
+      setTimeout(() => {
+        setDrafts(prev => prev.filter(d => d.id !== draftId))
+        setDeletingIds(prev => {
+          const next = new Set(prev)
+          next.delete(draftId)
+          return next
+        })
+      }, 350)
     } catch {
       setError('Failed to delete draft.')
     }
@@ -146,7 +165,15 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
         ) : (
           <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
             {drafts.map((draft) => (
-              <Card key={draft.id} className="p-0 overflow-hidden border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+              <Card
+                key={draft.id}
+                className={`p-0 overflow-hidden border-zinc-200 dark:border-white/10 bg-white dark:bg-black transition-all duration-300 ease-in-out ${
+                  deletingIds.has(draft.id)
+                    ? 'opacity-0 -translate-x-16 scale-[0.98] max-h-0 !my-0 !py-0 overflow-hidden'
+                    : 'opacity-100 translate-x-0 scale-100'
+                }`}
+                style={deletingIds.has(draft.id) ? { marginTop: 0, marginBottom: 0, maxHeight: 0, transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)' } : { maxHeight: '500px', transition: 'all 350ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+              >
                 <div className="border-b border-zinc-200 dark:border-white/10 p-3 sm:p-4 flex items-center justify-between">
                   <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <FileText className="h-4 w-4 text-zinc-400 shrink-0" />

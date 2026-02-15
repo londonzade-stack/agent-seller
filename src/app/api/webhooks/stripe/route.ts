@@ -34,6 +34,36 @@ export async function POST(req: Request) {
     const supabase = getAdminClient()
 
     switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object
+        const customerId =
+          typeof session.customer === 'string'
+            ? session.customer
+            : session.customer?.id
+
+        const subscriptionId =
+          typeof session.subscription === 'string'
+            ? session.subscription
+            : session.subscription?.id
+
+        if (customerId && subscriptionId) {
+          // Ensure the subscription row is linked even if subscription.created
+          // webhook arrives before the checkout route finishes upserting
+          const { error: checkoutError } = await supabase
+            .from('subscriptions')
+            .update({
+              stripe_subscription_id: subscriptionId,
+              status: 'active',
+            })
+            .eq('stripe_customer_id', customerId)
+          if (checkoutError) {
+            sanitizeError('Stripe webhook: failed to update on checkout.session.completed', checkoutError)
+            return new Response(JSON.stringify({ error: 'Database write failed' }), { status: 500 })
+          }
+        }
+        break
+      }
+
       case 'customer.subscription.created': {
         const subscription = event.data.object
         const customerId =

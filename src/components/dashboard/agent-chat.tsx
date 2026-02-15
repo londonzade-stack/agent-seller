@@ -240,7 +240,56 @@ function summarizeToolInput(toolName: string, input: Record<string, unknown>): s
   return null
 }
 
+function TipsSkeletonContent() {
+  return (
+    <div className="p-4 sm:p-5 space-y-5 sm:space-y-6 animate-pulse">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <div key={idx} className="rounded-xl bg-stone-100/80 dark:bg-zinc-800/30 border border-stone-200/50 dark:border-zinc-700/30 p-3 sm:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-7 w-7 rounded-lg bg-stone-200/80 dark:bg-zinc-700/50" />
+              <div className="h-4 w-24 rounded bg-stone-200/80 dark:bg-zinc-700/50" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 w-full rounded bg-stone-200/60 dark:bg-zinc-700/30" />
+              <div className="h-3 w-5/6 rounded bg-stone-200/60 dark:bg-zinc-700/30" />
+              <div className="h-3 w-4/6 rounded bg-stone-200/60 dark:bg-zinc-700/30" />
+              <div className="h-3 w-3/4 rounded bg-stone-200/60 dark:bg-zinc-700/30" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-stone-200/50 dark:border-zinc-800/50" />
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="h-4 w-4 rounded bg-stone-200/80 dark:bg-zinc-700/50" />
+          <div className="h-4 w-36 rounded bg-stone-200/80 dark:bg-zinc-700/50" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-lg bg-stone-100/80 dark:bg-zinc-800/30 border border-stone-200/50 dark:border-zinc-700/30 px-3 py-2.5">
+              <div className="h-4 w-3/4 rounded bg-stone-200/60 dark:bg-zinc-700/30 mb-1.5" />
+              <div className="h-3 w-full rounded bg-stone-200/40 dark:bg-zinc-700/20" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [showContent, setShowContent] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowContent(false)
+      const timer = setTimeout(() => setShowContent(true), 300)
+      return () => clearTimeout(timer)
+    }
+    setShowContent(false)
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const capabilities = [
@@ -293,46 +342,53 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="fixed inset-3 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[600px] max-h-[90vh] sm:max-h-[70vh] overflow-auto rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl">
+      <div className="fixed inset-3 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[600px] max-h-[90vh] sm:max-h-[70vh] overflow-auto rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl rounded-t-2xl">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-400" />
+            <div className="p-1 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+            </div>
             <h3 className="font-semibold text-base sm:text-lg">What I Can Do</h3>
-            <Badge variant="secondary" className="ml-1 sm:ml-2 bg-stone-100 dark:bg-zinc-800 text-stone-900 dark:text-white border-0 text-xs">33 abilities</Badge>
+            <span className="ml-1 sm:ml-2 inline-flex items-center rounded-full bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-stone-500 dark:text-zinc-400">33 abilities</span>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-stone-100 dark:hover:bg-zinc-800"><X className="h-4 w-4" /></Button>
         </div>
-        <div className="p-4 sm:p-5 space-y-5 sm:space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {capabilities.map((category, idx) => (
-              <div key={idx} className="rounded-xl bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 p-3 sm:p-4 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors">
-                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <div className="p-1.5 rounded-lg bg-stone-200 dark:bg-zinc-700"><category.icon className="h-4 w-4 text-stone-600 dark:text-zinc-300" /></div>
-                  <h4 className="font-medium text-sm">{category.title}</h4>
-                </div>
-                <ul className="space-y-1 sm:space-y-1.5">
-                  {category.items.map((item, i) => (
-                    <li key={i} className="text-xs text-stone-500 dark:text-zinc-400 flex items-start gap-1.5">
-                      <span className="text-stone-400 dark:text-zinc-500 mt-0.5">&#8226;</span><span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="border-t border-stone-200 dark:border-zinc-800" />
-          <div>
-            <div className="flex items-center gap-2 mb-3"><Lightbulb className="h-4 w-4 text-amber-400" /><h4 className="font-medium text-sm">Try saying things like:</h4></div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {examples.map((example, i) => (
-                <div key={i} className="rounded-lg bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 px-3 py-2.5 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors cursor-default">
-                  <p className="text-sm font-medium text-stone-900 dark:text-white">&ldquo;{example.text}&rdquo;</p>
-                  <p className="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">{example.desc}</p>
+
+        {!showContent ? (
+          <TipsSkeletonContent />
+        ) : (
+          <div className="p-4 sm:p-5 space-y-5 sm:space-y-6 animate-in fade-in duration-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {capabilities.map((category, idx) => (
+                <div key={idx} className="rounded-xl bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 p-3 sm:p-4 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors">
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                    <div className="p-1.5 rounded-lg bg-stone-200 dark:bg-zinc-700"><category.icon className="h-4 w-4 text-stone-600 dark:text-zinc-300" /></div>
+                    <h4 className="font-medium text-sm">{category.title}</h4>
+                  </div>
+                  <ul className="space-y-1 sm:space-y-1.5">
+                    {category.items.map((item, i) => (
+                      <li key={i} className="text-xs text-stone-500 dark:text-zinc-400 flex items-start gap-1.5">
+                        <span className="text-stone-400 dark:text-zinc-500 mt-0.5">&#8226;</span><span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
+            <div className="border-t border-stone-200 dark:border-zinc-800" />
+            <div>
+              <div className="flex items-center gap-2 mb-3"><Lightbulb className="h-4 w-4 text-amber-400" /><h4 className="font-medium text-sm">Try saying things like:</h4></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {examples.map((example, i) => (
+                  <div key={i} className="rounded-lg bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 px-3 py-2.5 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors cursor-default">
+                    <p className="text-sm font-medium text-stone-900 dark:text-white">&ldquo;{example.text}&rdquo;</p>
+                    <p className="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">{example.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   )
@@ -462,16 +518,15 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="relative">
-            <Badge
-              variant="outline"
-              className="cursor-pointer px-2 py-1 sm:px-3 sm:py-1.5 gap-1.5 sm:gap-2 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors border-stone-300 dark:border-zinc-700 bg-stone-50 dark:bg-zinc-800/50"
+            <button
+              className="inline-flex items-center cursor-pointer px-2.5 py-1.5 sm:px-3 sm:py-1.5 gap-1.5 sm:gap-2 rounded-lg text-stone-600 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 active:bg-stone-150 dark:active:bg-zinc-700 transition-all duration-150 border border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm hover:shadow"
               onClick={() => setShowTips(!showTips)}
             >
-              <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
+              <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
               <span className="text-xs font-medium hidden sm:inline">Tips & Commands</span>
               <span className="text-xs font-medium sm:hidden">Tips</span>
-              <ChevronDown className={`h-3 w-3 transition-transform ${showTips ? 'rotate-180' : ''}`} />
-            </Badge>
+              <ChevronDown className={`h-3 w-3 text-stone-400 dark:text-zinc-500 transition-transform duration-200 ${showTips ? 'rotate-180' : ''}`} />
+            </button>
             <TipsDropdown isOpen={showTips} onClose={() => setShowTips(false)} />
           </div>
           {!isEmailConnected && (
