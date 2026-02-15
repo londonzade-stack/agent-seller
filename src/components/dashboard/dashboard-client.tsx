@@ -24,6 +24,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [isEmailConnected, setIsEmailConnected] = useState(false)
   const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [chatSessionId, setChatSessionId] = useState<string | undefined>(undefined)
   const [billingStatus, setBillingStatus] = useState<string | null>(null)
   const [billingLoaded, setBillingLoaded] = useState(false)
 
@@ -39,6 +40,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const handleViewChange = useCallback((view: DashboardView) => {
     if (!hasValidBilling && billingLoaded && view !== 'billing') {
       return
+    }
+    // Clear session ID when navigating to agent via sidebar (starts new chat)
+    if (view === 'agent') {
+      setChatSessionId(undefined)
     }
     setActiveView(view)
   }, [hasValidBilling, billingLoaded])
@@ -124,8 +129,10 @@ export function DashboardClient({ user }: DashboardClientProps) {
         <main className="flex-1 flex flex-col min-h-0">
           {activeView === 'agent' && (
             <AgentChat
+              key={chatSessionId || 'new'}
               user={user}
               isEmailConnected={isEmailConnected}
+              initialSessionId={chatSessionId}
             />
           )}
           {activeView === 'email' && (
@@ -154,7 +161,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             />
           )}
           {activeView === 'chats' && (
-            <ChatsView onOpenChat={() => setActiveView('agent')} />
+            <ChatsView onOpenChat={(sid) => { setChatSessionId(sid); setActiveView('agent') }} />
           )}
           {activeView === 'billing' && (
             <BillingView onStatusChange={(status) => setBillingStatus(status)} />

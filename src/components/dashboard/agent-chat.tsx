@@ -43,6 +43,14 @@ import {
 interface AgentChatProps {
   user: User
   isEmailConnected: boolean
+  initialSessionId?: string
+}
+
+interface SavedMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
 }
 
 // Tool display names and icons
@@ -396,7 +404,7 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 
 const REQUEST_TIMEOUT = 120000
 
-export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
+export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentChatProps) {
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -404,23 +412,45 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
+  const [historyMessages, setHistoryMessages] = useState<SavedMessage[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(!!initialSessionId)
 
-  // Create chat session on mount
+  // Create new session OR load existing session on mount
   useEffect(() => {
-    const createSession = async () => {
-      try {
-        const res = await fetch('/api/chats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
-        if (res.ok) {
-          const data = await res.json()
-          setSessionId(data.session.id)
+    if (initialSessionId) {
+      // Load existing session messages
+      const loadHistory = async () => {
+        setLoadingHistory(true)
+        try {
+          const res = await fetch(`/api/chats/${initialSessionId}`)
+          if (res.ok) {
+            const data = await res.json()
+            setHistoryMessages(data.messages || [])
+          }
+        } catch (err) {
+          console.error('Failed to load chat history:', err)
+        } finally {
+          setLoadingHistory(false)
         }
-      } catch (err) {
-        console.error('Failed to create chat session:', err)
       }
+      loadHistory()
+    } else {
+      // Create new session
+      const createSession = async () => {
+        try {
+          const res = await fetch('/api/chats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+          if (res.ok) {
+            const data = await res.json()
+            setSessionId(data.session.id)
+          }
+        } catch (err) {
+          console.error('Failed to create chat session:', err)
+        }
+      }
+      createSession()
     }
-    createSession()
-  }, [])
+  }, [initialSessionId])
 
   const { messages, sendMessage, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
@@ -508,7 +538,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
     }
-  }, [messages, status])
+  }, [messages, status, historyMessages])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -591,7 +621,23 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
 
       {/* Messages area — Style A cream background */}
       <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
-        {messages.length === 0 ? (
+        {loadingHistory ? (
+          <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 animate-pulse">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className={`flex gap-2 sm:gap-4 ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                {i % 2 !== 0 && <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 shrink-0" />}
+                <div className={`rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${i % 2 === 0 ? 'bg-stone-300 dark:bg-zinc-700' : 'bg-stone-100 dark:bg-zinc-800'}`} style={{ width: `${50 + (i % 3) * 15}%`, maxWidth: '85%' }}>
+                  <div className="space-y-2">
+                    <div className="h-4 rounded bg-stone-200 dark:bg-zinc-700" style={{ width: '90%' }} />
+                    <div className="h-4 rounded bg-stone-200 dark:bg-zinc-700" style={{ width: '70%' }} />
+                    {i % 2 !== 0 && <div className="h-4 rounded bg-stone-200 dark:bg-zinc-700" style={{ width: '50%' }} />}
+                  </div>
+                </div>
+                {i % 2 === 0 && <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 shrink-0" />}
+              </div>
+            ))}
+          </div>
+        ) : messages.length === 0 && historyMessages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
             <div className="mb-4 sm:mb-5 relative group cursor-pointer">
               <BlitzAvatar size="lg" />
@@ -627,6 +673,43 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
           </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+            {/* History messages from Supabase */}
+            {historyMessages.map((msg) => (
+              <div key={`history-${msg.id}`} className={`flex gap-2 sm:gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.role === 'assistant' && (
+                  <div className="shrink-0">
+                    <BlitzAvatar size="sm" />
+                  </div>
+                )}
+                <div className={`max-w-[90%] sm:max-w-[85%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
+                  msg.role === 'user'
+                    ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
+                    : 'bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none text-stone-700 dark:text-zinc-300'
+                }`}>
+                  {msg.role === 'user' ? (
+                    <span>{msg.content}</span>
+                  ) : (
+                    <MarkdownContent content={msg.content} />
+                  )}
+                </div>
+                {msg.role === 'user' && (
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                    <UserIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-stone-600 dark:text-zinc-400" />
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Separator between history and new messages */}
+            {historyMessages.length > 0 && messages.length > 0 && (
+              <div className="flex items-center gap-3 py-2">
+                <div className="flex-1 h-px bg-stone-200 dark:bg-zinc-800" />
+                <span className="text-xs text-stone-400 dark:text-zinc-600">New messages</span>
+                <div className="flex-1 h-px bg-stone-200 dark:bg-zinc-800" />
+              </div>
+            )}
+
+            {/* Live messages from current session */}
             {messages.map((message) => (
               <div key={message.id} className={`flex gap-2 sm:gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {message.role === 'assistant' && (

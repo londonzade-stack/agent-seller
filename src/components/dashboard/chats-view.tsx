@@ -20,7 +20,7 @@ interface ChatSession {
 }
 
 interface ChatsViewProps {
-  onOpenChat: () => void
+  onOpenChat: (sessionId?: string) => void
 }
 
 export function ChatsView({ onOpenChat }: ChatsViewProps) {
@@ -110,7 +110,7 @@ export function ChatsView({ onOpenChat }: ChatsViewProps) {
           </Button>
           <Button
             size="sm"
-            onClick={onOpenChat}
+            onClick={() => onOpenChat()}
             className="bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-stone-700 dark:hover:bg-zinc-300"
           >
             <Plus className="h-4 w-4 mr-1 sm:mr-2" />
@@ -164,7 +164,7 @@ export function ChatsView({ onOpenChat }: ChatsViewProps) {
               Start a conversation with BLITZ and your chat history will appear here.
             </p>
             <Button
-              onClick={onOpenChat}
+              onClick={() => onOpenChat()}
               className="bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-stone-700 dark:hover:bg-zinc-300"
             >
               <Zap className="h-4 w-4 mr-2" />
@@ -184,7 +184,7 @@ export function ChatsView({ onOpenChat }: ChatsViewProps) {
                     <Card
                       key={session.id}
                       className="p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer shadow-sm dark:shadow-none group"
-                      onClick={onOpenChat}
+                      onClick={() => onOpenChat(session.id)}
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
