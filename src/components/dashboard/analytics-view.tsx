@@ -368,18 +368,15 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                         tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '...' : v}
                       />
                       <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.75)',
-                          backdropFilter: 'blur(16px)',
-                          WebkitBackdropFilter: 'blur(16px)',
-                          border: '1px solid rgba(255, 255, 255, 0.3)',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                          padding: '8px 12px',
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload?.length) return null
+                          return (
+                            <div className="rounded-xl px-3 py-2 text-xs shadow-lg border border-white/30 dark:border-white/10" style={{ backgroundColor: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5)' }}>
+                              <p className="font-medium text-stone-700 mb-1">{String(label)}</p>
+                              <p className="text-stone-500">Emails: <span className="font-semibold text-stone-800">{payload[0].value}</span></p>
+                            </div>
+                          )
                         }}
-                        formatter={(value) => [value, 'Emails']}
-                        labelFormatter={(label) => String(label)}
                       />
                       <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                         {stats.topSenders.slice(0, 8).map((_, index) => (
@@ -426,15 +423,18 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                             ))}
                           </Pie>
                           <Tooltip
-                            contentStyle={{
-                              backgroundColor: 'rgba(255, 255, 255, 0.75)',
-                              backdropFilter: 'blur(16px)',
-                              WebkitBackdropFilter: 'blur(16px)',
-                              border: '1px solid rgba(255, 255, 255, 0.3)',
-                              borderRadius: '12px',
-                              fontSize: '12px',
-                              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-                              padding: '8px 12px',
+                            content={({ active, payload }) => {
+                              if (!active || !payload?.length) return null
+                              const data = payload[0]
+                              return (
+                                <div className="rounded-xl px-3 py-2 text-xs shadow-lg border border-white/30 dark:border-white/10" style={{ backgroundColor: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5)' }}>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: data.payload?.fill || '#888' }} />
+                                    <span className="font-medium text-stone-700">{data.name}</span>
+                                    <span className="font-semibold text-stone-800">{data.value}</span>
+                                  </div>
+                                </div>
+                              )
                             }}
                           />
                         </PieChart>
