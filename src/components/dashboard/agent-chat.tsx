@@ -441,7 +441,7 @@ export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentCha
   if (!ready) {
     return (
       <div className="flex-1 flex flex-col h-full">
-        <header className="border-b border-white/30 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white/40 dark:bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+        <header className="relative z-50 border-b border-white/30 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white/40 dark:bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <div className="min-w-0">
             <div className="h-6 w-40 rounded-full bg-stone-200/80 dark:bg-zinc-700/50" />
           </div>
@@ -665,7 +665,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header — liquid glass */}
-      <header className="border-b border-white/30 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white/40 dark:bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+      <header className="relative z-50 border-b border-white/30 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white/40 dark:bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
         <div className="min-w-0">
           <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 backdrop-blur-sm px-3 py-1 text-xs font-medium tracking-wide rounded-full">
             <Sparkles className="h-3 w-3 mr-1.5 text-amber-500" />
@@ -694,7 +694,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       </header>
 
       {/* Messages area — Style A cream background */}
-      <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
+      <div className="relative z-0 flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
             <div className="mb-4 sm:mb-5 relative group cursor-pointer">
