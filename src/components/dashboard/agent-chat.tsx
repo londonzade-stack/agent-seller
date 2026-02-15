@@ -110,7 +110,7 @@ const markdownComponents = {
     <strong className="font-semibold text-stone-900 dark:text-white" {...props}>{children}</strong>
   ),
   a: ({ children, ...props }: React.ComponentPropsWithoutRef<'a'>) => (
-    <a className="text-stone-900 dark:text-white underline underline-offset-2" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
+    <a {...props} className="text-stone-900 dark:text-white underline underline-offset-2 hover:text-amber-700 dark:hover:text-amber-300 transition-colors" target="_blank" rel="noopener noreferrer">{children}</a>
   ),
   ul: ({ children, ...props }: React.ComponentPropsWithoutRef<'ul'>) => (
     <ul className="my-1.5 ml-4 list-disc space-y-0.5" {...props}>{children}</ul>
