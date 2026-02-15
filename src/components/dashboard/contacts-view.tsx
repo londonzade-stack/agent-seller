@@ -275,7 +275,7 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
                         {emailsLoading ? (
                           <div className="space-y-2">
                             {[0, 1, 2].map((j) => (
-                              <Card key={j} className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 p-3 sm:p-4" style={{ animationDelay: `${j * 100}ms` }}>
+                              <Card key={j} className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 p-3 sm:p-4 animate-skeleton-drop" style={{ animationDelay: `${j * 80}ms`, animationFillMode: 'both' }}>
                                 <div className="flex items-start justify-between gap-2 mb-2">
                                   <div className="h-4 w-3/5 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
                                   <div className="h-3 w-16 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
@@ -298,10 +298,11 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
                             <span className="text-sm text-zinc-500 dark:text-zinc-400">No emails found from this contact.</span>
                           </div>
                         ) : (
-                          contactEmails.map((email) => (
+                          contactEmails.map((email, idx) => (
                             <Card
                               key={email.id}
-                              className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 p-3 sm:p-4"
+                              className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 p-3 sm:p-4 animate-skeleton-drop"
+                              style={{ animationDelay: `${idx * 80}ms`, animationFillMode: 'both' }}
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex items-start justify-between gap-2 mb-1">
