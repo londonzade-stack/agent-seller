@@ -9,7 +9,6 @@ import { DraftsView } from './drafts-view'
 import { ContactsView } from './contacts-view'
 import { AnalyticsView } from './analytics-view'
 import { BillingView } from './billing-view'
-import { ChatsView } from './chats-view'
 import { CommandPalette } from './command-palette'
 import { Brain, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -113,6 +112,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         user={user}
         activeView={activeView}
         onViewChange={handleViewChange}
+        onOpenChat={(sid) => { setChatSessionId(sid); setActiveView('agent') }}
         isEmailConnected={isEmailConnected}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
@@ -174,9 +174,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
             />
-          )}
-          {activeView === 'chats' && (
-            <ChatsView onOpenChat={(sid) => { setChatSessionId(sid); setActiveView('agent') }} />
           )}
           {activeView === 'billing' && (
             <BillingView onStatusChange={(status) => setBillingStatus(status)} />
