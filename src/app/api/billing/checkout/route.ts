@@ -1,6 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { getStripe } from '@/lib/stripe'
 import { sanitizeError } from '@/lib/logger'
+
+function getAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error('Missing Supabase environment variables for admin client')
+  }
+  return createSupabaseAdmin(url, serviceKey)
+}
 
 export async function POST() {
   try {
@@ -11,8 +21,11 @@ export async function POST() {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
     }
 
+    // Use admin client to bypass RLS for writes
+    const admin = getAdminClient()
+
     // Look up existing subscription row
-    const { data: subscription } = await supabase
+    const { data: subscription } = await admin
       .from('subscriptions')
       .select('stripe_customer_id')
       .eq('user_id', user.id)
@@ -29,7 +42,7 @@ export async function POST() {
       stripeCustomerId = customer.id
 
       // Store the customer ID in the subscriptions table
-      await supabase
+      await admin
         .from('subscriptions')
         .update({ stripe_customer_id: stripeCustomerId })
         .eq('user_id', user.id)
