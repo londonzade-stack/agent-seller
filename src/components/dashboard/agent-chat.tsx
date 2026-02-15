@@ -454,10 +454,9 @@ export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentCha
   if (!ready) {
     return (
       <div className="flex-1 flex flex-col h-full">
-        <header className="border-b border-stone-200 dark:border-zinc-800 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113]">
+        <header className="border-b border-white/30 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white/40 dark:bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-semibold text-stone-900 dark:text-white truncate tracking-tight">AI Email Agent</h1>
-            <p className="text-xs sm:text-sm text-stone-400 dark:text-zinc-500 hidden sm:block">Your powerful email assistant with 33 tools</p>
+            <div className="h-6 w-40 rounded-full bg-stone-200/80 dark:bg-zinc-700/50" />
           </div>
         </header>
         <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]">
@@ -651,11 +650,13 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      {/* Header — Style A warm tones */}
-      <header className="border-b border-stone-200 dark:border-zinc-800 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113]">
+      {/* Header — liquid glass */}
+      <header className="border-b border-white/30 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white/40 dark:bg-white/[0.04] backdrop-blur-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
         <div className="min-w-0">
-          <h1 className="text-lg sm:text-xl font-semibold text-stone-900 dark:text-white truncate tracking-tight">AI Email Agent</h1>
-          <p className="text-xs sm:text-sm text-stone-400 dark:text-zinc-500 hidden sm:block">Your powerful email assistant with 33 tools</p>
+          <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 backdrop-blur-sm px-3 py-1 text-xs font-medium tracking-wide rounded-full">
+            <Sparkles className="h-3 w-3 mr-1.5 text-amber-500" />
+            Email AI Intelligence
+          </Badge>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="relative">
