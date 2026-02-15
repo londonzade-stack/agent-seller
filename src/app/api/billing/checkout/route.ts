@@ -41,11 +41,19 @@ export async function POST() {
       })
       stripeCustomerId = customer.id
 
-      // Store the customer ID in the subscriptions table
+      // Upsert the customer ID — handles users who signed up before subscriptions table existed
       await admin
         .from('subscriptions')
-        .update({ stripe_customer_id: stripeCustomerId })
-        .eq('user_id', user.id)
+        .upsert(
+          {
+            user_id: user.id,
+            stripe_customer_id: stripeCustomerId,
+            status: 'trialing',
+            trial_start: new Date().toISOString(),
+            trial_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          { onConflict: 'user_id' }
+        )
     }
 
     // Determine the app URL for redirects

@@ -97,6 +97,8 @@ export function BillingView() {
         return 'Past Due'
       case 'paused':
         return 'Paused'
+      case 'none':
+        return 'No Subscription'
       default:
         return 'Unknown'
     }
@@ -109,6 +111,7 @@ export function BillingView() {
       case 'trialing':
         return 'text-blue-500'
       case 'canceled':
+      case 'none':
         return 'text-zinc-500'
       case 'past_due':
         return 'text-amber-500'
@@ -126,6 +129,7 @@ export function BillingView() {
       case 'trialing':
         return 'bg-blue-500/10'
       case 'canceled':
+      case 'none':
         return 'bg-zinc-500/10'
       case 'past_due':
         return 'bg-amber-500/10'
@@ -280,6 +284,36 @@ export function BillingView() {
               </Card>
             )}
 
+            {/* No Subscription Banner */}
+            {billing.status === 'none' && (
+              <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-500/10">
+                <div className="flex items-start gap-3">
+                  <CreditCard className="h-5 w-5 text-zinc-500 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                      Get started with AgentSeller Pro
+                    </p>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                      Subscribe to unlock full access to your AI-powered sales assistant.
+                    </p>
+                    <Button
+                      onClick={handleCheckout}
+                      disabled={actionLoading}
+                      className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                      size="sm"
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <CreditCard className="h-4 w-4 mr-2" />
+                      )}
+                      Subscribe Now
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Past Due / Canceled Banner */}
             {(billing.status === 'past_due' || billing.status === 'canceled' || billing.status === 'paused') && (
               <Card className="p-4 sm:p-6 border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10">
@@ -320,7 +354,7 @@ export function BillingView() {
             <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
               <h3 className="font-medium mb-4">Quick Actions</h3>
               <div className="space-y-3">
-                {(billing.status === 'trialing' || billing.status === 'canceled' || billing.status === 'paused') && (
+                {(billing.status === 'trialing' || billing.status === 'canceled' || billing.status === 'paused' || billing.status === 'none') && (
                   <Button
                     onClick={handleCheckout}
                     disabled={actionLoading}
