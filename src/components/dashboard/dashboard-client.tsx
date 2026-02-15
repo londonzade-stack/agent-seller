@@ -10,6 +10,7 @@ import { ContactsView } from './contacts-view'
 import { AnalyticsView } from './analytics-view'
 import { BillingView } from './billing-view'
 import { ChatsView } from './chats-view'
+import { CommandPalette } from './command-palette'
 import { Brain, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -27,6 +28,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [chatSessionId, setChatSessionId] = useState<string | undefined>(undefined)
   const [billingStatus, setBillingStatus] = useState<string | null>(null)
   const [billingLoaded, setBillingLoaded] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   // Whether the user has a valid subscription (active or trialing)
   const hasValidBilling = billingStatus === 'active' || billingStatus === 'trialing'
@@ -91,6 +93,18 @@ export function DashboardClient({ user }: DashboardClientProps) {
       }
     }
     checkGmailStatus()
+  }, [])
+
+  // Global Cmd+K / Ctrl+K shortcut to toggle command palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setCommandPaletteOpen(prev => !prev)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   return (
@@ -168,6 +182,14 @@ export function DashboardClient({ user }: DashboardClientProps) {
           )}
         </main>
       </div>
+
+      <CommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+        onNavigate={handleViewChange}
+        onOpenChat={(sid) => { setChatSessionId(sid); setActiveView('agent') }}
+        billingGated={billingLoaded && !hasValidBilling}
+      />
     </div>
   )
 }
