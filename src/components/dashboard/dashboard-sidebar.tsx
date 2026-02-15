@@ -8,7 +8,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import Link from 'next/link'
 import {
   Target,
-  Brain,
+  Zap,
   Mail,
   LogOut,
   CheckCircle2,
@@ -57,8 +57,8 @@ export function DashboardSidebar({
 
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
 
-  const navItems: { id: DashboardView; label: string; icon: typeof Brain; badge?: string }[] = [
-    { id: 'agent', label: 'AI Agent', icon: Brain },
+  const navItems: { id: DashboardView; label: string; icon: typeof Zap; badge?: string }[] = [
+    { id: 'agent', label: 'BLITZ', icon: Zap },
     { id: 'drafts', label: 'Drafts', icon: FileText },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },

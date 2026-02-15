@@ -795,6 +795,486 @@ const zeroPalette: Record<string, string> = {
   K: '#1a1a1a', R: '#EF4444', '.': '',
 }
 
+// ─── 31. BLITZ — Pixel Lightning Bug ──────────────────────────────────────────
+const blitzGrid = [
+  '........YYY........',
+  '.......YYYYY.......',
+  '......YYYYYYY......',
+  '......YWWYYWWY.....',
+  '......YWKYYWKY.....',
+  '......YYYYYYY......',
+  '.......YYYYY.......',
+  '......YYYYYYY......',
+  '.....YYYYYYYYY.....',
+  '....YY.YYYYY.YY....',
+  '...YY..YYYYY..YY...',
+  '..YY...YYYYY...YY..',
+  '.......YYYYY.......',
+  '......YY.YY.Y......',
+  '.....YYGGYYGGY.....',
+  '......GGG.GGG......',
+]
+const blitzPalette: Record<string, string> = {
+  Y: '#FBBF24', W: '#FFFFFF', K: '#1a1a1a', G: '#F59E0B',
+  '.': '',
+}
+
+// ─── 32. ATLAS — Pixel Bear ────────────────────────────────────────────────
+const atlasGrid = [
+  '..BBB.........BBB..',
+  '.BBBB.........BBBB.',
+  '.BBBBaaaaaaaBBBBa..',
+  '..aBBBBBBBBBBBBa...',
+  '..aBBBBBBBBBBBBa...',
+  '..aBBWWBBBBWWBBa...',
+  '..aBBWKBBBBWKBBa...',
+  '..aBBBBBBBBBBBBa...',
+  '..aBBBBBnBBBBBBa...',
+  '..aBBBBBBBBBBBBa...',
+  '...aBBBBBBBBBBa....',
+  '..aaBBBBBBBBBBaa...',
+  '.aaBBBBBBBBBBBBaa..',
+  '.aaBBBBBBBBBBBBaa..',
+  '..aaBBBBBBBBBBaa...',
+  '...aaBBBa.aBBBaa...',
+  '....aaaa...aaaa....',
+]
+const atlasPalette: Record<string, string> = {
+  B: '#92400E', a: '#78350F', W: '#FFFFFF', K: '#1a1a1a',
+  n: '#451A03', '.': '',
+}
+
+// ─── 33. FIZZ — Pixel Soda Can ────────────────────────────────────────────
+const fizzGrid = [
+  '.....aaaaaaaa......',
+  '....aDDDDDDDDa.....',
+  '...aDDDDDDDDDDa....',
+  '..aRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aRRWWRRRRWWRRa...',
+  '..aRRWKRRRRWKRRa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aWWWWWWWWWWWWa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRa...',
+  '..aaaaaaaaaaaaaaa...',
+]
+const fizzPalette: Record<string, string> = {
+  R: '#DC2626', a: '#991B1B', D: '#A1A1AA', W: '#FFFFFF',
+  K: '#1a1a1a', '.': '',
+}
+
+// ─── 34. MOCHI — Pixel Dumpling ───────────────────────────────────────────
+const mochiGrid = [
+  '.......aaaaa.......',
+  '....aaWWWWWWWaa....',
+  '...aWWWWWWWWWWWa...',
+  '..aWWWWWWWWWWWWWa..',
+  '..aWWWWWWWWWWWWWa..',
+  '..aWWKKWWWWWKKWWa..',
+  '..aWWKKWWWWWKKWWa..',
+  '..aWWWWWWWWWWWWWa..',
+  '..aWWWpWWWWWpWWWa..',
+  '..aWWWWWmmmWWWWWa..',
+  '...aWWWWWWWWWWWa...',
+  '....aWWWWWWWWWa....',
+  '.....aaWWWWWaa.....',
+  '.......aaaaa.......',
+]
+const mochiPalette: Record<string, string> = {
+  W: '#FEF3C7', a: '#D97706', K: '#1a1a1a', p: '#FBBF24',
+  m: '#F472B6', '.': '',
+}
+
+// ─── 35. COSMO — Pixel Alien ──────────────────────────────────────────────
+const cosmoGrid = [
+  '.....aaaaaaaaa.....',
+  '....aGGGGGGGGGa....',
+  '...aGGGGGGGGGGGa...',
+  '..aGGGGGGGGGGGGGa..',
+  '..aGGGGGGGGGGGGGa..',
+  '.aGGGWWWGGGWWWGGGa.',
+  '.aGGGWKWGGGWKWGGGa.',
+  '.aGGGWWWGGGWWWGGGa.',
+  '..aGGGGGGGGGGGGGa..',
+  '..aGGGGGGGGGGGGGa..',
+  '...aGGGGmmmGGGGa...',
+  '....aGGGGGGGGGa....',
+  '...aaGGGGGGGGGaa...',
+  '..aaGGGGGGGGGGGaa..',
+  '...aaGGGa.aGGGaa...',
+  '....aaaa...aaaa....',
+]
+const cosmoPalette: Record<string, string> = {
+  G: '#6EE7B7', a: '#059669', W: '#FFFFFF', K: '#1a1a1a',
+  m: '#1a1a1a', '.': '',
+}
+
+// ─── 36. JINX — Pixel Black Cat ───────────────────────────────────────────
+const jinxGrid = [
+  '..NN...........NN..',
+  '.NNN...........NNN.',
+  '.NNNNaaaaaaaaNNNNa.',
+  '..aNNNNNNNNNNNNNa..',
+  '..aNNNNNNNNNNNNNa..',
+  '..aNNGGNNNNNGGNNa..',
+  '..aNNGGNNNNNGGNNa..',
+  '..aNNNNNNrNNNNNNa..',
+  '..aNNNNNNNNNNNNNa..',
+  '...aNNNNNNNNNNNa...',
+  '..aaNNNNNNNNNNNaa..',
+  '.aaNNNNNNNNNNNNNaa.',
+  '.aaNNNNNNNNNNNNNaa.',
+  '..aaNNNNNNNNNNNaa..',
+  '...aNNNa...aNNNa.tt',
+  '...aaaa.....aaaa.tt.',
+  '................ttt.',
+]
+const jinxPalette: Record<string, string> = {
+  N: '#18181B', a: '#09090B', G: '#22C55E', r: '#F472B6',
+  t: '#18181B', '.': '',
+}
+
+// ─── 37. ORBIT — Pixel Satellite ──────────────────────────────────────────
+const orbitGrid = [
+  '...PP.........PP...',
+  '..PPPP.......PPPP..',
+  '..PPPP.......PPPP..',
+  '...PPPP.....PPPP...',
+  '....aaaaaaaaaaaa....',
+  '...aBBBBBBBBBBBa...',
+  '..aBBBBBBBBBBBBBa..',
+  '..aBBWWBBBBBWWBBa..',
+  '..aBBWKBBBBBWKBBa..',
+  '..aBBBBBBBBBBBBBa..',
+  '..aBBBBBBBBBBBBBa..',
+  '...aBBBBBBBBBBBa...',
+  '....aaBBBBBBBaa....',
+  '.....aaaaaaaaaa.....',
+]
+const orbitPalette: Record<string, string> = {
+  B: '#64748B', a: '#334155', P: '#38BDF8', W: '#FFFFFF',
+  K: '#1a1a1a', '.': '',
+}
+
+// ─── 38. QUILL — Pixel Porcupine Writer ───────────────────────────────────
+const quillGrid = [
+  '..aPaPaPaPaPa......',
+  '.aPaPaPaPaPaPa.....',
+  '.aPBBBBBBBBBaPa....',
+  'aPaBBBBBBBBBBaPa...',
+  'aPaBBWWBBBWWBaPa...',
+  'aPaBBWKBBBWKBaPa...',
+  'aPaBBBBBBBBBBaPa...',
+  '.aPBBBBBrBBBBaPa...',
+  '..aBBBBBBBBBBBa....',
+  '..aBBBBBBBBBBBa....',
+  '..aBBBBBBBBBBBa....',
+  '...aBBBBBBBBBa.....',
+  '...aBBBa.aBBBa.....',
+  '...aaaa...aaaa.YYYY.',
+  '...............YYaY.',
+  '...............YYYY.',
+]
+const quillPalette: Record<string, string> = {
+  B: '#A3744F', a: '#6B3A1F', P: '#8B4513', W: '#FFFFFF',
+  K: '#1a1a1a', r: '#FF6B6B', Y: '#FBBF24', '.': '',
+}
+
+// ─── 39. SHADE — Pixel Ninja ──────────────────────────────────────────────
+const shadeGrid = [
+  '......aaaaaaa......',
+  '.....aDDDDDDDa.....',
+  '....aDDDDDDDDDa....',
+  '...aDDDDDDDDDDDa...',
+  '..aaRRRRRRRRRRRaa..',
+  '..aRRRWWRRRWWRRRa..',
+  '..aRRRWWRRRWWRRRa..',
+  '..aaRRRRRRRRRRRaa..',
+  '...aDDDDDDDDDDDa...',
+  '...aDDDDDDDDDDDa...',
+  '..aaDDDDDDDDDDDaa..',
+  '.aaDDDDDDDDDDDDDaa.',
+  '..aaDDDDDDDDDDDaa..',
+  '...aaDDDa.aDDDaa...',
+  '....aaaa...aaaa....',
+]
+const shadePalette: Record<string, string> = {
+  D: '#27272A', a: '#18181B', R: '#DC2626', W: '#FFFFFF',
+  '.': '',
+}
+
+// ─── 40. CLOVER — Pixel Lucky Frog ────────────────────────────────────────
+const cloverGrid = [
+  '..GG...........GG..',
+  '.GGG...........GGG.',
+  '.GGGaaaaaaaaaaGGGa.',
+  '..aGGGGGGGGGGGGa...',
+  '..aGGGGGGGGGGGGa...',
+  '..aGGWWGGGGWWGGa...',
+  '..aGGWKGGGGWKGGa...',
+  '..aGGGGGGGGGGGGa...',
+  '..aGGGGGGGGGGGGa...',
+  '...aGGmmmmmGGGa....',
+  '...aGGGGGGGGGGa....',
+  '..aaGGGGGGGGGGaa...',
+  '.aaGGGGGGGGGGGGaa..',
+  '..aaGGGGGGGGGGaa...',
+  '...aaGGGa.aGGGaa...',
+  '....aaaa...aaaa....',
+]
+const cloverPalette: Record<string, string> = {
+  G: '#22C55E', a: '#15803D', W: '#FFFFFF', K: '#1a1a1a',
+  m: '#1a1a1a', '.': '',
+}
+
+// ─── 41. APEX — Pixel Eagle ──────────────────────────────────────────────
+const apexGrid = [
+  '.WW...............WW.',
+  '.WWW.............WWW.',
+  '..WWWaaaaaaaaWWWWa...',
+  '...aBBBBBBBBBBBBa....',
+  '...aBBBBBBBBBBBBa....',
+  '...aBBYYBBBBYYBBa....',
+  '...aBBYKBBBBYKBBa....',
+  '...aBBBBYYBBBBBBa....',
+  '...aBBBBYYBBBBBBa....',
+  '..EaBBBBBBBBBBBaE....',
+  '.EEaBBBBBBBBBBBaEE...',
+  '.EEaBBBBBBBBBBBaEE...',
+  '..EaBBBBBBBBBBBaE....',
+  '...aBBBBBBBBBBBa.....',
+  '....aYYYa.aYYYa......',
+  '...aYYYYa.aYYYYa.....',
+]
+const apexPalette: Record<string, string> = {
+  B: '#78350F', a: '#451A03', W: '#FFFFFF', K: '#1a1a1a',
+  Y: '#FBBF24', E: '#92400E', '.': '',
+}
+
+// ─── 42. MISTY — Pixel Rain Cloud ──────────────────────────────────────────
+const mistyGrid = [
+  '........aaaa........',
+  '......aaLLLLaa......',
+  '....aaLLLLLLLLaa....',
+  '...aLLLLLLLLLLLLa...',
+  '..aLLLLLLLLLLLLLLa..',
+  '..aLLLKKLLLLLKKLLa..',
+  '..aLLLKKLLLLLKKLLa..',
+  '..aLLLLLLLLLLLLLLa..',
+  '..aLLLLLLLmLLLLLLa..',
+  '...aLLLLLLLLLLLLa...',
+  '....aaLLLLLLLLaa....',
+  '.....aaaaaaaaaa.....',
+  '...B..B..B..B..B....',
+  '..B..B..B..B..B.....',
+  '.B..B..B..B..B......',
+]
+const mistyPalette: Record<string, string> = {
+  L: '#BFDBFE', a: '#60A5FA', K: '#1a1a1a', m: '#93C5FD',
+  B: '#3B82F6', '.': '',
+}
+
+// ─── 43. FANG — Pixel Bat ─────────────────────────────────────────────────
+const fangGrid = [
+  'PP.............PP...',
+  'PPP...........PPP...',
+  'PPPP.........PPPP...',
+  'PPPPP.......PPPPP...',
+  'PPPPPPaaaaaaPPPPP...',
+  '.PPPPPPPPPPPPPPPa...',
+  '..aPPPPPPPPPPPPa....',
+  '..aPPWWPPPPWWPPa....',
+  '..aPPWKPPPPWKPPa....',
+  '..aPPPPPPPPPPPPa....',
+  '...aPPPWPWPPPPa.....',
+  '...aPPPPPPPPPPa.....',
+  '....aPPPPPPPPa......',
+  '.....aPPaaPPa.......',
+  '.....aaaa.aaaa......',
+]
+const fangPalette: Record<string, string> = {
+  P: '#581C87', a: '#3B0764', W: '#FFFFFF', K: '#1a1a1a',
+  '.': '',
+}
+
+// ─── 44. SPROUT — Pixel Plant Pot ─────────────────────────────────────────
+const sproutGrid = [
+  '.........GG........',
+  '........GGGG.......',
+  '.......GG.GGG......',
+  '......GG...GG......',
+  '.......GGGGG.......',
+  '........GGG........',
+  '........GGG........',
+  '....aaaBBBBBaaa....',
+  '...aBBBBBBBBBBBa...',
+  '..aBBBBBBBBBBBBBa..',
+  '..aBBWWBBBBBWWBBa..',
+  '..aBBWKBBBBBWKBBa..',
+  '..aBBBBBBBBBBBBBa..',
+  '..aBBBBBmBBBBBBBa..',
+  '...aBBBBBBBBBBBa...',
+  '....aBBBBBBBBBa....',
+  '.....aaaaaaaaaa.....',
+]
+const sproutPalette: Record<string, string> = {
+  G: '#22C55E', B: '#D2691E', a: '#8B4513', W: '#FFFFFF',
+  K: '#1a1a1a', m: '#1a1a1a', '.': '',
+}
+
+// ─── 45. TURBO — Pixel Race Car ───────────────────────────────────────────
+const turboGrid = [
+  '......aaaaaaaa......',
+  '.....aRRRRRRRRa.....',
+  '....aRRRRRRRRRRa....',
+  '...aRRRRRRRRRRRRa...',
+  '..aRRRWWRRRRWWRRRa..',
+  '..aRRRWKRRRRWKRRRa..',
+  '..aRRRRRRRRRRRRRRa..',
+  '..aRRRRRRRRRRRRRRa..',
+  '...aRRRRRRRRRRRRa...',
+  '..aaWWRRRRRRRRWWaa..',
+  '.aaRRRRRRRRRRRRRRaa.',
+  '.aaRRYYYRRRRYYYRRaa.',
+  '..aaRRRRRRRRRRRRaa..',
+  '..DDaaRRRRRRRRaaDDD.',
+  '.DDDDD.aaaaaaa.DDDD.',
+  '.DDDDD.........DDDD.',
+]
+const turboPalette: Record<string, string> = {
+  R: '#EF4444', a: '#B91C1C', W: '#FFFFFF', K: '#1a1a1a',
+  Y: '#FBBF24', D: '#27272A', '.': '',
+}
+
+// ─── 46. NIMBUS — Pixel Weather Cat ───────────────────────────────────────
+const nimbusGrid = [
+  '..CC...........CC..',
+  '.CCC...........CCC.',
+  '.CCCCaaaaaaaaaCCCCa.',
+  '..aCCCCCCCCCCCCCa..',
+  '..aCCCCCCCCCCCCCa..',
+  '..aCCWWCCCCCWWCCa..',
+  '..aCCWKCCCCCWKCCa..',
+  '..aCCCCCCCCCCCCCa..',
+  '..aCCCCCCCCCCCCCa..',
+  '...aCCCCCCCCCCCa....',
+  '..aaCCYYCCYYCCCaa...',
+  '.aaCCCYYCCYYCCCCaa..',
+  '.aaCCCCCCCCCCCCCaa..',
+  '..aaCCCCCCCCCCCaa...',
+  '...aaCCCa.aCCCaa....',
+  '....aaaa...aaaa.....',
+]
+const nimbusPalette: Record<string, string> = {
+  C: '#94A3B8', a: '#475569', W: '#FFFFFF', K: '#1a1a1a',
+  Y: '#FBBF24', '.': '',
+}
+
+// ─── 47. MAPLE — Pixel Raccoon ────────────────────────────────────────────
+const mapleGrid = [
+  '..DD...........DD..',
+  '.DDD...........DDD.',
+  '.DDDDaaaaaaaaaDDDDa.',
+  '..aDDDDDDDDDDDDDa...',
+  '..aNNNNDDDDDNNNNa...',
+  '..aNWWNDDDDDNWWNa...',
+  '..aNWKNDDDDDNWKNa...',
+  '..aNNNNDDKDDNNNNa...',
+  '..aDDDDDDDDDDDDDa...',
+  '...aDDDDDDDDDDDa....',
+  '..aaDDDDDDDDDDDaa...',
+  '.aaDDDDDDDDDDDDDaa..',
+  '.aaDDDDDDDDDDDDDaa..',
+  '..aaDDDDDDDDDDDaa...',
+  '...aaDDDa.aDDDaa.tt.',
+  '....aaaa...aaaa.ttt.',
+  '...............ttDtt',
+  '................ttt.',
+]
+const maplePalette: Record<string, string> = {
+  D: '#A1A1AA', a: '#52525B', N: '#27272A', W: '#FFFFFF',
+  K: '#1a1a1a', t: '#A1A1AA', '.': '',
+}
+
+// ─── 48. ANCHOR — Pixel Whale ─────────────────────────────────────────────
+const anchorGrid = [
+  '.......aaaaaaaaa....',
+  '....aaBBBBBBBBBaa...',
+  '...aBBBBBBBBBBBBBa..',
+  '..aBBBBBBBBBBBBBBBa.',
+  '..aBBBBBBBBBBBBBBBa.',
+  '.aBBBWWBBBBBBBWWBBa.',
+  '.aBBBWKBBBBBBBWKBBa.',
+  '.aBBBBBBBBBBBBBBBBa.',
+  '.aBBBBBBBBBBBBBBBBa.',
+  '..aBBBBBBBBBBBBBBa..',
+  '..aWWWWWWWWWWWWWWa..',
+  '...aWWWWWWWWWWWWa...',
+  '....aaBBBBBBBBaa....',
+  '.....aaaBBBaaaa.....',
+  '........aaa.........',
+  '........YYa.........',
+]
+const anchorPalette: Record<string, string> = {
+  B: '#3B82F6', a: '#1E40AF', W: '#E0F2FE', K: '#1a1a1a',
+  Y: '#60A5FA', '.': '',
+}
+
+// ─── 49. PYRO — Pixel Dragon ──────────────────────────────────────────────
+const pyroGrid = [
+  '..RR...........RR..',
+  '.RRR...........RRR.',
+  '.RRRRaaaaaaaaRRRRa..',
+  '..aRRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRRa...',
+  '..aRRYYRRRRRYYRRa...',
+  '..aRRYKRRRRRYKRRa...',
+  '..aRRRRRRRRRRRRRa...',
+  '..aRRRRRRRRRRRRRa...',
+  '...aRRRRRRRRRRRa....',
+  '..aaRRRRRRRRRRRaa...',
+  '.aaRRRRYRYRRRRRRaa..',
+  '.aaRRRRYYYRRRRRRaa..',
+  '..aaRRRRRRRRRRRaa...',
+  '...aaRRRa.aRRRaa..tt',
+  '....aaaa...aaaa..ttt',
+  '.................tRt',
+  '..................tt',
+]
+const pyroPalette: Record<string, string> = {
+  R: '#DC2626', a: '#7F1D1D', Y: '#FBBF24', K: '#1a1a1a',
+  t: '#DC2626', W: '#FFFFFF', '.': '',
+}
+
+// ─── 50. LUMI — Pixel Firefly Jar ────────────────────────────────────────
+const lumiGrid = [
+  '......aaaaaaa.......',
+  '.....aDDDDDDDa......',
+  '....aaDDDDDDDaa.....',
+  '....aGGGGGGGGGa.....',
+  '...aGGGGGGGGGGGa....',
+  '...aGGYGGGYGGGGa....',
+  '...aGGGGGGGGYGGa....',
+  '...aGGGYGGGGGGGa....',
+  '...aGGGGGGGYGGGa....',
+  '...aGGGGGGGGGGGa....',
+  '...aGGYGGGGGGYGa....',
+  '...aGGGGGGGGGGGa....',
+  '....aGGGGGGGGGa.....',
+  '....aaDDDDDDDaa......',
+  '.....aDDDDDDDa.......',
+  '......aaaaaaa........',
+]
+const lumiPalette: Record<string, string> = {
+  G: '#D9F99D', a: '#65A30D', D: '#A1A1AA', Y: '#FBBF24',
+  '.': '',
+}
+
 // ─── Character data ──────────────────────────────────────────────────────────
 
 const CHARACTERS = [
@@ -1038,6 +1518,166 @@ const CHARACTERS = [
     grid: zeroGrid,
     palette: zeroPalette,
   },
+  {
+    name: 'BLITZ',
+    tagline: 'The Lightning Bug',
+    description: 'A glowing firefly crackling with electricity. Blitz zaps through your inbox at the speed of light and never burns out.',
+    color: '#FBBF24',
+    grid: blitzGrid,
+    palette: blitzPalette,
+  },
+  {
+    name: 'ATLAS',
+    tagline: 'The Mighty Bear',
+    description: 'A sturdy brown bear who carries the weight of your entire outreach on broad shoulders. Atlas never drops the ball.',
+    color: '#92400E',
+    grid: atlasGrid,
+    palette: atlasPalette,
+  },
+  {
+    name: 'FIZZ',
+    tagline: 'The Soda Pop',
+    description: 'A sentient soda can bursting with carbonated energy. Fizz adds sparkle to every message and keeps things refreshing.',
+    color: '#DC2626',
+    grid: fizzGrid,
+    palette: fizzPalette,
+  },
+  {
+    name: 'MOCHI',
+    tagline: 'The Sweet Dumpling',
+    description: 'A warm, squishy dumpling with rosy cheeks. Mochi softens even the hardest prospects with pure sweetness.',
+    color: '#D97706',
+    grid: mochiGrid,
+    palette: mochiPalette,
+  },
+  {
+    name: 'COSMO',
+    tagline: 'The Alien Friend',
+    description: 'A little green alien who traveled galaxies to help you send emails. Cosmo brings otherworldly intelligence to your outreach.',
+    color: '#6EE7B7',
+    grid: cosmoGrid,
+    palette: cosmoPalette,
+  },
+  {
+    name: 'JINX',
+    tagline: 'The Midnight Cat',
+    description: 'A sleek black cat with glowing green eyes. Jinx turns bad luck into good fortune and hexes your spam folder.',
+    color: '#22C55E',
+    grid: jinxGrid,
+    palette: jinxPalette,
+  },
+  {
+    name: 'ORBIT',
+    tagline: 'The Satellite',
+    description: 'A small satellite with antenna wings orbiting your inbox. Orbit picks up every signal and never loses connection.',
+    color: '#38BDF8',
+    grid: orbitGrid,
+    palette: orbitPalette,
+  },
+  {
+    name: 'QUILL',
+    tagline: 'The Prickly Poet',
+    description: 'A porcupine with a golden pen. Quill writes sharp, pointed emails that stick with every reader — literally.',
+    color: '#A3744F',
+    grid: quillGrid,
+    palette: quillPalette,
+  },
+  {
+    name: 'SHADE',
+    tagline: 'The Silent Blade',
+    description: 'A pixel ninja who moves through inboxes unseen. Shade delivers your message before anyone knows what hit them.',
+    color: '#DC2626',
+    grid: shadeGrid,
+    palette: shadePalette,
+  },
+  {
+    name: 'CLOVER',
+    tagline: 'The Lucky Frog',
+    description: 'A bright green frog who brings good luck to every campaign. Clover hops from lead to lead with a four-leaf charm.',
+    color: '#22C55E',
+    grid: cloverGrid,
+    palette: cloverPalette,
+  },
+  {
+    name: 'APEX',
+    tagline: 'The Sky Ruler',
+    description: 'A majestic eagle who soars above the competition. Apex spots opportunities from a mile away with razor-sharp vision.',
+    color: '#FBBF24',
+    grid: apexGrid,
+    palette: apexPalette,
+  },
+  {
+    name: 'MISTY',
+    tagline: 'The Rain Maker',
+    description: 'A gentle rain cloud who makes it pour leads. Misty brings a refreshing shower of opportunities to your pipeline.',
+    color: '#60A5FA',
+    grid: mistyGrid,
+    palette: mistyPalette,
+  },
+  {
+    name: 'FANG',
+    tagline: 'The Night Wing',
+    description: 'A purple bat who thrives after dark. Fang swoops through night-owl inboxes and delivers messages while the world sleeps.',
+    color: '#581C87',
+    grid: fangGrid,
+    palette: fangPalette,
+  },
+  {
+    name: 'SPROUT',
+    tagline: 'The Growing One',
+    description: 'A little plant growing from a terracotta pot. Sprout nurtures every lead with patience and watches deals bloom.',
+    color: '#22C55E',
+    grid: sproutGrid,
+    palette: sproutPalette,
+  },
+  {
+    name: 'TURBO',
+    tagline: 'The Speed Machine',
+    description: 'A pixel race car with flames on the side. Turbo accelerates your pipeline from zero to closed-won in record time.',
+    color: '#EF4444',
+    grid: turboGrid,
+    palette: turboPalette,
+  },
+  {
+    name: 'NIMBUS',
+    tagline: 'The Storm Cat',
+    description: 'A silver cat with lightning bolt markings. Nimbus controls the weather of your outreach — always sunny with a chance of deals.',
+    color: '#94A3B8',
+    grid: nimbusGrid,
+    palette: nimbusPalette,
+  },
+  {
+    name: 'MAPLE',
+    tagline: 'The Masked Bandit',
+    description: 'A clever raccoon with a striped tail. Maple steals the show with crafty emails and sneaks past every spam filter.',
+    color: '#A1A1AA',
+    grid: mapleGrid,
+    palette: maplePalette,
+  },
+  {
+    name: 'ANCHOR',
+    tagline: 'The Deep One',
+    description: 'A gentle whale who dives deep into data. Anchor surfaces with the best insights and makes a big splash every time.',
+    color: '#3B82F6',
+    grid: anchorGrid,
+    palette: anchorPalette,
+  },
+  {
+    name: 'PYRO',
+    tagline: 'The Fire Drake',
+    description: 'A fierce little dragon with a flame-tipped tail. Pyro breathes fire into cold outreach and scorches the competition.',
+    color: '#DC2626',
+    grid: pyroGrid,
+    palette: pyroPalette,
+  },
+  {
+    name: 'LUMI',
+    tagline: 'The Jar of Light',
+    description: 'A mason jar full of glowing fireflies. Lumi lights up dark inboxes and brings warmth to every cold email.',
+    color: '#FBBF24',
+    grid: lumiGrid,
+    palette: lumiPalette,
+  },
 ]
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -1054,7 +1694,7 @@ export default function MascotsPage() {
             MASCOT GALLERY
           </h1>
           <p className="mt-1 text-zinc-500 font-mono text-sm">
-            30 pixel art characters — click to preview
+            50 pixel art characters — click to preview
           </p>
         </div>
       </div>

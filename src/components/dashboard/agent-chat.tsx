@@ -9,11 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
+import { BlitzAvatar } from '@/components/blitz-avatar'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
   Send,
-  Brain,
   Sparkles,
   AlertCircle,
   Loader2,
@@ -486,12 +486,12 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
       <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-stone-200 dark:bg-zinc-800 flex items-center justify-center mb-5 sm:mb-6">
-              <Brain className="h-7 w-7 sm:h-8 sm:w-8 text-stone-500 dark:text-zinc-400" />
+            <div className="mb-4 sm:mb-5">
+              <BlitzAvatar size="lg" />
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">Hello, {userName}</h2>
             <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
-              {"I'm your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
+              {"I'm BLITZ, your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
             </p>
             <button onClick={() => setShowTips(true)} className="text-sm text-stone-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
               <Lightbulb className="h-3.5 w-3.5" />See everything I can do
@@ -512,8 +512,8 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             {messages.map((message) => (
               <div key={message.id} className={`flex gap-2 sm:gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {message.role === 'assistant' && (
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-800 dark:bg-zinc-200 flex items-center justify-center shrink-0">
-                    <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white dark:text-zinc-900" />
+                  <div className="shrink-0">
+                    <BlitzAvatar size="sm" />
                   </div>
                 )}
                 <div className={`max-w-[90%] sm:max-w-[85%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
@@ -546,8 +546,8 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
             {/* Show loading only if the last message doesn't already have a running tool visible */}
             {isLoading && !lastMsgHasRunningTool && (
               <div className="flex gap-2 sm:gap-4 justify-start">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-800 dark:bg-zinc-200 flex items-center justify-center shrink-0">
-                  <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white dark:text-zinc-900" />
+                <div className="shrink-0">
+                  <BlitzAvatar size="sm" />
                 </div>
                 <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm dark:shadow-none">
                   <div className="flex items-center gap-2 sm:gap-3">
