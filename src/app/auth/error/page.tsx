@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Target, AlertCircle } from 'lucide-react'
+import { Brain, AlertCircle } from 'lucide-react'
 
 export default async function AuthErrorPage({
   searchParams,
@@ -16,7 +16,7 @@ export default async function AuthErrorPage({
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-              <Target className="h-5 w-5" />
+              <Brain className="h-5 w-5" />
             </div>
             <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>

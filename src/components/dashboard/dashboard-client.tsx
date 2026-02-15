@@ -10,7 +10,7 @@ import { ContactsView } from './contacts-view'
 import { AnalyticsView } from './analytics-view'
 import { BillingView } from './billing-view'
 import { ChatsView } from './chats-view'
-import { Target, Menu } from 'lucide-react'
+import { Brain, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -118,7 +118,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           </Button>
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 dark:bg-zinc-800">
-              <Target className="h-4 w-4" />
+              <Brain className="h-4 w-4" />
             </div>
             <span className="text-base font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>

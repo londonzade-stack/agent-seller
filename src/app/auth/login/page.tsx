@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Target, ArrowLeft, Mail, Lock } from 'lucide-react'
+import { Brain, ArrowLeft, Mail, Lock } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -43,7 +43,7 @@ export default function LoginPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-              <Target className="h-5 w-5" />
+              <Brain className="h-5 w-5" />
             </div>
             <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>

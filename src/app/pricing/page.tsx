@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import {
-  Target,
   ArrowRight,
   CheckCircle2,
   Users,
@@ -52,7 +51,7 @@ export default function PricingPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
-              <Target className="h-5 w-5" />
+              <Brain className="h-5 w-5" />
             </div>
             <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>
@@ -302,7 +301,7 @@ export default function PricingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <Link href="/" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
-                <Target className="h-5 w-5" />
+                <Brain className="h-5 w-5" />
               </div>
               <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
             </Link>

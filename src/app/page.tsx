@@ -17,7 +17,6 @@ import {
   Sparkles,
   MessageSquare,
   FileText,
-  Target,
   BarChart3,
   Inbox,
 } from "lucide-react";
@@ -31,7 +30,7 @@ export default function Home() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
-              <Target className="h-5 w-5" />
+              <Brain className="h-5 w-5" />
             </div>
             <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </div>
@@ -187,7 +186,7 @@ export default function Home() {
               <div className="p-6 text-zinc-500 dark:text-zinc-400">Feature</div>
               <div className="p-6 bg-zinc-100 dark:bg-zinc-900/50 flex items-center gap-2">
                 <div className="w-6 h-6 rounded bg-zinc-200 dark:bg-white/10 flex items-center justify-center">
-                  <Target className="h-4 w-4" />
+                  <Brain className="h-4 w-4" />
                 </div>
                 Emailligence
               </div>
@@ -404,7 +403,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
-                <Target className="h-5 w-5" />
+                <Brain className="h-5 w-5" />
               </div>
               <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
             </div>
