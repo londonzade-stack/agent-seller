@@ -25,6 +25,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [chatSessionId, setChatSessionId] = useState<string | undefined>(undefined)
+  const [chatKey, setChatKey] = useState(0)
   const [billingStatus, setBillingStatus] = useState<string | null>(null)
   const [billingLoaded, setBillingLoaded] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
@@ -45,6 +46,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
     // Clear session ID when navigating to agent via sidebar (starts new chat)
     if (view === 'agent') {
       setChatSessionId(undefined)
+      setChatKey(k => k + 1)
     }
     setActiveView(view)
   }, [hasValidBilling, billingLoaded])
@@ -112,7 +114,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         user={user}
         activeView={activeView}
         onViewChange={handleViewChange}
-        onOpenChat={(sid) => { setChatSessionId(sid); setActiveView('agent') }}
+        onOpenChat={(sid) => { setChatSessionId(sid); if (!sid) setChatKey(k => k + 1); setActiveView('agent') }}
         isEmailConnected={isEmailConnected}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
@@ -143,7 +145,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         <main className="flex-1 flex flex-col min-h-0">
           {activeView === 'agent' && (
             <AgentChat
-              key={chatSessionId || 'new'}
+              key={chatSessionId || `new-${chatKey}`}
               user={user}
               isEmailConnected={isEmailConnected}
               initialSessionId={chatSessionId}
@@ -185,7 +187,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
         onNavigate={handleViewChange}
-        onOpenChat={(sid) => { setChatSessionId(sid); setActiveView('agent') }}
+        onOpenChat={(sid) => { setChatSessionId(sid); if (!sid) setChatKey(k => k + 1); setActiveView('agent') }}
         billingGated={billingLoaded && !hasValidBilling}
       />
     </div>
