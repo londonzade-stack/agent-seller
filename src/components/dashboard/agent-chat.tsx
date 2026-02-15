@@ -236,6 +236,123 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   )
 }
 
+// ─── Approval Card — renders the [APPROVAL_REQUIRED] block ──────────
+interface ApprovalData {
+  action: string
+  description: string
+  details: string | null
+}
+
+function parseApprovalBlock(text: string): { before: string; approval: ApprovalData; after: string } | null {
+  const startTag = '[APPROVAL_REQUIRED]'
+  const endTag = '[/APPROVAL_REQUIRED]'
+  const startIdx = text.indexOf(startTag)
+  const endIdx = text.indexOf(endTag)
+  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) return null
+
+  const before = text.slice(0, startIdx).trim()
+  const after = text.slice(endIdx + endTag.length).trim()
+  const block = text.slice(startIdx + startTag.length, endIdx).trim()
+
+  let action = ''
+  let description = ''
+  let details: string | null = null
+
+  for (const line of block.split('\n')) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith('action:')) action = trimmed.slice(7).trim()
+    else if (trimmed.startsWith('description:')) description = trimmed.slice(12).trim()
+    else if (trimmed.startsWith('details:')) details = trimmed.slice(8).trim()
+  }
+
+  if (!action && !description) return null
+  return { before, approval: { action, description, details }, after }
+}
+
+function ApprovalCard({ approval, onApprove, onDeny, responded }: {
+  approval: ApprovalData
+  onApprove: () => void
+  onDeny: () => void
+  responded: 'approved' | 'denied' | null
+}) {
+  const getActionIcon = (action: string) => {
+    const lower = action.toLowerCase()
+    if (lower.includes('trash') || lower.includes('delete')) return Trash2
+    if (lower.includes('archive')) return Archive
+    if (lower.includes('send')) return Send
+    if (lower.includes('draft')) return Mail
+    if (lower.includes('unsubscribe')) return Mail
+    if (lower.includes('spam')) return Shield
+    if (lower.includes('label')) return Tag
+    if (lower.includes('star')) return Star
+    return AlertCircle
+  }
+
+  const ActionIcon = getActionIcon(approval.action)
+  const detailItems = approval.details?.split(',').map(d => d.trim()).filter(Boolean) || []
+
+  return (
+    <div className="my-3 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+        <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+          <ActionIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        </div>
+        <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">Approval Required</span>
+      </div>
+
+      <div className="px-4 py-3 space-y-3">
+        <p className="text-sm text-stone-600 dark:text-zinc-300">{approval.description}</p>
+
+        {detailItems.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-stone-400 dark:text-zinc-500 mb-1.5">Details</p>
+            <div className="flex flex-wrap gap-1.5">
+              {detailItems.map((item, i) => (
+                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md bg-stone-100 dark:bg-zinc-800 text-xs text-stone-600 dark:text-zinc-400 border border-stone-200/60 dark:border-zinc-700/60">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="px-4 py-3 border-t border-stone-100 dark:border-zinc-800">
+        {responded ? (
+          <div className={`flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium ${
+            responded === 'approved'
+              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
+              : 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800/40'
+          }`}>
+            {responded === 'approved' ? (
+              <><CheckCircle2 className="h-4 w-4" /> Approved</>
+            ) : (
+              <><XCircle className="h-4 w-4" /> Denied</>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={onDeny}
+              className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800/40 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+              Deny
+            </button>
+            <button
+              onClick={onApprove}
+              className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors cursor-pointer"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              Approve
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function summarizeToolInput(toolName: string, input: Record<string, unknown>): string | null {
   if (input.query) return `"${String(input.query).slice(0, 40)}"`
   if (input.emailId) return `ID: ${String(input.emailId).slice(0, 12)}...`
@@ -639,6 +756,17 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     saveMessage('user', suggestion)
   }
 
+  // Track approval responses per message ID
+  const [approvalResponses, setApprovalResponses] = useState<Record<string, 'approved' | 'denied'>>({})
+
+  const handleApproval = (messageId: string, response: 'approved' | 'denied') => {
+    if (isLoading) return
+    setApprovalResponses(prev => ({ ...prev, [messageId]: response }))
+    const text = response === 'approved' ? 'Yes, approved. Proceed.' : 'No, denied. Do not proceed.'
+    sendMessage({ text })
+    saveMessage('user', text)
+  }
+
   const handleStop = () => { if (stop) stop(); setIsTimedOut(false); setLoadingStartTime(null) }
 
   const handleRetry = () => {
@@ -777,6 +905,23 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                       if (part.type === 'text') {
                         if (message.role === 'user') {
                           return <span key={index}>{part.text}</span>
+                        }
+                        // Check for approval block
+                        const approvalParsed = parseApprovalBlock(part.text)
+                        if (approvalParsed) {
+                          const isLastAssistant = message.id === [...messages].reverse().find(m => m.role === 'assistant')?.id
+                          return (
+                            <React.Fragment key={index}>
+                              {approvalParsed.before && <MarkdownContent content={approvalParsed.before} />}
+                              <ApprovalCard
+                                approval={approvalParsed.approval}
+                                onApprove={() => handleApproval(message.id, 'approved')}
+                                onDeny={() => handleApproval(message.id, 'denied')}
+                                responded={approvalResponses[message.id] || (isLastAssistant ? null : 'approved')}
+                              />
+                              {approvalParsed.after && <MarkdownContent content={approvalParsed.after} />}
+                            </React.Fragment>
+                          )
                         }
                         return <MarkdownContent key={index} content={part.text} />
                       }
