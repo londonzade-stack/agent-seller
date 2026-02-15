@@ -19,12 +19,32 @@ interface DashboardClientProps {
   user: User
 }
 
+// Read ?chat= param from URL on initial load
+function getInitialChatId(): string | undefined {
+  if (typeof window === 'undefined') return undefined
+  const params = new URLSearchParams(window.location.search)
+  return params.get('chat') || undefined
+}
+
+// Update the URL ?chat= param without a full navigation
+function updateChatUrl(sessionId: string | undefined) {
+  if (typeof window === 'undefined') return
+  const url = new URL(window.location.href)
+  if (sessionId) {
+    url.searchParams.set('chat', sessionId)
+  } else {
+    url.searchParams.delete('chat')
+  }
+  window.history.replaceState({}, '', url.toString())
+}
+
 export function DashboardClient({ user }: DashboardClientProps) {
-  const [activeView, setActiveView] = useState<DashboardView>('agent')
+  const initialChatId = getInitialChatId()
+  const [activeView, setActiveView] = useState<DashboardView>(initialChatId ? 'agent' : 'agent')
   const [isEmailConnected, setIsEmailConnected] = useState(false)
   const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  const [chatSessionId, setChatSessionId] = useState<string | undefined>(undefined)
+  const [chatSessionId, setChatSessionId] = useState<string | undefined>(initialChatId)
   const [chatKey, setChatKey] = useState(0)
   const [billingStatus, setBillingStatus] = useState<string | null>(null)
   const [billingLoaded, setBillingLoaded] = useState(false)
@@ -37,6 +57,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
     setIsEmailConnected(connected)
     setConnectedEmail(email || null)
   }, [])
+
+  // Sync URL whenever chatSessionId changes
+  useEffect(() => {
+    updateChatUrl(chatSessionId)
+  }, [chatSessionId])
 
   // Handle view changes — block non-billing views if billing isn't set up
   const handleViewChange = useCallback((view: DashboardView) => {
