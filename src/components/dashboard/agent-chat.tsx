@@ -605,10 +605,13 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     prevStatusRef.current = status
   }, [status, messages, saveMessage])
 
-  // Auto-scroll on new content
+  // Auto-scroll only when user is near the bottom (within 150px)
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
+    const el = scrollAreaRef.current
+    if (!el) return
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+    if (distanceFromBottom < 150) {
+      el.scrollTop = el.scrollHeight
     }
   }, [messages, status])
 
@@ -695,6 +698,8 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
 
       {/* Messages area — Style A cream background */}
       <div className="relative z-0 flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
+        {/* Glassy fade at top */}
+        <div className="pointer-events-none sticky top-0 left-0 right-0 h-8 -mt-4 sm:-mt-6 -mx-3 sm:-mx-6 z-10 bg-gradient-to-b from-[#faf8f5] via-[#faf8f5]/80 to-transparent dark:from-[#111113] dark:via-[#111113]/80 dark:to-transparent" />
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
             <div className="mb-4 sm:mb-5 relative group cursor-pointer">

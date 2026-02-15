@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -67,6 +67,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
   const [expandedSender, setExpandedSender] = useState<string | null>(null)
   const [senderEmails, setSenderEmails] = useState<Record<string, SenderEmail[]>>({})
   const [senderEmailsLoading, setSenderEmailsLoading] = useState<string | null>(null)
+  const expandedSenderRef = useRef<HTMLDivElement>(null)
 
   const fetchSenderEmails = async (senderEmail: string) => {
     if (expandedSender === senderEmail) {
@@ -74,6 +75,10 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
       return
     }
     setExpandedSender(senderEmail)
+    // Scroll expanded section into view after animation starts
+    setTimeout(() => {
+      expandedSenderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }, 350)
     if (senderEmails[senderEmail]) return
     setSenderEmailsLoading(senderEmail)
     try {
@@ -364,10 +369,14 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                       />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)',
+                          borderRadius: '12px',
                           fontSize: '12px',
+                          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                          padding: '8px 12px',
                         }}
                         formatter={(value) => [value, 'Emails']}
                         labelFormatter={(label) => String(label)}
@@ -418,10 +427,14 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                           </Pie>
                           <Tooltip
                             contentStyle={{
-                              backgroundColor: 'hsl(var(--card))',
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                              backdropFilter: 'blur(16px)',
+                              WebkitBackdropFilter: 'blur(16px)',
+                              border: '1px solid rgba(255, 255, 255, 0.3)',
+                              borderRadius: '12px',
                               fontSize: '12px',
+                              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                              padding: '8px 12px',
                             }}
                           />
                         </PieChart>
@@ -475,7 +488,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                           />
                         </button>
                         {isExpanded && (
-                          <div className="pl-4 sm:pl-12 pr-2 py-3 space-y-2">
+                          <div ref={expandedSenderRef} className="pl-4 sm:pl-12 pr-2 py-3 space-y-2">
                             {isLoading ? (
                               <div className="space-y-2">
                                 {[0, 1, 2].map((j) => (

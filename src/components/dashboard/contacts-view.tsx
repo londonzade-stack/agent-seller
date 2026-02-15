@@ -94,6 +94,10 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
     } else {
       setSelectedContact(email)
       fetchContactEmails(email)
+      // Scroll the expanded section into view after animation starts
+      setTimeout(() => {
+        expandRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 350)
     }
   }, [selectedContact, fetchContactEmails])
 
