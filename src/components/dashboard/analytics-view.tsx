@@ -479,7 +479,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                             {isLoading ? (
                               <div className="space-y-2">
                                 {[0, 1, 2].map((j) => (
-                                  <div key={j} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4 animate-skeleton-drop" style={{ animationDelay: `${j * 80}ms`, animationFillMode: 'both' }}>
+                                  <div key={j} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4 animate-email-drop" style={{ animationDelay: `${j * 120}ms` }}>
                                     <div className="flex items-start justify-between gap-2 mb-2">
                                       <div className="h-4 w-3/5 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
                                       <div className="h-3 w-16 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
@@ -495,8 +495,8 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                               emails.slice(0, 5).map((email, idx) => (
                                 <div
                                   key={email.id}
-                                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4 animate-skeleton-drop"
-                                  style={{ animationDelay: `${idx * 80}ms`, animationFillMode: 'both' }}
+                                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4 animate-email-drop"
+                                  style={{ animationDelay: `${idx * 120}ms` }}
                                 >
                                   <div className="flex items-start justify-between gap-2 mb-1">
                                     <p className="font-medium text-sm truncate">{email.subject}</p>
