@@ -147,6 +147,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               user={user}
               isEmailConnected={isEmailConnected}
               initialSessionId={chatSessionId}
+              onOpenCommandPalette={() => setCommandPaletteOpen(true)}
             />
           )}
           {activeView === 'email' && (

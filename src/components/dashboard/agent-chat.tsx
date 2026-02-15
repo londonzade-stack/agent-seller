@@ -44,6 +44,7 @@ interface AgentChatProps {
   user: User
   isEmailConnected: boolean
   initialSessionId?: string
+  onOpenCommandPalette?: () => void
 }
 
 interface SavedMessage {
@@ -405,7 +406,7 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 const REQUEST_TIMEOUT = 120000
 
 // Wrapper that loads history / creates session before rendering the actual chat
-export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentChatProps) {
+export function AgentChat({ user, isEmailConnected, initialSessionId, onOpenCommandPalette }: AgentChatProps) {
   const [ready, setReady] = useState(false)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
@@ -473,6 +474,7 @@ export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentCha
       isEmailConnected={isEmailConnected}
       sessionId={sessionId}
       initialMessages={initialMessages}
+      onOpenCommandPalette={onOpenCommandPalette}
     />
   )
 }
@@ -482,9 +484,10 @@ interface AgentChatInnerProps {
   isEmailConnected: boolean
   sessionId: string | null
   initialMessages: UIMessage[]
+  onOpenCommandPalette?: () => void
 }
 
-function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages }: AgentChatInnerProps) {
+function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, onOpenCommandPalette }: AgentChatInnerProps) {
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -676,6 +679,17 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
           </Badge>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {onOpenCommandPalette && (
+            <button
+              className="inline-flex items-center cursor-pointer px-2 py-1.5 sm:px-2.5 gap-1.5 rounded-lg text-stone-400 dark:text-zinc-500 hover:text-stone-600 dark:hover:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 active:bg-stone-150 dark:active:bg-zinc-700 transition-all duration-150 border border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm hover:shadow"
+              onClick={onOpenCommandPalette}
+            >
+              <Search className="h-3.5 w-3.5" />
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px] font-medium bg-stone-100 dark:bg-zinc-700/60 border border-stone-200/60 dark:border-zinc-600/40">
+                ⌘K
+              </kbd>
+            </button>
+          )}
           <div className="relative">
             <button
               className="inline-flex items-center cursor-pointer px-2.5 py-1.5 sm:px-3 sm:py-1.5 gap-1.5 sm:gap-2 rounded-lg text-stone-600 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 active:bg-stone-150 dark:active:bg-zinc-700 transition-all duration-150 border border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm hover:shadow"
