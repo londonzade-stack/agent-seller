@@ -886,6 +886,23 @@ export async function POST(req: Request) {
 
     const userId = user?.id || null
 
+    // Check billing status — block usage if no valid subscription
+    if (userId) {
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', userId)
+        .single()
+
+      const billingStatus = subscription?.status
+      if (billingStatus !== 'active' && billingStatus !== 'trialing') {
+        return new Response(
+          JSON.stringify({ error: 'Please set up billing to use the AI agent.' }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
     // Rate limit: 20 requests per minute per user (or per IP for unauthenticated)
     const rateLimitKey = userId || req.headers.get('x-forwarded-for') || 'anonymous'
     const rateLimitResult = rateLimit(rateLimitKey, 20, 60 * 1000)

@@ -18,6 +18,7 @@ import {
   BarChart3,
   CreditCard,
   X,
+  Lock,
 } from 'lucide-react'
 
 export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'billing'
@@ -29,6 +30,7 @@ interface DashboardSidebarProps {
   isEmailConnected: boolean
   mobileOpen?: boolean
   onMobileClose?: () => void
+  billingGated?: boolean
 }
 
 export function DashboardSidebar({
@@ -38,6 +40,7 @@ export function DashboardSidebar({
   isEmailConnected,
   mobileOpen,
   onMobileClose,
+  billingGated,
 }: DashboardSidebarProps) {
   const router = useRouter()
 
@@ -89,27 +92,36 @@ export function DashboardSidebar({
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => handleNavClick(item.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeView === item.id
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
-            }`}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-            {item.id === 'email' && (
-              isEmailConnected ? (
-                <CheckCircle2 className="h-3 w-3 ml-auto text-emerald-500" />
-              ) : (
-                <Circle className="h-3 w-3 ml-auto" />
-              )
-            )}
-          </button>
-        ))}
+        {navItems.map((item) => {
+          const isLocked = billingGated && item.id !== 'billing'
+          return (
+            <button
+              key={item.id}
+              onClick={() => handleNavClick(item.id)}
+              disabled={isLocked}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === item.id
+                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
+                  : isLocked
+                    ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              }`}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+              {isLocked && (
+                <Lock className="h-3 w-3 ml-auto" />
+              )}
+              {!isLocked && item.id === 'email' && (
+                isEmailConnected ? (
+                  <CheckCircle2 className="h-3 w-3 ml-auto text-emerald-500" />
+                ) : (
+                  <Circle className="h-3 w-3 ml-auto" />
+                )
+              )}
+            </button>
+          )
+        })}
       </nav>
 
       <div className="p-4 border-t border-zinc-200 dark:border-white/10 space-y-4">

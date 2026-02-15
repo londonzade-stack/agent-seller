@@ -12,6 +12,7 @@ import { BillingView } from './billing-view'
 import { Target, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 interface DashboardClientProps {
   user: User
@@ -22,11 +23,52 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [isEmailConnected, setIsEmailConnected] = useState(false)
   const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [billingStatus, setBillingStatus] = useState<string | null>(null)
+  const [billingLoaded, setBillingLoaded] = useState(false)
+
+  // Whether the user has a valid subscription (active or trialing)
+  const hasValidBilling = billingStatus === 'active' || billingStatus === 'trialing'
 
   const handleConnectionChange = useCallback((connected: boolean, email?: string) => {
     setIsEmailConnected(connected)
     setConnectedEmail(email || null)
   }, [])
+
+  // Handle view changes — block non-billing views if billing isn't set up
+  const handleViewChange = useCallback((view: DashboardView) => {
+    if (!hasValidBilling && billingLoaded && view !== 'billing') {
+      return
+    }
+    setActiveView(view)
+  }, [hasValidBilling, billingLoaded])
+
+  const searchParams = useSearchParams()
+
+  // Check billing status on mount (and after returning from Stripe checkout)
+  useEffect(() => {
+    const checkBilling = async () => {
+      try {
+        const res = await fetch('/api/billing/status')
+        if (res.ok) {
+          const data = await res.json()
+          setBillingStatus(data.status)
+          const isValid = data.status === 'active' || data.status === 'trialing'
+          // If returning from successful checkout, go to agent view
+          if (isValid && searchParams.get('billing') === 'success') {
+            setActiveView('agent')
+          } else if (!isValid) {
+            // If no valid billing, force to billing view
+            setActiveView('billing')
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check billing status:', err)
+      } finally {
+        setBillingLoaded(true)
+      }
+    }
+    checkBilling()
+  }, [searchParams])
 
   // Check Gmail connection status on dashboard mount
   useEffect(() => {
@@ -50,10 +92,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
       <DashboardSidebar
         user={user}
         activeView={activeView}
-        onViewChange={setActiveView}
+        onViewChange={handleViewChange}
         isEmailConnected={isEmailConnected}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
+        billingGated={billingLoaded && !hasValidBilling}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -110,7 +153,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             />
           )}
           {activeView === 'billing' && (
-            <BillingView />
+            <BillingView onStatusChange={(status) => setBillingStatus(status)} />
           )}
         </main>
       </div>

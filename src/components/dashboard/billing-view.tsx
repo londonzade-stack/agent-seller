@@ -19,7 +19,11 @@ interface BillingStatus {
   currentPeriodEnd: string | null
 }
 
-export function BillingView() {
+interface BillingViewProps {
+  onStatusChange?: (status: string) => void
+}
+
+export function BillingView({ onStatusChange }: BillingViewProps) {
   const [billing, setBilling] = useState<BillingStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -33,6 +37,7 @@ export function BillingView() {
       if (!res.ok) throw new Error('Failed to fetch billing status')
       const data = await res.json()
       setBilling(data)
+      onStatusChange?.(data.status)
     } catch {
       setError('Failed to load billing information. Try again.')
     } finally {
