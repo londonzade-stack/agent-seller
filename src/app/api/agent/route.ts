@@ -271,7 +271,7 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
 
     // ============ SEND & DRAFT ============
     sendEmail: tool({
-      description: 'Send an email immediately. Use this to send emails directly without creating a draft first.',
+      description: 'Send an email immediately. IMPORTANT: You MUST show the user the email details and get their approval FIRST using the [APPROVAL_REQUIRED] block, then call this tool with confirmed=true only after the user approves. If confirmed is false or missing, the tool will refuse to send.',
       inputSchema: z.object({
         to: z.string().describe('Recipient email address(es), comma-separated for multiple'),
         subject: z.string().describe('Email subject'),
@@ -279,8 +279,12 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
         cc: z.string().optional().describe('CC recipients'),
         bcc: z.string().optional().describe('BCC recipients'),
         replyToThreadId: z.string().optional().describe('Thread ID if replying to an existing thread'),
+        confirmed: z.boolean().describe('MUST be true — set this only AFTER the user has approved sending via the approval card. If false, the email will NOT be sent.'),
       }),
-      execute: async ({ to, subject, body, cc, bcc, replyToThreadId }) => {
+      execute: async ({ to, subject, body, cc, bcc, replyToThreadId, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before sending. Show the email details to the user and wait for them to click Approve, then call sendEmail again with confirmed=true.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }
@@ -373,11 +377,15 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
     }),
 
     sendDraft: tool({
-      description: 'Send an existing draft.',
+      description: 'Send an existing draft. IMPORTANT: You MUST get user approval FIRST using the [APPROVAL_REQUIRED] block before calling this with confirmed=true.',
       inputSchema: z.object({
         draftId: z.string().describe('Draft ID to send'),
+        confirmed: z.boolean().describe('MUST be true — set this only AFTER the user has approved sending. If false, the draft will NOT be sent.'),
       }),
-      execute: async ({ draftId }) => {
+      execute: async ({ draftId, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before sending a draft. Show the draft details and wait for approval, then call sendDraft again with confirmed=true.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }
@@ -502,11 +510,15 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
 
     // ============ ARCHIVE, TRASH, DELETE ============
     archiveEmails: tool({
-      description: 'Archive emails (remove from inbox but keep in All Mail). Supports bulk.',
+      description: 'Archive emails (remove from inbox but keep in All Mail). Supports bulk. IMPORTANT: You MUST get user approval FIRST using the [APPROVAL_REQUIRED] block before calling this with confirmed=true.',
       inputSchema: z.object({
         emailIds: z.array(z.string()).describe('Array of email IDs to archive'),
+        confirmed: z.boolean().describe('MUST be true — set this only AFTER the user has approved. If false, emails will NOT be archived.'),
       }),
-      execute: async ({ emailIds }) => {
+      execute: async ({ emailIds, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before archiving. Show what you plan to archive and wait for approval, then call archiveEmails again with confirmed=true.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }
@@ -521,11 +533,15 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
     }),
 
     trashEmails: tool({
-      description: 'Move emails to trash. Supports bulk operations.',
+      description: 'Move emails to trash. Supports bulk operations. IMPORTANT: You MUST get user approval FIRST using the [APPROVAL_REQUIRED] block before calling this with confirmed=true.',
       inputSchema: z.object({
         emailIds: z.array(z.string()).describe('Array of email IDs to trash'),
+        confirmed: z.boolean().describe('MUST be true — set this only AFTER the user has approved. If false, emails will NOT be trashed.'),
       }),
-      execute: async ({ emailIds }) => {
+      execute: async ({ emailIds, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before trashing. Show what you plan to trash and wait for approval, then call trashEmails again with confirmed=true.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }

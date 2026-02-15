@@ -114,7 +114,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         user={user}
         activeView={activeView}
         onViewChange={handleViewChange}
-        onOpenChat={(sid) => { setChatSessionId(sid); if (!sid) setChatKey(k => k + 1); setActiveView('agent') }}
+        onOpenChat={(sid) => { setChatSessionId(sid); setChatKey(k => k + 1); setActiveView('agent') }}
         isEmailConnected={isEmailConnected}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
@@ -146,7 +146,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         <main className="flex-1 flex flex-col min-h-0">
           {activeView === 'agent' && (
             <AgentChat
-              key={chatSessionId || `new-${chatKey}`}
+              key={`chat-${chatKey}`}
               user={user}
               isEmailConnected={isEmailConnected}
               initialSessionId={chatSessionId}
@@ -189,7 +189,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
         onNavigate={handleViewChange}
-        onOpenChat={(sid) => { setChatSessionId(sid); if (!sid) setChatKey(k => k + 1); setActiveView('agent') }}
+        onOpenChat={(sid) => { setChatSessionId(sid); setChatKey(k => k + 1); setActiveView('agent') }}
         billingGated={billingLoaded && !hasValidBilling}
       />
     </div>
