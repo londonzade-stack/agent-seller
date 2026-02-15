@@ -193,14 +193,15 @@ export function DashboardSidebar({
   // ─── Chats Panel (shown when on agent view) ────────────────────────
   const chatsPanel = (
     <>
-      {/* Header */}
+      {/* Header with back arrow */}
       <div className="p-4 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 dark:bg-zinc-800">
-            <Brain className="h-5 w-5" />
-          </div>
-          <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
-        </Link>
+        <button
+          onClick={() => setForceNav(true)}
+          className="flex items-center gap-1.5 text-sm font-medium text-stone-600 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
         <div className="flex items-center gap-1">
           <ThemeToggle />
           {onMobileClose && (
@@ -304,15 +305,8 @@ export function DashboardSidebar({
         )}
       </div>
 
-      {/* Footer with settings + user */}
+      {/* Footer */}
       <div className="p-4 border-t border-stone-200 dark:border-zinc-800 space-y-3">
-        <button
-          onClick={() => setForceNav(true)}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
-        >
-          <Settings className="h-4 w-4" />
-          Settings & More
-        </button>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-stone-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-medium">
             {userName.charAt(0).toUpperCase()}
