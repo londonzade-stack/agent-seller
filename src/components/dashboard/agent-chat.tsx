@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -404,6 +404,23 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+
+  // Create chat session on mount
+  useEffect(() => {
+    const createSession = async () => {
+      try {
+        const res = await fetch('/api/chats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+        if (res.ok) {
+          const data = await res.json()
+          setSessionId(data.session.id)
+        }
+      } catch (err) {
+        console.error('Failed to create chat session:', err)
+      }
+    }
+    createSession()
+  }, [])
 
   const { messages, sendMessage, status, error, stop } = useChat({
     transport: new DefaultChatTransport({
@@ -412,6 +429,7 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     }),
   })
 
+  const prevStatusRef = useRef(status)
   const isLoading = status === 'streaming' || status === 'submitted'
 
   // Figure out what the agent is actively doing right now (for the streaming indicator)
@@ -454,6 +472,37 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
   }, [isLoading, loadingStartTime, stop])
 
+  // Save message helper (fire-and-forget)
+  const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string) => {
+    if (!sessionId || !content.trim()) return
+    try {
+      await fetch(`/api/chats/${sessionId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, content }),
+      })
+    } catch (err) {
+      console.error('Failed to save message:', err)
+    }
+  }, [sessionId])
+
+  // Save assistant message when streaming completes
+  useEffect(() => {
+    if (prevStatusRef.current === 'streaming' && status === 'ready') {
+      const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
+      if (lastAssistant) {
+        const textContent = lastAssistant.parts
+          .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+          .map(p => p.text)
+          .join('\n')
+        if (textContent) {
+          saveMessage('assistant', textContent)
+        }
+      }
+    }
+    prevStatusRef.current = status
+  }, [status, messages, saveMessage])
+
   // Auto-scroll on new content
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -465,14 +514,17 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
     e.preventDefault()
     if (!input.trim() || isLoading) return
     setIsTimedOut(false)
-    sendMessage({ text: input })
+    const text = input
+    sendMessage({ text })
     setInput('')
+    saveMessage('user', text)
   }
 
   const handleSuggestionClick = (suggestion: string) => {
     if (isLoading) return
     setIsTimedOut(false)
     sendMessage({ text: suggestion })
+    saveMessage('user', suggestion)
   }
 
   const handleStop = () => { if (stop) stop(); setIsTimedOut(false); setLoadingStartTime(null) }

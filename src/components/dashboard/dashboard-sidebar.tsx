@@ -19,9 +19,10 @@ import {
   CreditCard,
   X,
   Lock,
+  MessageSquare,
 } from 'lucide-react'
 
-export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'billing'
+export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'billing' | 'chats'
 
 interface DashboardSidebarProps {
   user: User
@@ -59,6 +60,7 @@ export function DashboardSidebar({
 
   const navItems: { id: DashboardView; label: string; icon: typeof Zap; badge?: string }[] = [
     { id: 'agent', label: 'BLITZ', icon: Zap },
+    { id: 'chats', label: 'Recent Chats', icon: MessageSquare },
     { id: 'drafts', label: 'Drafts', icon: FileText },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },

@@ -115,6 +115,21 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@keyframes skeleton-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-skeleton-drop {
+  animation: skeleton-drop 0.4s ease-out;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

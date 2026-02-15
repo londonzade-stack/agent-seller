@@ -125,35 +125,37 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
 
       <div className="flex-1 overflow-auto p-3 sm:p-6">
         {loading && contacts.length === 0 ? (
-          <div className="max-w-4xl mx-auto animate-pulse">
+          <div className="max-w-4xl mx-auto">
             <div className="grid gap-2 sm:gap-3">
               {[
-                { nameW: 'w-32', emailW: 'w-44' },
-                { nameW: 'w-28', emailW: 'w-52' },
-                { nameW: 'w-36', emailW: 'w-48' },
-                { nameW: 'w-24', emailW: 'w-40' },
-                { nameW: 'w-40', emailW: 'w-36' },
-                { nameW: 'w-20', emailW: 'w-44' },
-                { nameW: 'w-32', emailW: 'w-52' },
-                { nameW: 'w-28', emailW: 'w-48' },
+                { nameW: 'w-32', emailW: 'w-44', delay: 0 },
+                { nameW: 'w-28', emailW: 'w-52', delay: 80 },
+                { nameW: 'w-36', emailW: 'w-48', delay: 160 },
+                { nameW: 'w-24', emailW: 'w-40', delay: 240 },
+                { nameW: 'w-40', emailW: 'w-36', delay: 320 },
+                { nameW: 'w-20', emailW: 'w-44', delay: 400 },
+                { nameW: 'w-32', emailW: 'w-52', delay: 480 },
+                { nameW: 'w-28', emailW: 'w-48', delay: 560 },
               ].map((row, i) => (
-                <Card key={i} className="p-3 sm:p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-200 dark:bg-zinc-800 shrink-0" />
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className={`h-4 ${row.nameW} rounded bg-stone-200 dark:bg-zinc-800`} />
-                      <div className={`h-3 ${row.emailW} rounded bg-stone-100 dark:bg-zinc-800/60`} />
+                <div key={i} className="animate-skeleton-drop" style={{ animationDelay: `${row.delay}ms`, animationFillMode: 'both' }}>
+                  <Card className="p-3 sm:p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-200 dark:bg-zinc-800 shrink-0 animate-pulse" />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className={`h-4 ${row.nameW} rounded bg-stone-200 dark:bg-zinc-800 animate-pulse`} />
+                        <div className={`h-3 ${row.emailW} rounded bg-stone-100 dark:bg-zinc-800/60 animate-pulse`} />
+                      </div>
+                      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                        <div className="h-3 w-6 rounded bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                        <div className="hidden sm:block h-3 w-16 rounded bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                      </div>
+                      <div className="hidden sm:flex gap-1 shrink-0">
+                        <div className="h-5 w-12 rounded-full bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                        <div className="h-5 w-16 rounded-full bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-                      <div className="h-3 w-6 rounded bg-stone-100 dark:bg-zinc-800/60" />
-                      <div className="hidden sm:block h-3 w-16 rounded bg-stone-100 dark:bg-zinc-800/60" />
-                    </div>
-                    <div className="hidden sm:flex gap-1 shrink-0">
-                      <div className="h-5 w-12 rounded-full bg-stone-100 dark:bg-zinc-800/60" />
-                      <div className="h-5 w-16 rounded-full bg-stone-100 dark:bg-zinc-800/60" />
-                    </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               ))}
             </div>
           </div>

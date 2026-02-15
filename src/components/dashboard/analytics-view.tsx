@@ -128,78 +128,88 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
 
       <div className="flex-1 overflow-auto p-3 sm:p-6">
         {loading && !stats ? (
-          <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 animate-pulse">
+          <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
             {/* Skeleton: Primary Stat Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="p-3 sm:p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800" />
-                    <div className="h-3 w-12 rounded bg-stone-200 dark:bg-zinc-800" />
-                  </div>
-                  <div className="h-7 w-16 rounded bg-stone-200 dark:bg-zinc-800 mb-2" />
-                  <div className="h-3 w-20 rounded bg-stone-100 dark:bg-zinc-800/60" />
-                </Card>
+              {[0, 80, 160, 240].map((delay, i) => (
+                <div key={i} className="animate-skeleton-drop" style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}>
+                  <Card className="p-3 sm:p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 animate-pulse" />
+                      <div className="h-3 w-12 rounded bg-stone-200 dark:bg-zinc-800 animate-pulse" />
+                    </div>
+                    <div className="h-7 w-16 rounded bg-stone-200 dark:bg-zinc-800 mb-2 animate-pulse" />
+                    <div className="h-3 w-20 rounded bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                  </Card>
+                </div>
               ))}
             </div>
             {/* Skeleton: Secondary Stat Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="p-3 sm:p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800" />
-                    <div className="h-3 w-14 rounded bg-stone-200 dark:bg-zinc-800" />
-                  </div>
-                  <div className="h-7 w-12 rounded bg-stone-200 dark:bg-zinc-800 mb-2" />
-                  <div className="h-3 w-16 rounded bg-stone-100 dark:bg-zinc-800/60" />
-                </Card>
+              {[320, 400, 480, 560].map((delay, i) => (
+                <div key={i} className="animate-skeleton-drop" style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}>
+                  <Card className="p-3 sm:p-4 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 animate-pulse" />
+                      <div className="h-3 w-14 rounded bg-stone-200 dark:bg-zinc-800 animate-pulse" />
+                    </div>
+                    <div className="h-7 w-12 rounded bg-stone-200 dark:bg-zinc-800 mb-2 animate-pulse" />
+                    <div className="h-3 w-16 rounded bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                  </Card>
+                </div>
               ))}
             </div>
             {/* Skeleton: Charts Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="animate-skeleton-drop" style={{ animationDelay: '640ms', animationFillMode: 'both' }}>
+                <Card className="p-4 sm:p-6 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
+                  <div className="h-4 w-24 rounded bg-stone-200 dark:bg-zinc-800 mb-4 animate-pulse" />
+                  <div className="space-y-3">
+                    {[100, 80, 60, 45, 70, 35].map((w, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="h-3 w-16 rounded bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                        <div className="h-5 rounded bg-stone-200 dark:bg-zinc-800 animate-pulse" style={{ width: `${w}%` }} />
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+              <div className="animate-skeleton-drop" style={{ animationDelay: '720ms', animationFillMode: 'both' }}>
+                <Card className="p-4 sm:p-6 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
+                  <div className="h-4 w-28 rounded bg-stone-200 dark:bg-zinc-800 mb-4 animate-pulse" />
+                  <div className="flex items-center justify-center h-[250px]">
+                    <div className="w-[180px] h-[180px] rounded-full border-[24px] border-stone-200 dark:border-zinc-800 animate-pulse" />
+                  </div>
+                  <div className="flex justify-center gap-4 mt-2">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-stone-200 dark:bg-zinc-800 animate-pulse" />
+                        <div className="h-3 w-8 rounded bg-stone-100 dark:bg-zinc-800/60 animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            </div>
+            {/* Skeleton: Top Senders Table */}
+            <div className="animate-skeleton-drop" style={{ animationDelay: '800ms', animationFillMode: 'both' }}>
               <Card className="p-4 sm:p-6 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
-                <div className="h-4 w-24 rounded bg-stone-200 dark:bg-zinc-800 mb-4" />
-                <div className="space-y-3">
-                  {[100, 80, 60, 45, 70, 35].map((w, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="h-3 w-16 rounded bg-stone-100 dark:bg-zinc-800/60" />
-                      <div className="h-5 rounded bg-stone-200 dark:bg-zinc-800" style={{ width: `${w}%` }} />
-                    </div>
-                  ))}
-                </div>
-              </Card>
-              <Card className="p-4 sm:p-6 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
-                <div className="h-4 w-28 rounded bg-stone-200 dark:bg-zinc-800 mb-4" />
-                <div className="flex items-center justify-center h-[250px]">
-                  <div className="w-[180px] h-[180px] rounded-full border-[24px] border-stone-200 dark:border-zinc-800" />
-                </div>
-                <div className="flex justify-center gap-4 mt-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-stone-200 dark:bg-zinc-800" />
-                      <div className="h-3 w-8 rounded bg-stone-100 dark:bg-zinc-800/60" />
+                <div className="h-4 w-28 rounded bg-stone-200 dark:bg-zinc-800 mb-4 animate-pulse" />
+                <div className="space-y-2">
+                  {[90, 75, 60, 50, 40].map((w, i) => (
+                    <div key={i} className="flex items-center gap-3 py-2 border-b border-stone-100 dark:border-zinc-800/60 last:border-0">
+                      <div className="w-8 h-8 rounded-full bg-stone-200 dark:bg-zinc-800 animate-pulse" />
+                      <div className="h-3 rounded bg-stone-200 dark:bg-zinc-800 animate-pulse" style={{ width: `${w + 30}px` }} />
+                      <div className="flex-1" />
+                      <div className="h-3 w-12 rounded bg-stone-100 dark:bg-zinc-800/60 hidden sm:block animate-pulse" />
+                      <div className="w-16 sm:w-24 h-2 bg-stone-100 dark:bg-zinc-800/60 rounded-full overflow-hidden animate-pulse">
+                        <div className="h-full bg-stone-200 dark:bg-zinc-800 rounded-full" style={{ width: `${w}%` }} />
+                      </div>
                     </div>
                   ))}
                 </div>
               </Card>
             </div>
-            {/* Skeleton: Top Senders Table */}
-            <Card className="p-4 sm:p-6 border-stone-200 dark:border-zinc-800 bg-white dark:bg-black">
-              <div className="h-4 w-28 rounded bg-stone-200 dark:bg-zinc-800 mb-4" />
-              <div className="space-y-2">
-                {[90, 75, 60, 50, 40].map((w, i) => (
-                  <div key={i} className="flex items-center gap-3 py-2 border-b border-stone-100 dark:border-zinc-800/60 last:border-0">
-                    <div className="w-8 h-8 rounded-full bg-stone-200 dark:bg-zinc-800" />
-                    <div className="h-3 rounded bg-stone-200 dark:bg-zinc-800" style={{ width: `${w + 30}px` }} />
-                    <div className="flex-1" />
-                    <div className="h-3 w-12 rounded bg-stone-100 dark:bg-zinc-800/60 hidden sm:block" />
-                    <div className="w-16 sm:w-24 h-2 bg-stone-100 dark:bg-zinc-800/60 rounded-full overflow-hidden">
-                      <div className="h-full bg-stone-200 dark:bg-zinc-800 rounded-full" style={{ width: `${w}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full">

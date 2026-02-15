@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ScrollReveal } from "@/components/scroll-reveal";
 import {
   Target,
   ArrowRight,
@@ -62,8 +63,12 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white">Log in</Button>
-            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200">Get Started</Button>
+            <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" asChild>
+              <Link href="/auth/login">Log in</Link>
+            </Button>
+            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
+              <Link href="/auth/sign-up">Get Started</Link>
+            </Button>
           </div>
         </div>
       </nav>
@@ -71,92 +76,98 @@ export default function PricingPage() {
       {/* Pricing Section */}
       <section className="pt-32 pb-20 px-6">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">Pricing</p>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Simple, transparent pricing
-            </h1>
-            <p className="text-zinc-500 max-w-2xl mx-auto text-lg">
-              Start with a simple per-user plan, or talk to us about custom pricing for your team.
-            </p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">Pricing</p>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                Simple, transparent pricing
+              </h1>
+              <p className="text-zinc-500 max-w-2xl mx-auto text-lg">
+                Start with a simple per-user plan, or talk to us about custom pricing for your team.
+              </p>
+            </div>
+          </ScrollReveal>
 
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {/* Individual Plan */}
-            <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8">
-              <div className="text-center mb-8">
-                <Badge variant="secondary" className="mb-4 bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10">
-                  <Users className="mr-2 h-3 w-3" />
-                  Per User
-                </Badge>
-                <div className="flex items-baseline justify-center gap-2 mb-2">
-                  <span className="text-5xl md:text-6xl font-bold">$10</span>
-                  <span className="text-zinc-500">/month</span>
-                </div>
-                <p className="text-zinc-500 text-sm">per user account</p>
-              </div>
-
-              <div className="space-y-4 mb-8">
-                {individualFeatures.map((feature, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
-                    <span className="text-sm">{feature}</span>
+            <ScrollReveal delay={0}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 h-full">
+                <div className="text-center mb-8">
+                  <Badge variant="secondary" className="mb-4 bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10">
+                    <Users className="mr-2 h-3 w-3" />
+                    Per User
+                  </Badge>
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="text-5xl md:text-6xl font-bold">$10</span>
+                    <span className="text-zinc-500">/month</span>
                   </div>
-                ))}
-              </div>
+                  <p className="text-zinc-500 text-sm">per user account</p>
+                </div>
 
-              <Link href="/auth/sign-up">
-                <Button className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" size="lg">
-                  Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
-                14-day free trial. No credit card required.
-              </p>
-              <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-2">
-                Already have an account?{" "}
-                <Link href="/dashboard" className="underline hover:text-zinc-600 dark:hover:text-zinc-400">
-                  Go to Billing in your dashboard
+                <div className="space-y-4 mb-8">
+                  {individualFeatures.map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                      <span className="text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link href="/auth/sign-up">
+                  <Button className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" size="lg">
+                    Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
                 </Link>
-              </p>
-            </Card>
+                <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
+                  14-day free trial. No credit card required.
+                </p>
+                <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-2">
+                  Already have an account?{" "}
+                  <Link href="/dashboard" className="underline hover:text-zinc-600 dark:hover:text-zinc-400">
+                    Go to Billing in your dashboard
+                  </Link>
+                </p>
+              </Card>
+            </ScrollReveal>
 
             {/* Business Plan */}
-            <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-zinc-300 dark:border-white/20 p-8 relative">
-              <div className="text-center mb-8">
-                <Badge variant="secondary" className="mb-4 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-900 dark:hover:bg-white">
-                  <Building className="mr-2 h-3 w-3" />
-                  Business
-                </Badge>
-                <div className="flex items-baseline justify-center gap-2 mb-2">
-                  <span className="text-5xl md:text-6xl font-bold">Custom</span>
-                </div>
-                <p className="text-zinc-500 text-sm">tailored to your team</p>
-              </div>
-
-              <p className="text-zinc-500 text-sm text-center mb-6">
-                Get a discounted per-user rate with volume pricing, plus dedicated support and custom integrations for your team.
-              </p>
-
-              <div className="space-y-4 mb-8">
-                {businessFeatures.map((feature, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <feature.icon className="h-5 w-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                    <span className="text-sm">{feature.text}</span>
+            <ScrollReveal delay={150}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-zinc-300 dark:border-white/20 p-8 relative h-full">
+                <div className="text-center mb-8">
+                  <Badge variant="secondary" className="mb-4 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-900 dark:hover:bg-white">
+                    <Building className="mr-2 h-3 w-3" />
+                    Business
+                  </Badge>
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="text-5xl md:text-6xl font-bold">Custom</span>
                   </div>
-                ))}
-              </div>
+                  <p className="text-zinc-500 text-sm">tailored to your team</p>
+                </div>
 
-              <a href="mailto:sales@agentseller.com">
-                <Button variant="outline" className="w-full border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" size="lg">
-                  Contact Sales <Mail className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-              <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
-                We&apos;ll get back to you within one business day.
-              </p>
-            </Card>
+                <p className="text-zinc-500 text-sm text-center mb-6">
+                  Get a discounted per-user rate with volume pricing, plus dedicated support and custom integrations for your team.
+                </p>
+
+                <div className="space-y-4 mb-8">
+                  {businessFeatures.map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <feature.icon className="h-5 w-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                      <span className="text-sm">{feature.text}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <a href="mailto:sales@agentseller.com">
+                  <Button variant="outline" className="w-full border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" size="lg">
+                    Contact Sales <Mail className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+                <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
+                  We&apos;ll get back to you within one business day.
+                </p>
+              </Card>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -164,10 +175,12 @@ export default function PricingPage() {
       {/* Features Grid */}
       <section className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything included</h2>
-            <p className="text-zinc-500">No feature gates. Every user gets full access.</p>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything included</h2>
+              <p className="text-zinc-500">No feature gates. Every user gets full access.</p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -202,13 +215,15 @@ export default function PricingPage() {
                 description: "Track all your email activity and get AI-powered insights."
               },
             ].map((feature, i) => (
-              <Card key={i} className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6">
-                <div className="w-10 h-10 rounded-lg bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mb-4">
-                  <feature.icon className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
-                </div>
-                <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-zinc-500 text-sm">{feature.description}</p>
-              </Card>
+              <ScrollReveal key={i} delay={i * 80}>
+                <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 h-full">
+                  <div className="w-10 h-10 rounded-lg bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mb-4">
+                    <feature.icon className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
+                  </div>
+                  <h3 className="font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-zinc-500 text-sm">{feature.description}</p>
+                </Card>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -217,9 +232,11 @@ export default function PricingPage() {
       {/* FAQ Section */}
       <section className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
         <div className="mx-auto max-w-3xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently asked questions</h2>
-          </div>
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently asked questions</h2>
+            </div>
+          </ScrollReveal>
 
           <div className="space-y-6">
             {[
@@ -244,10 +261,12 @@ export default function PricingPage() {
                 a: "Business plans offer discounted per-user rates based on team size, along with dedicated support, custom integrations, and advanced admin controls. Contact our sales team and we'll put together a plan tailored to your organization."
               },
             ].map((faq, i) => (
-              <Card key={i} className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6">
-                <h3 className="font-semibold mb-2">{faq.q}</h3>
-                <p className="text-zinc-500 text-sm">{faq.a}</p>
-              </Card>
+              <ScrollReveal key={i} delay={i * 80}>
+                <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6">
+                  <h3 className="font-semibold mb-2">{faq.q}</h3>
+                  <p className="text-zinc-500 text-sm">{faq.a}</p>
+                </Card>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -255,24 +274,26 @@ export default function PricingPage() {
 
       {/* CTA Section */}
       <section className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to get started?
-          </h2>
-          <p className="text-zinc-500 mb-10">
-            Join teams that are getting more done with less email busywork.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/sign-up">
-              <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8">
-                Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Ready to get started?
+            </h2>
+            <p className="text-zinc-500 mb-10">
+              Join teams that are getting more done with less email busywork.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/auth/sign-up">
+                <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8">
+                  Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10">
+                Schedule a Demo
               </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10">
-              Schedule a Demo
-            </Button>
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* Footer */}
