@@ -371,9 +371,9 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                         content={({ active, payload, label }) => {
                           if (!active || !payload?.length) return null
                           return (
-                            <div className="rounded-xl px-3 py-2 text-xs shadow-lg border border-white/30 dark:border-white/10" style={{ backgroundColor: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5)' }}>
-                              <p className="font-medium text-stone-700 mb-1">{String(label)}</p>
-                              <p className="text-stone-500">Emails: <span className="font-semibold text-stone-800">{payload[0].value}</span></p>
+                            <div className="glass-tooltip rounded-xl px-3 py-2 text-xs shadow-lg border border-white/30 dark:border-white/10">
+                              <p className="font-medium text-stone-700 dark:text-zinc-200 mb-1">{String(label)}</p>
+                              <p className="text-stone-500 dark:text-zinc-400">Emails: <span className="font-semibold text-stone-800 dark:text-white">{payload[0].value}</span></p>
                             </div>
                           )
                         }}
@@ -427,11 +427,11 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                               if (!active || !payload?.length) return null
                               const data = payload[0]
                               return (
-                                <div className="rounded-xl px-3 py-2 text-xs shadow-lg border border-white/30 dark:border-white/10" style={{ backgroundColor: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5)' }}>
+                                <div className="glass-tooltip rounded-xl px-3 py-2 text-xs shadow-lg border border-white/30 dark:border-white/10">
                                   <div className="flex items-center gap-2">
                                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: data.payload?.fill || '#888' }} />
-                                    <span className="font-medium text-stone-700">{data.name}</span>
-                                    <span className="font-semibold text-stone-800">{data.value}</span>
+                                    <span className="font-medium text-stone-700 dark:text-zinc-200">{data.name}</span>
+                                    <span className="font-semibold text-stone-800 dark:text-white">{data.value}</span>
                                   </div>
                                 </div>
                               )

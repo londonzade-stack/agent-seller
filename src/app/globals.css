@@ -150,6 +150,18 @@
   animation: email-card-drop 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+.glass-tooltip {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.dark .glass-tooltip {
+  background: rgba(30, 30, 34, 0.85);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
