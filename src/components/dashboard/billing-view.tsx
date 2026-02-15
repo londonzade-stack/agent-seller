@@ -14,6 +14,9 @@ import {
   ExternalLink,
   RefreshCw,
   LogOut,
+  Ticket,
+  Building2,
+  ArrowRight,
 } from 'lucide-react'
 
 interface BillingStatus {
@@ -33,6 +36,9 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [accessCode, setAccessCode] = useState('')
+  const [redeemLoading, setRedeemLoading] = useState(false)
+  const [redeemMessage, setRedeemMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -157,6 +163,31 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
         return 'bg-zinc-500/10'
       default:
         return 'bg-zinc-500/10'
+    }
+  }
+
+  const handleRedeem = async () => {
+    if (!accessCode.trim()) return
+    setRedeemLoading(true)
+    setRedeemMessage(null)
+    try {
+      const res = await fetch('/api/billing/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: accessCode.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setRedeemMessage({ type: 'error', text: data.error || 'Failed to redeem code' })
+        return
+      }
+      setRedeemMessage({ type: 'success', text: 'Access code redeemed! You now have full access.' })
+      setAccessCode('')
+      fetchBillingStatus()
+    } catch {
+      setRedeemMessage({ type: 'error', text: 'Something went wrong. Please try again.' })
+    } finally {
+      setRedeemLoading(false)
     }
   }
 
@@ -404,6 +435,73 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                     Manage Billing
                   </Button>
                 )}
+              </div>
+            </Card>
+
+            {/* Access Code */}
+            {(billing.status === 'none' || billing.status === 'canceled' || billing.status === 'paused') && (
+              <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
+                    <Ticket className="h-5 w-5 text-violet-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Have an access code?</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Enter your code to unlock free access</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={accessCode}
+                    onChange={e => setAccessCode(e.target.value.toUpperCase())}
+                    onKeyDown={e => e.key === 'Enter' && handleRedeem()}
+                    placeholder="Enter code"
+                    className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 text-sm outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 dark:focus:border-violet-400 transition-all font-mono tracking-wider uppercase placeholder:normal-case placeholder:tracking-normal placeholder:font-sans"
+                    disabled={redeemLoading}
+                  />
+                  <Button
+                    onClick={handleRedeem}
+                    disabled={redeemLoading || !accessCode.trim()}
+                    size="sm"
+                    className="bg-violet-600 hover:bg-violet-700 text-white dark:bg-violet-500 dark:hover:bg-violet-600 px-4"
+                  >
+                    {redeemLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      'Redeem'
+                    )}
+                  </Button>
+                </div>
+                {redeemMessage && (
+                  <p className={`text-xs mt-2 ${redeemMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {redeemMessage.text}
+                  </p>
+                )}
+              </Card>
+            )}
+
+            {/* Business Plan CTA */}
+            <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-gradient-to-br from-zinc-50 to-stone-50 dark:from-zinc-900/50 dark:to-zinc-800/30">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-stone-100 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
+                  <Building2 className="h-5 w-5 text-stone-600 dark:text-zinc-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-stone-900 dark:text-zinc-100">
+                    Looking for a business plan?
+                  </p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                    Get custom pricing, team seats, and dedicated support for your organization.
+                  </p>
+                  <a
+                    href="mailto:hello@emailligence.com?subject=Business Plan Inquiry"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-zinc-200 hover:text-stone-900 dark:hover:text-white mt-3 transition-colors"
+                  >
+                    Reach out for a free demo
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                </div>
               </div>
             </Card>
 
