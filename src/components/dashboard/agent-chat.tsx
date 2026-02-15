@@ -486,8 +486,19 @@ export function AgentChat({ user, isEmailConnected }: AgentChatProps) {
       <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center">
-            <div className="mb-4 sm:mb-5">
+            <div className="mb-4 sm:mb-5 relative group cursor-pointer">
               <BlitzAvatar size="lg" />
+              <div className="pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 absolute left-1/2 -translate-x-1/2 top-full mt-3 w-72 sm:w-80 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl dark:shadow-black/40 p-4 z-20">
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-stone-200 dark:border-b-zinc-700" />
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mt-[1px] w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-white dark:border-b-zinc-900" />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base font-bold tracking-widest font-mono text-amber-500">BLITZ</span>
+                  <span className="text-[10px] text-stone-400 dark:text-zinc-500 font-mono tracking-wide">The Lightning Bug</span>
+                </div>
+                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                  A glowing firefly crackling with electricity. Blitz zaps through your inbox at the speed of light and never burns out.
+                </p>
+              </div>
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">Hello, {userName}</h2>
             <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
