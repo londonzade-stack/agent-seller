@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms of Service - AgentSeller",
-  description: "AgentSeller terms of service. Read the terms governing your use of our platform.",
+  title: "Terms of Service - Emailligence",
+  description: "Emailligence terms of service. Read the terms governing your use of our platform.",
 };
 
 export default function TermsPage() {
@@ -18,7 +18,7 @@ export default function TermsPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
               <Target className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold">AgentSeller</span>
+            <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>
           <div className="hidden items-center gap-8 md:flex">
             <Link href="/#features" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Features</Link>
@@ -50,17 +50,17 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                By accessing or using AgentSeller (&quot;the Service&quot;), you agree to be bound by these
+                By accessing or using Emailligence (&quot;the Service&quot;), you agree to be bound by these
                 Terms of Service (&quot;Terms&quot;). If you do not agree to these Terms, you may not use
                 the Service. These Terms constitute a legally binding agreement between you and
-                AgentSeller.
+                Emailligence.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                AgentSeller is an AI-powered email management platform that connects to your Gmail
+                Emailligence is an AI-powered email management platform that connects to your Gmail
                 account to help you search, draft, organize, and analyze email. The Service includes
                 an AI agent capable of performing email actions on your behalf, a contact pipeline,
                 draft review queue, and inbox analytics dashboard.
@@ -70,7 +70,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">3. Account Registration</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                To use AgentSeller, you must create an account and provide accurate, complete
+                To use Emailligence, you must create an account and provide accurate, complete
                 information. You are responsible for maintaining the security of your account
                 credentials and for all activity that occurs under your account. You must notify
                 us immediately of any unauthorized use of your account.
@@ -80,14 +80,14 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">4. Gmail Connection and Authorization</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                AgentSeller requires you to connect your Gmail account via Google&apos;s OAuth
-                authorization flow. By connecting your Gmail, you authorize AgentSeller to access,
+                Emailligence requires you to connect your Gmail account via Google&apos;s OAuth
+                authorization flow. By connecting your Gmail, you authorize Emailligence to access,
                 read, modify, draft, send, label, archive, and trash emails in your account as
                 directed by you through the AI agent or dashboard interface.
               </p>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mt-3">
                 You may revoke this authorization at any time by disconnecting Gmail in the
-                AgentSeller dashboard or through your{" "}
+                Emailligence dashboard or through your{" "}
                 <a href="https://myaccount.google.com/permissions" className="underline hover:text-zinc-900 dark:hover:text-white" target="_blank" rel="noopener noreferrer">
                   Google Account permissions
                 </a>.
@@ -97,7 +97,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">5. User Responsibilities</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-3">
-                When using AgentSeller, you agree to:
+                When using Emailligence, you agree to:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-zinc-600 dark:text-zinc-400">
                 <li>Use the Service only for lawful purposes and in compliance with all applicable laws</li>
@@ -113,7 +113,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">6. Email Usage and CAN-SPAM Compliance</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                You are solely responsible for ensuring that any emails sent through AgentSeller
+                You are solely responsible for ensuring that any emails sent through Emailligence
                 comply with applicable laws, including the CAN-SPAM Act, GDPR, and any other relevant
                 email regulations. This includes but is not limited to:
               </p>
@@ -124,7 +124,7 @@ export default function TermsPage() {
                 <li>Not sending commercial email to recipients who have not consented to receive it</li>
               </ul>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mt-3">
-                AgentSeller provides AI-generated drafts as suggestions. You are responsible for
+                Emailligence provides AI-generated drafts as suggestions. You are responsible for
                 reviewing all content before it is sent. We are not responsible for the content of
                 emails you choose to send.
               </p>
@@ -139,7 +139,7 @@ export default function TermsPage() {
               <ul className="list-disc pl-6 space-y-2 text-zinc-600 dark:text-zinc-400 mt-3">
                 <li>AI-generated content should be reviewed before use</li>
                 <li>The AI agent may misinterpret instructions or context</li>
-                <li>AgentSeller is not liable for actions taken based on AI-generated recommendations</li>
+                <li>Emailligence is not liable for actions taken based on AI-generated recommendations</li>
                 <li>The AI agent requires explicit confirmation before sending emails</li>
               </ul>
             </section>
@@ -147,7 +147,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">8. Subscription and Payment</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                AgentSeller offers a 14-day free trial. After the trial period, continued use requires
+                Emailligence offers a 14-day free trial. After the trial period, continued use requires
                 a paid subscription at $10 per user per month. Pricing is subject to change with 30
                 days&apos; notice. Refunds are handled on a case-by-case basis.
               </p>
@@ -157,8 +157,8 @@ export default function TermsPage() {
               <h2 className="text-2xl font-semibold mb-4">9. Intellectual Property</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 The Service, including its design, code, features, and branding, is owned by
-                AgentSeller and protected by intellectual property laws. You retain ownership of
-                your email content and data. You grant AgentSeller a limited license to process
+                Emailligence and protected by intellectual property laws. You retain ownership of
+                your email content and data. You grant Emailligence a limited license to process
                 your data solely to provide the Service.
               </p>
             </section>
@@ -166,7 +166,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">10. Limitation of Liability</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                To the maximum extent permitted by law, AgentSeller and its officers, directors,
+                To the maximum extent permitted by law, Emailligence and its officers, directors,
                 employees, and agents shall not be liable for any indirect, incidental, special,
                 consequential, or punitive damages, including but not limited to loss of profits,
                 data, or business opportunities, arising out of or in connection with your use of
@@ -174,7 +174,7 @@ export default function TermsPage() {
               </p>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mt-3">
                 Our total liability for any claims arising under these Terms shall not exceed the
-                amount you paid to AgentSeller in the twelve (12) months preceding the claim.
+                amount you paid to Emailligence in the twelve (12) months preceding the claim.
               </p>
             </section>
 
@@ -240,7 +240,7 @@ export default function TermsPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
                 <Target className="h-5 w-5" />
               </div>
-              <span className="text-lg font-semibold">AgentSeller</span>
+              <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
             </Link>
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
@@ -248,7 +248,7 @@ export default function TermsPage() {
               <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
-              &copy; 2026 AgentSeller. All rights reserved.
+              &copy; 2026 Emailligence. All rights reserved.
             </div>
           </div>
         </div>

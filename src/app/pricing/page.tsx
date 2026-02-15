@@ -54,7 +54,7 @@ export default function PricingPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
               <Target className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold">AgentSeller</span>
+            <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>
           <div className="hidden items-center gap-8 md:flex">
             <Link href="/#features" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Features</Link>
@@ -242,7 +242,7 @@ export default function PricingPage() {
             {[
               {
                 q: "How does the free trial work?",
-                a: "You get 14 days of full access to AgentSeller with no credit card required. After the trial, you can choose to subscribe or your account will be paused."
+                a: "You get 14 days of full access to Emailligence with no credit card required. After the trial, you can choose to subscribe or your account will be paused."
               },
               {
                 q: "Can I add more users later?",
@@ -304,7 +304,7 @@ export default function PricingPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
                 <Target className="h-5 w-5" />
               </div>
-              <span className="text-lg font-semibold">AgentSeller</span>
+              <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
             </Link>
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
@@ -312,7 +312,7 @@ export default function PricingPage() {
               <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
-              &copy; 2026 AgentSeller. All rights reserved.
+              &copy; 2026 Emailligence. All rights reserved.
             </div>
           </div>
         </div>

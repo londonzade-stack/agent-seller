@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Privacy Policy - AgentSeller",
-  description: "AgentSeller privacy policy. Learn how we collect, use, and protect your data.",
+  title: "Privacy Policy - Emailligence",
+  description: "Emailligence privacy policy. Learn how we collect, use, and protect your data.",
 };
 
 export default function PrivacyPage() {
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
               <Target className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold">AgentSeller</span>
+            <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>
           <div className="hidden items-center gap-8 md:flex">
             <Link href="/#features" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Features</Link>
@@ -50,12 +50,12 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                AgentSeller (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) provides an AI-powered email management
+                Emailligence (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) provides an AI-powered email management
                 platform. This Privacy Policy explains how we collect, use, store, and protect your personal
                 information when you use our service at agentseller.com (the &quot;Service&quot;).
               </p>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mt-3">
-                By using AgentSeller, you agree to the collection and use of information as described in
+                By using Emailligence, you agree to the collection and use of information as described in
                 this policy. If you do not agree, please do not use the Service.
               </p>
             </section>
@@ -73,14 +73,14 @@ export default function PrivacyPage() {
               <h3 className="text-lg font-medium mb-2 mt-6">2.2 Gmail Connection Data</h3>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 When you connect your Gmail account, we store OAuth access tokens and refresh tokens
-                to maintain your connection. These tokens allow AgentSeller to read, draft, send, and
+                to maintain your connection. These tokens allow Emailligence to read, draft, send, and
                 manage emails on your behalf. We store your connected Gmail address for identification
                 purposes.
               </p>
 
               <h3 className="text-lg font-medium mb-2 mt-6">2.3 Email Data</h3>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                AgentSeller accesses your email content in real time to perform actions you request
+                Emailligence accesses your email content in real time to perform actions you request
                 (searching, reading, drafting, labeling, archiving, etc.). We do not permanently store
                 the content of your emails on our servers. Email data is processed transiently to fulfill
                 your requests and is not retained after the request is complete.
@@ -110,17 +110,17 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">4. Third-Party Services</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mb-4">
-                AgentSeller relies on the following third-party services to operate:
+                Emailligence relies on the following third-party services to operate:
               </p>
               <ul className="list-disc pl-6 space-y-3 text-zinc-600 dark:text-zinc-400">
                 <li>
                   <strong className="text-zinc-900 dark:text-white">Google (Gmail API)</strong> &mdash; We
                   use Google&apos;s Gmail API to access and manage your email. Your use of Gmail through
-                  AgentSeller is also subject to{" "}
+                  Emailligence is also subject to{" "}
                   <a href="https://policies.google.com/privacy" className="underline hover:text-zinc-900 dark:hover:text-white" target="_blank" rel="noopener noreferrer">
                     Google&apos;s Privacy Policy
                   </a>.
-                  AgentSeller&apos;s use of information received from Google APIs adheres to the{" "}
+                  Emailligence&apos;s use of information received from Google APIs adheres to the{" "}
                   <a href="https://developers.google.com/terms/api-services-user-data-policy" className="underline hover:text-zinc-900 dark:hover:text-white" target="_blank" rel="noopener noreferrer">
                     Google API Services User Data Policy
                   </a>, including the Limited Use requirements.
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 We retain your account information and Gmail connection tokens for as long as your
                 account is active. Email content is processed transiently and not stored permanently.
-                When you disconnect your Gmail account or delete your AgentSeller account, we delete
+                When you disconnect your Gmail account or delete your Emailligence account, we delete
                 your stored OAuth tokens and connection data.
               </p>
             </section>
@@ -191,11 +191,11 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <strong className="text-zinc-900 dark:text-white">Revocation</strong> &mdash; You can
-                  revoke AgentSeller&apos;s access to your Gmail at any time through your{" "}
+                  revoke Emailligence&apos;s access to your Gmail at any time through your{" "}
                   <a href="https://myaccount.google.com/permissions" className="underline hover:text-zinc-900 dark:hover:text-white" target="_blank" rel="noopener noreferrer">
                     Google Account permissions
                   </a>{" "}
-                  or by disconnecting Gmail in the AgentSeller dashboard.
+                  or by disconnecting Gmail in the Emailligence dashboard.
                 </li>
                 <li>
                   <strong className="text-zinc-900 dark:text-white">Portability</strong> &mdash; You can
@@ -207,7 +207,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">8. Cookies</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                AgentSeller uses essential cookies for authentication and session management. We do
+                Emailligence uses essential cookies for authentication and session management. We do
                 not use third-party tracking cookies or advertising cookies.
               </p>
             </section>
@@ -215,7 +215,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">9. Children&apos;s Privacy</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                AgentSeller is not intended for use by individuals under the age of 16. We do not
+                Emailligence is not intended for use by individuals under the age of 16. We do not
                 knowingly collect personal information from children. If we become aware that we have
                 collected data from a child under 16, we will take steps to delete that information.
               </p>
@@ -253,7 +253,7 @@ export default function PrivacyPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
                 <Target className="h-5 w-5" />
               </div>
-              <span className="text-lg font-semibold">AgentSeller</span>
+              <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
             </Link>
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
@@ -261,7 +261,7 @@ export default function PrivacyPage() {
               <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
-              &copy; 2026 AgentSeller. All rights reserved.
+              &copy; 2026 Emailligence. All rights reserved.
             </div>
           </div>
         </div>

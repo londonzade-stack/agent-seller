@@ -48,9 +48,6 @@ export async function POST() {
           {
             user_id: user.id,
             stripe_customer_id: stripeCustomerId,
-            status: 'trialing',
-            trial_start: new Date().toISOString(),
-            trial_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
           },
           { onConflict: 'user_id' }
         )
@@ -68,8 +65,8 @@ export async function POST() {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'AgentSeller Pro',
-              description: 'Full access to AgentSeller — AI-powered sales assistant',
+              name: 'Emailligence Pro',
+              description: 'Full access to Emailligence — AI-powered sales assistant',
             },
             unit_amount: 1000, // $10.00
             recurring: { interval: 'month' },
@@ -77,6 +74,9 @@ export async function POST() {
           quantity: 1,
         },
       ],
+      subscription_data: {
+        trial_period_days: 14,
+      },
       success_url: `${appUrl}/dashboard?billing=success`,
       cancel_url: `${appUrl}/dashboard?billing=canceled`,
     })

@@ -33,7 +33,7 @@ export default function Home() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
               <Target className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold">AgentSeller</span>
+            <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
             <a href="#features" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Features</a>
@@ -174,7 +174,7 @@ export default function Home() {
           <ScrollReveal>
             <div className="text-center mb-12">
               <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">The Difference</p>
-              <h2 className="text-4xl md:text-5xl font-bold">AgentSeller vs the old way</h2>
+              <h2 className="text-4xl md:text-5xl font-bold">Emailligence vs the old way</h2>
               <p className="text-zinc-500 mt-4 max-w-2xl mx-auto">
                 Stop switching between tabs. Let an AI agent handle your email workflow.
               </p>
@@ -189,7 +189,7 @@ export default function Home() {
                 <div className="w-6 h-6 rounded bg-zinc-200 dark:bg-white/10 flex items-center justify-center">
                   <Target className="h-4 w-4" />
                 </div>
-                AgentSeller
+                Emailligence
               </div>
               <div className="p-6 text-zinc-500 dark:text-zinc-400">Manual Workflow</div>
             </div>
@@ -296,7 +296,7 @@ export default function Home() {
                 </div>
                 <div className="text-zinc-400 dark:text-zinc-600 text-sm mb-2">Step 1</div>
                 <h3 className="text-xl font-semibold mb-2">Connect Your Email</h3>
-                <p className="text-zinc-500 text-sm">Link your Gmail account. AgentSeller securely connects and starts analyzing your inbox.</p>
+                <p className="text-zinc-500 text-sm">Link your Gmail account. Emailligence securely connects and starts analyzing your inbox.</p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={150}>
@@ -406,7 +406,7 @@ export default function Home() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-white/10">
                 <Target className="h-5 w-5" />
               </div>
-              <span className="text-lg font-semibold">AgentSeller</span>
+              <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
             </div>
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
@@ -414,7 +414,7 @@ export default function Home() {
               <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
-              &copy; 2026 AgentSeller. All rights reserved.
+              &copy; 2026 Emailligence. All rights reserved.
             </div>
           </div>
         </div>

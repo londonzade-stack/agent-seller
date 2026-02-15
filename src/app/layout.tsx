@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgentSeller - AI Email Agent for Teams",
+  title: "Emailligence - AI Email Agent for Teams",
   description: "Not just a chatbot, but an agent. Manage your inbox, auto-draft responses, track contacts, and get more done with AI.",
 };
 

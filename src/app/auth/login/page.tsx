@@ -45,7 +45,7 @@ export default function LoginPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
               <Target className="h-5 w-5" />
             </div>
-            <span className="text-lg font-semibold">AgentSeller</span>
+            <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>
           <Link href="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />

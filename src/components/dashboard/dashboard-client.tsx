@@ -120,7 +120,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 dark:bg-zinc-800">
               <Target className="h-4 w-4" />
             </div>
-            <span className="text-base font-semibold">AgentSeller</span>
+            <span className="text-base font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>
           {/* Spacer to center the logo */}
           <div className="w-9" />

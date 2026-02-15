@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
   stripe_customer_id TEXT,
   stripe_subscription_id TEXT,
-  status TEXT NOT NULL DEFAULT 'trialing'
-    CHECK (status IN ('trialing', 'active', 'canceled', 'past_due', 'paused')),
+  status TEXT NOT NULL DEFAULT 'none'
+    CHECK (status IN ('none', 'trialing', 'active', 'canceled', 'past_due', 'paused')),
   plan TEXT NOT NULL DEFAULT 'pro',
   trial_start TIMESTAMPTZ,
   trial_end TIMESTAMPTZ,
@@ -54,12 +54,10 @@ CREATE TRIGGER update_subscriptions_updated_at
 CREATE OR REPLACE FUNCTION handle_new_user_subscription()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.subscriptions (user_id, status, trial_start, trial_end)
+  INSERT INTO public.subscriptions (user_id, status)
   VALUES (
     NEW.id,
-    'trialing',
-    NOW(),
-    NOW() + INTERVAL '14 days'
+    'none'
   );
   RETURN NEW;
 END;

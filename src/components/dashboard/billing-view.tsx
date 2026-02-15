@@ -223,7 +223,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                   </div>
                   <div>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
-                    <p className="text-lg font-semibold">AgentSeller Pro</p>
+                    <p className="text-lg font-semibold">Emailligence Pro</p>
                   </div>
                 </div>
                 <span className={`text-sm font-medium px-2.5 py-1 rounded-full ${getStatusBg(billing.status)} ${getStatusColor(billing.status)}`}>
@@ -283,7 +283,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                     </p>
                     <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                       {getTrialDaysLeft() === 0
-                        ? 'Subscribe now to continue using AgentSeller.'
+                        ? 'Subscribe now to continue using Emailligence.'
                         : 'Subscribe before your trial ends to keep uninterrupted access.'}
                     </p>
                     <Button
@@ -311,7 +311,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                   <CreditCard className="h-5 w-5 text-zinc-500 shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                      Get started with AgentSeller Pro
+                      Get started with Emailligence Pro
                     </p>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
                       Subscribe to unlock full access to your AI-powered sales assistant.
@@ -349,7 +349,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                     </p>
                     <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
                       {billing.status === 'past_due'
-                        ? 'Please update your payment method to continue using AgentSeller.'
+                        ? 'Please update your payment method to continue using Emailligence.'
                         : 'Subscribe again to regain access to all features.'}
                     </p>
                     <Button

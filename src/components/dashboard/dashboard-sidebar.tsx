@@ -75,7 +75,7 @@ export function DashboardSidebar({
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 dark:bg-zinc-800">
             <Target className="h-5 w-5" />
           </div>
-          <span className="text-lg font-semibold">AgentSeller</span>
+          <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
         </Link>
         <div className="flex items-center gap-1">
           <ThemeToggle />
