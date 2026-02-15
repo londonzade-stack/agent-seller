@@ -382,10 +382,20 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
         }
         try {
           const label = await createLabel(userId, name, { backgroundColor, textColor })
-          return { success: true, message: `Label "${name}" created!`, label }
-        } catch (error) {
+          const encodedName = encodeURIComponent(name).replace(/%20/g, '+')
+          const gmailUrl = `https://mail.google.com/mail/u/0/#label/${encodedName}`
+          return { success: true, message: `Label "${name}" created!`, label, gmailUrl }
+        } catch (error: unknown) {
           sanitizeError('Create label error', error)
-          return { success: false, error: 'Failed to create label.' }
+          // Provide actionable error details to the agent
+          const errMsg = error instanceof Error ? error.message : String(error)
+          if (errMsg.includes('409') || errMsg.toLowerCase().includes('already exists')) {
+            return { success: false, error: `A label named "${name}" already exists. Use getLabels to find its ID.` }
+          }
+          if (errMsg.includes('403') || errMsg.includes('insufficient')) {
+            return { success: false, error: 'Insufficient permissions to create labels. The user may need to reconnect Gmail.' }
+          }
+          return { success: false, error: `Failed to create label: ${errMsg.slice(0, 150)}` }
         }
       },
     }),
@@ -402,10 +412,11 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
         }
         try {
           const result = await applyLabels(userId, emailIds, labelIds)
-          return { success: true, message: `Labels applied to ${result.modifiedCount} emails!` }
-        } catch (error) {
+          return { success: true, message: `Labels applied to ${result.modifiedCount} emails!`, modifiedCount: result.modifiedCount }
+        } catch (error: unknown) {
           sanitizeError('Apply labels error', error)
-          return { success: false, error: 'Failed to apply labels.' }
+          const errMsg = error instanceof Error ? error.message : String(error)
+          return { success: false, error: `Failed to apply labels: ${errMsg.slice(0, 150)}` }
         }
       },
     }),

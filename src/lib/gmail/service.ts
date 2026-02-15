@@ -478,9 +478,13 @@ export async function createLabel(userId: string, name: string, options?: {
     },
   })
 
+  if (!response.data?.id) {
+    throw new Error('Label created but Gmail did not return an ID')
+  }
+
   return {
     id: response.data.id,
-    name: response.data.name,
+    name: response.data.name ?? name,
   }
 }
 
