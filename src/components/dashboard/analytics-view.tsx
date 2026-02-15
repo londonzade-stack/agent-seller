@@ -15,6 +15,8 @@ import {
   Star,
   ShieldAlert,
   Trash2,
+  ChevronDown,
+  Loader2,
 } from 'lucide-react'
 import {
   BarChart,
@@ -43,6 +45,14 @@ interface InboxStats {
   topSenders: { sender: string; count: number }[]
 }
 
+interface SenderEmail {
+  id: string
+  subject: string
+  from: string
+  date: string
+  snippet: string
+}
+
 interface AnalyticsViewProps {
   isEmailConnected: boolean
   onConnectEmail: () => void
@@ -55,6 +65,29 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
   const [timeframe, setTimeframe] = useState<'today' | 'week' | 'month'>('week')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [expandedSender, setExpandedSender] = useState<string | null>(null)
+  const [senderEmails, setSenderEmails] = useState<Record<string, SenderEmail[]>>({})
+  const [senderEmailsLoading, setSenderEmailsLoading] = useState<string | null>(null)
+
+  const fetchSenderEmails = async (senderEmail: string) => {
+    if (expandedSender === senderEmail) {
+      setExpandedSender(null)
+      return
+    }
+    setExpandedSender(senderEmail)
+    if (senderEmails[senderEmail]) return
+    setSenderEmailsLoading(senderEmail)
+    try {
+      const res = await fetch(`/api/contacts/emails?sender=${encodeURIComponent(senderEmail)}`)
+      if (!res.ok) throw new Error('Failed to fetch emails')
+      const data = await res.json()
+      setSenderEmails(prev => ({ ...prev, [senderEmail]: data.emails || [] }))
+    } catch {
+      setSenderEmails(prev => ({ ...prev, [senderEmail]: [] }))
+    } finally {
+      setSenderEmailsLoading(null)
+    }
+  }
 
   const fetchStats = async () => {
     if (!isEmailConnected) return
@@ -319,16 +352,16 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
               <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <h3 className="font-medium mb-4">Top Senders</h3>
                 {stats.topSenders.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={stats.topSenders.slice(0, 8)} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis type="number" tick={{ fontSize: 12 }} />
                       <YAxis
                         type="category"
                         dataKey="sender"
-                        width={80}
+                        width={120}
                         tick={{ fontSize: 10 }}
-                        tickFormatter={(v: string) => v.length > 12 ? v.slice(0, 12) + '...' : v}
+                        tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '...' : v}
                       />
                       <Tooltip
                         contentStyle={{
@@ -337,12 +370,18 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                           borderRadius: '8px',
                           fontSize: '12px',
                         }}
+                        formatter={(value) => [value, 'Emails']}
+                        labelFormatter={(label) => String(label)}
                       />
-                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                        {stats.topSenders.slice(0, 8).map((_, index) => (
+                          <Cell key={`bar-cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-[300px] flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-sm">
+                  <div className="h-[350px] flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-sm">
                     No sender data available
                   </div>
                 )}
@@ -351,49 +390,54 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
               {/* Email Distribution Pie Chart */}
               <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <h3 className="font-medium mb-4">Inbox Breakdown</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'Read', value: stats.totalEmails - stats.unreadEmails },
-                        { name: 'Unread', value: stats.unreadEmails },
-                        { name: 'Starred', value: stats.starredEmails },
-                      ].filter(d => d.value > 0)}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {[0, 1, 2].map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="flex justify-center gap-3 sm:gap-6 mt-2 flex-wrap">
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[0] }} />
-                    Read
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[1] }} />
-                    Unread
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[2] }} />
-                    Starred
-                  </div>
-                </div>
+                {(() => {
+                  const breakdownData = [
+                    { name: 'Read', value: stats.totalEmails - stats.unreadEmails },
+                    { name: 'Unread', value: stats.unreadEmails },
+                    { name: 'Starred', value: stats.starredEmails },
+                    { name: 'Sent', value: stats.sentEmails },
+                    { name: 'Spam', value: stats.spamEmails },
+                    { name: 'With Attachments', value: stats.emailsWithAttachments },
+                    { name: 'Trashed', value: stats.trashedEmails },
+                  ].filter(d => d.value > 0)
+                  return (
+                    <>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={breakdownData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {breakdownData.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--card))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="flex justify-center gap-3 sm:gap-4 mt-2 flex-wrap">
+                        {breakdownData.map((entry, index) => (
+                          <div key={entry.name} className="flex items-center gap-2 text-xs">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                            {entry.name}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )
+                })()}
               </Card>
             </div>
 
@@ -401,23 +445,66 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
             {stats.topSenders.length > 0 && (
               <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <h3 className="font-medium mb-4">All Top Senders</h3>
-                <div className="space-y-2">
-                  {stats.topSenders.map((sender, i) => (
-                    <div key={i} className="flex items-center gap-3 py-2 border-b border-zinc-200 dark:border-white/10 last:border-0">
-                      <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium">
-                        {sender.sender.charAt(0).toUpperCase()}
+                <div className="space-y-1">
+                  {stats.topSenders.map((sender, i) => {
+                    const isExpanded = expandedSender === sender.sender
+                    const isLoading = senderEmailsLoading === sender.sender
+                    const emails = senderEmails[sender.sender]
+                    return (
+                      <div key={i}>
+                        <button
+                          onClick={() => fetchSenderEmails(sender.sender)}
+                          className="w-full flex items-center gap-3 py-2.5 px-2 rounded-lg border-b border-zinc-200 dark:border-white/10 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer text-left"
+                        >
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }}>
+                            {sender.sender.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="flex-1 text-sm truncate">{sender.sender}</span>
+                          <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:inline">{sender.count} emails</span>
+                          <span className="text-sm text-zinc-500 dark:text-zinc-400 sm:hidden">{sender.count}</span>
+                          <div className="w-16 sm:w-24 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${(sender.count / stats.topSenders[0].count) * 100}%`,
+                                backgroundColor: COLORS[i % COLORS.length],
+                              }}
+                            />
+                          </div>
+                          <ChevronDown
+                            className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        {isExpanded && (
+                          <div className="pl-4 sm:pl-12 pr-2 py-3 space-y-2">
+                            {isLoading ? (
+                              <div className="flex items-center justify-center py-6">
+                                <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+                              </div>
+                            ) : emails && emails.length > 0 ? (
+                              emails.slice(0, 5).map((email) => (
+                                <div
+                                  key={email.id}
+                                  className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4"
+                                  style={{ borderLeftWidth: '3px', borderLeftColor: COLORS[i % COLORS.length] }}
+                                >
+                                  <div className="flex items-start justify-between gap-2 mb-1">
+                                    <p className="font-medium text-sm truncate">{email.subject}</p>
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap shrink-0">
+                                      {new Date(email.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-zinc-400 line-clamp-2">{email.snippet}</p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-zinc-400 py-4 text-center">No emails found</p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <span className="flex-1 text-sm truncate">{sender.sender}</span>
-                      <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:inline">{sender.count} emails</span>
-                      <span className="text-sm text-zinc-500 dark:text-zinc-400 sm:hidden">{sender.count}</span>
-                      <div className="w-16 sm:w-24 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-zinc-900 dark:bg-white rounded-full"
-                          style={{ width: `${(sender.count / stats.topSenders[0].count) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </Card>
             )}

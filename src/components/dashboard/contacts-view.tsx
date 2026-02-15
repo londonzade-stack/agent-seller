@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,8 @@ import {
   ArrowUpDown,
   Clock,
   MessageSquare,
+  ChevronDown,
+  Loader2,
 } from 'lucide-react'
 
 interface Contact {
@@ -22,6 +24,14 @@ interface Contact {
   totalEmails: number
   lastContactDate: string
   labels: string[]
+}
+
+interface ContactEmail {
+  id: string
+  subject: string
+  from: string
+  date: string
+  snippet: string
 }
 
 interface ContactsViewProps {
@@ -35,6 +45,11 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<'recent' | 'frequency'>('recent')
+  const [selectedContact, setSelectedContact] = useState<string | null>(null)
+  const [contactEmails, setContactEmails] = useState<ContactEmail[]>([])
+  const [emailsLoading, setEmailsLoading] = useState(false)
+  const [emailsError, setEmailsError] = useState<string | null>(null)
+  const expandRef = useRef<HTMLDivElement>(null)
 
   const fetchContacts = async () => {
     if (!isEmailConnected) return
@@ -55,6 +70,33 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
   useEffect(() => {
     fetchContacts()
   }, [isEmailConnected])
+
+  const fetchContactEmails = useCallback(async (email: string) => {
+    setEmailsLoading(true)
+    setEmailsError(null)
+    setContactEmails([])
+    try {
+      const res = await fetch(`/api/contacts/emails?sender=${encodeURIComponent(email)}`)
+      if (!res.ok) throw new Error('Failed to fetch emails')
+      const data = await res.json()
+      setContactEmails(data.emails || [])
+    } catch {
+      setEmailsError('Failed to load emails for this contact.')
+    } finally {
+      setEmailsLoading(false)
+    }
+  }, [])
+
+  const handleContactClick = useCallback((email: string) => {
+    if (selectedContact === email) {
+      setSelectedContact(null)
+      setContactEmails([])
+      setEmailsError(null)
+    } else {
+      setSelectedContact(email)
+      fetchContactEmails(email)
+    }
+  }, [selectedContact, fetchContactEmails])
 
   const filteredContacts = contacts
     .filter(c =>
@@ -178,38 +220,106 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
         ) : (
           <div className="max-w-4xl mx-auto">
             <div className="grid gap-2 sm:gap-3">
-              {filteredContacts.map((contact) => (
-                <Card key={contact.email} className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-medium shrink-0">
-                      {(contact.name || contact.email).charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate text-sm sm:text-base">{contact.name || contact.email}</p>
-                      <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 truncate">{contact.email}</p>
-                    </div>
-                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 shrink-0">
-                      <div className="flex items-center gap-1" title="Total emails">
-                        <MessageSquare className="h-3 w-3" />
-                        {contact.totalEmails}
+              {filteredContacts.map((contact) => {
+                const isExpanded = selectedContact === contact.email
+                return (
+                  <div key={contact.email}>
+                    <Card
+                      className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors cursor-pointer select-none"
+                      onClick={() => handleContactClick(contact.email)}
+                    >
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-sm font-medium shrink-0">
+                          {(contact.name || contact.email).charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate text-sm sm:text-base">{contact.name || contact.email}</p>
+                          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 truncate">{contact.email}</p>
+                        </div>
+                        <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 shrink-0">
+                          <div className="flex items-center gap-1" title="Total emails">
+                            <MessageSquare className="h-3 w-3" />
+                            {contact.totalEmails}
+                          </div>
+                          <div className="hidden sm:flex items-center gap-1" title="Last contact">
+                            <Clock className="h-3 w-3" />
+                            {new Date(contact.lastContactDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                        {contact.labels?.length > 0 && (
+                          <div className="hidden sm:flex gap-1 shrink-0">
+                            {contact.labels.slice(0, 2).map((label) => (
+                              <Badge key={label} variant="secondary" className="text-xs bg-zinc-100 dark:bg-zinc-800 border-0">
+                                {label}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        <ChevronDown
+                          className={`h-4 w-4 text-zinc-400 shrink-0 transition-transform duration-200 ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
                       </div>
-                      <div className="hidden sm:flex items-center gap-1" title="Last contact">
-                        <Clock className="h-3 w-3" />
-                        {new Date(contact.lastContactDate).toLocaleDateString()}
+                    </Card>
+
+                    {/* Expandable email previews section */}
+                    <div
+                      ref={isExpanded ? expandRef : undefined}
+                      className="overflow-hidden transition-all duration-300 ease-in-out"
+                      style={{
+                        maxHeight: isExpanded ? '2000px' : '0px',
+                        opacity: isExpanded ? 1 : 0,
+                      }}
+                    >
+                      <div className="pt-2 pb-1 pl-4 sm:pl-6 pr-1 sm:pr-2 space-y-2">
+                        {emailsLoading ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Loader2 className="h-5 w-5 animate-spin text-zinc-400 mr-2" />
+                            <span className="text-sm text-zinc-500 dark:text-zinc-400">Loading emails...</span>
+                          </div>
+                        ) : emailsError ? (
+                          <div className="flex items-center justify-center py-6">
+                            <AlertCircle className="h-4 w-4 text-red-500 mr-2" />
+                            <span className="text-sm text-zinc-500 dark:text-zinc-400">{emailsError}</span>
+                          </div>
+                        ) : contactEmails.length === 0 ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Mail className="h-4 w-4 text-zinc-400 mr-2" />
+                            <span className="text-sm text-zinc-500 dark:text-zinc-400">No emails found from this contact.</span>
+                          </div>
+                        ) : (
+                          contactEmails.map((email) => (
+                            <Card
+                              key={email.id}
+                              className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 border-l-2 border-l-amber-500 p-3 sm:p-4"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="flex items-start justify-between gap-2 mb-1">
+                                <p className="font-medium text-sm truncate flex-1">
+                                  {email.subject || '(No subject)'}
+                                </p>
+                                <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap shrink-0">
+                                  {email.date
+                                    ? new Date(email.date).toLocaleDateString(undefined, {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                      })
+                                    : ''}
+                                </span>
+                              </div>
+                              <p className="text-sm text-zinc-400 line-clamp-2">
+                                {email.snippet || 'No preview available.'}
+                              </p>
+                            </Card>
+                          ))
+                        )}
                       </div>
                     </div>
-                    {contact.labels?.length > 0 && (
-                      <div className="hidden sm:flex gap-1 shrink-0">
-                        {contact.labels.slice(0, 2).map((label) => (
-                          <Badge key={label} variant="secondary" className="text-xs bg-zinc-100 dark:bg-zinc-800 border-0">
-                            {label}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </div>
-                </Card>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

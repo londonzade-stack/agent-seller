@@ -153,7 +153,7 @@ export function DashboardSidebar({
   return (
     <>
       {/* Desktop sidebar - always visible on lg+ */}
-      <aside className="hidden lg:flex w-64 border-r border-stone-200 dark:border-zinc-800 bg-[#faf8f5] dark:bg-[#111113] flex-col shrink-0">
+      <aside className="hidden lg:flex w-64 border-r border-stone-200 dark:border-zinc-800 bg-[#faf8f5] dark:bg-[#111113] flex-col shrink-0 overflow-y-auto">
         {sidebarContent}
       </aside>
 
