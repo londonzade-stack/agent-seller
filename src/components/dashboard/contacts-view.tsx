@@ -15,7 +15,6 @@ import {
   Clock,
   MessageSquare,
   ChevronDown,
-  Loader2,
 } from 'lucide-react'
 
 interface Contact {
@@ -274,9 +273,19 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
                     >
                       <div className="pt-2 pb-1 pl-4 sm:pl-6 pr-1 sm:pr-2 space-y-2">
                         {emailsLoading ? (
-                          <div className="flex items-center justify-center py-6">
-                            <Loader2 className="h-5 w-5 animate-spin text-zinc-400 mr-2" />
-                            <span className="text-sm text-zinc-500 dark:text-zinc-400">Loading emails...</span>
+                          <div className="space-y-2">
+                            {[0, 1, 2].map((j) => (
+                              <Card key={j} className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 p-3 sm:p-4" style={{ animationDelay: `${j * 100}ms` }}>
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div className="h-4 w-3/5 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
+                                  <div className="h-3 w-16 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <div className="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                                  <div className="h-3 w-4/5 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                                </div>
+                              </Card>
+                            ))}
                           </div>
                         ) : emailsError ? (
                           <div className="flex items-center justify-center py-6">
@@ -292,7 +301,7 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
                           contactEmails.map((email) => (
                             <Card
                               key={email.id}
-                              className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 border-l-2 border-l-amber-500 p-3 sm:p-4"
+                              className="rounded-xl border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 p-3 sm:p-4"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <div className="flex items-start justify-between gap-2 mb-1">

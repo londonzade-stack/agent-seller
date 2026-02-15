@@ -16,7 +16,6 @@ import {
   ShieldAlert,
   Trash2,
   ChevronDown,
-  Loader2,
 } from 'lucide-react'
 import {
   BarChart,
@@ -478,15 +477,25 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                         {isExpanded && (
                           <div className="pl-4 sm:pl-12 pr-2 py-3 space-y-2">
                             {isLoading ? (
-                              <div className="flex items-center justify-center py-6">
-                                <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+                              <div className="space-y-2">
+                                {[0, 1, 2].map((j) => (
+                                  <div key={j} className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4" style={{ animationDelay: `${j * 100}ms` }}>
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                      <div className="h-4 w-3/5 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
+                                      <div className="h-3 w-16 rounded bg-zinc-200 dark:bg-zinc-700 animate-pulse" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                      <div className="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                                      <div className="h-3 w-4/5 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             ) : emails && emails.length > 0 ? (
                               emails.slice(0, 5).map((email) => (
                                 <div
                                   key={email.id}
                                   className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4"
-                                  style={{ borderLeftWidth: '3px', borderLeftColor: COLORS[i % COLORS.length] }}
                                 >
                                   <div className="flex items-start justify-between gap-2 mb-1">
                                     <p className="font-medium text-sm truncate">{email.subject}</p>
