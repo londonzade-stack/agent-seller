@@ -404,22 +404,21 @@ function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 
 const REQUEST_TIMEOUT = 120000
 
-// Wrapper that loads history before rendering the actual chat
+// Wrapper that loads history / creates session before rendering the actual chat
 export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentChatProps) {
-  const [loadingHistory, setLoadingHistory] = useState(!!initialSessionId)
+  const [ready, setReady] = useState(false)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
 
   useEffect(() => {
     if (initialSessionId) {
+      // Load existing session messages
       const loadHistory = async () => {
-        setLoadingHistory(true)
         try {
           const res = await fetch(`/api/chats/${initialSessionId}`)
           if (res.ok) {
             const data = await res.json()
             const msgs = (data.messages || []) as SavedMessage[]
-            // Convert to UIMessage format for useChat
             setInitialMessages(msgs.map(m => ({
               id: m.id,
               role: m.role,
@@ -429,11 +428,12 @@ export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentCha
         } catch (err) {
           console.error('Failed to load chat history:', err)
         } finally {
-          setLoadingHistory(false)
+          setReady(true)
         }
       }
       loadHistory()
     } else {
+      // Create new session — wait for it before rendering inner component
       const createSession = async () => {
         try {
           const res = await fetch('/api/chats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
@@ -443,13 +443,15 @@ export function AgentChat({ user, isEmailConnected, initialSessionId }: AgentCha
           }
         } catch (err) {
           console.error('Failed to create chat session:', err)
+        } finally {
+          setReady(true)
         }
       }
       createSession()
     }
   }, [initialSessionId])
 
-  if (loadingHistory) {
+  if (!ready) {
     return (
       <div className="flex-1 flex flex-col h-full">
         <header className="border-b border-stone-200 dark:border-zinc-800 px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113]">
