@@ -164,23 +164,92 @@ export async function scanInboxForEmails(
     searchQuery += ` after:${afterTimestamp}`
   }
 
-  // Get message list
-  const response = await gmail.users.messages.list({
-    userId: 'me',
-    maxResults,
-    q: searchQuery.trim() || undefined,
-  })
+  // Get message list — paginate if maxResults > 500 (Gmail API limit per page)
+  const allMessageRefs: Array<{ id: string; threadId?: string }> = []
+  let pageToken: string | undefined
+  let remaining = maxResults
 
-  if (!response.data.messages) {
-    return []
+  while (remaining > 0) {
+    const response = await gmail.users.messages.list({
+      userId: 'me',
+      maxResults: Math.min(remaining, 500),
+      q: searchQuery.trim() || undefined,
+      pageToken,
+    })
+
+    if (!response.data.messages) break
+
+    for (const msg of response.data.messages) {
+      allMessageRefs.push({ id: msg.id!, threadId: msg.threadId || undefined })
+    }
+
+    remaining -= response.data.messages.length
+    pageToken = response.data.nextPageToken || undefined
+    if (!pageToken) break
   }
 
-  // Fetch full message details
+  if (allMessageRefs.length === 0) return []
+
+  // For large bulk operations (>50), use lightweight metadata-only fetch
+  // This avoids 500 individual full-body fetches for bulk delete/archive
+  if (maxResults > 50) {
+    // Fetch metadata in parallel batches of 50 for reasonable speed
+    const CHUNK_SIZE = 50
+    const emails: Array<{
+      id: string | null | undefined
+      threadId: string | null | undefined
+      from: string
+      to: string
+      cc: string
+      subject: string
+      date: string
+      preview: string
+      snippet: string | null | undefined
+      labelIds: string[] | null | undefined
+      hasAttachments: boolean
+      attachmentCount: number
+    }> = []
+
+    for (let i = 0; i < allMessageRefs.length; i += CHUNK_SIZE) {
+      const chunk = allMessageRefs.slice(i, i + CHUNK_SIZE)
+      const results = await Promise.all(
+        chunk.map(async (msg) => {
+          const message = await gmail.users.messages.get({
+            userId: 'me',
+            id: msg.id,
+            format: 'metadata',
+            metadataHeaders: ['From', 'Subject', 'Date'],
+          })
+
+          const headers = parseEmailHeaders(message.data.payload?.headers || [])
+          return {
+            id: message.data.id,
+            threadId: message.data.threadId,
+            from: headers.from,
+            to: '',
+            cc: '',
+            subject: headers.subject,
+            date: headers.date,
+            preview: message.data.snippet || '',
+            snippet: message.data.snippet,
+            labelIds: message.data.labelIds,
+            hasAttachments: false,
+            attachmentCount: 0,
+          }
+        })
+      )
+      emails.push(...results)
+    }
+
+    return emails
+  }
+
+  // Standard full fetch for small result sets
   const emails = await Promise.all(
-    response.data.messages.map(async (msg) => {
+    allMessageRefs.map(async (msg) => {
       const message = await gmail.users.messages.get({
         userId: 'me',
-        id: msg.id!,
+        id: msg.id,
         format: 'full',
       })
 
@@ -535,25 +604,47 @@ export async function archiveEmails(userId: string, emailIds: string[]) {
 export async function trashEmails(userId: string, emailIds: string[]) {
   const gmail = await getAuthenticatedGmailClient(userId)
 
-  // Use individual trash calls with allSettled so one failure doesn't kill the batch
-  const results = await Promise.allSettled(
-    emailIds.map(id => gmail.users.messages.trash({ userId: 'me', id }))
-  )
+  // Use batchModify to add TRASH label — supports up to 1000 IDs per call
+  // Chunk into batches of 1000 for very large operations
+  const BATCH_SIZE = 1000
+  let totalTrashed = 0
 
-  const succeeded = results.filter(r => r.status === 'fulfilled').length
-  const failed = results.filter(r => r.status === 'rejected').length
+  for (let i = 0; i < emailIds.length; i += BATCH_SIZE) {
+    const batch = emailIds.slice(i, i + BATCH_SIZE)
+    await gmail.users.messages.batchModify({
+      userId: 'me',
+      requestBody: {
+        ids: batch,
+        addLabelIds: ['TRASH'],
+        removeLabelIds: ['INBOX'],
+      },
+    })
+    totalTrashed += batch.length
+  }
 
-  return { success: succeeded > 0, trashedCount: succeeded, failedCount: failed }
+  return { success: true, trashedCount: totalTrashed, failedCount: 0 }
 }
 
 export async function untrashEmails(userId: string, emailIds: string[]) {
   const gmail = await getAuthenticatedGmailClient(userId)
 
-  await Promise.all(
-    emailIds.map(id => gmail.users.messages.untrash({ userId: 'me', id }))
-  )
+  const BATCH_SIZE = 1000
+  let totalRestored = 0
 
-  return { success: true, restoredCount: emailIds.length }
+  for (let i = 0; i < emailIds.length; i += BATCH_SIZE) {
+    const batch = emailIds.slice(i, i + BATCH_SIZE)
+    await gmail.users.messages.batchModify({
+      userId: 'me',
+      requestBody: {
+        ids: batch,
+        removeLabelIds: ['TRASH'],
+        addLabelIds: ['INBOX'],
+      },
+    })
+    totalRestored += batch.length
+  }
+
+  return { success: true, restoredCount: totalRestored }
 }
 
 export async function permanentlyDeleteEmails(userId: string, emailIds: string[]) {

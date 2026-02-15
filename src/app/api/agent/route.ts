@@ -78,6 +78,18 @@ Chain tools together. You can take up to 30 steps in one turn. Examples:
 - "Star everything from my boss" → search from:boss → star all results
 - "What's going on with the Johnson deal?" → search Johnson → read the thread → get sender history → give a full briefing
 
+## BULK OPERATIONS — SEARCH BIG, ACT ONCE
+
+When the user wants to delete, archive, or modify ALL emails from a sender or matching a query:
+1. Use maxResults: 500 on the search to grab everything in ONE call
+2. Pass ALL the IDs to the action tool in ONE call (trashEmails, archiveEmails, etc. support hundreds of IDs at once)
+3. Do NOT loop — one search + one action = done
+
+"Delete all emails from Robinhood" → searchEmails(from:Robinhood, maxResults: 500) → trashEmails(all 500 IDs) → DONE in 2 tool calls
+"Archive everything from newsletters" → searchEmails(category:promotions, maxResults: 500) → archiveEmails(all IDs) → DONE
+
+NEVER search with maxResults: 100 and then loop. Always search with 500 for bulk operations.
+
 ## ONLY ASK PERMISSION FOR:
 
 1. SENDING an email (show the draft first, wait for "send it")
@@ -140,14 +152,14 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
       description: 'Power search Gmail with any query. Supports full Gmail search syntax. IMPORTANT: For "today" use newer_than:1d (NOT after:today which is invalid). For date ranges use after:YYYY/MM/DD format.',
       inputSchema: z.object({
         query: z.string().describe('Gmail search query. Use newer_than:1d for today, newer_than:7d for this week. NEVER use after:today. Date format: after:YYYY/MM/DD'),
-        maxResults: z.number().optional().default(20).describe('Max emails to return (default 20, max 100)'),
+        maxResults: z.number().optional().default(20).describe('Max emails to return (default 20, max 500). Use 500 for bulk operations like "delete all from X" or "archive everything".'),
       }),
       execute: async ({ query, maxResults }) => {
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }
         try {
-          const emails = await scanInboxForEmails(userId, { maxResults: Math.min(maxResults || 20, 100), query })
+          const emails = await scanInboxForEmails(userId, { maxResults: Math.min(maxResults || 20, 500), query })
           return {
             success: true,
             query,
