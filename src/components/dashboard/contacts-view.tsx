@@ -131,25 +131,25 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      <header className="border-b border-zinc-200 dark:border-white/10 px-3 py-3 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-black">
-        <div>
-          <h1 className="text-lg sm:text-xl font-semibold">Contacts</h1>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
-            {contacts.length > 0 ? `${contacts.length} contacts from your inbox` : 'People you email with'}
-          </p>
+      <header className="relative z-10 border-b border-white/30 dark:border-white/[0.06] px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <div className="min-w-0">
+          <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 px-3 py-1 text-xs font-medium tracking-wide rounded-full">
+            <Users className="h-3 w-3 mr-1.5 text-stone-400 dark:text-zinc-500" />
+            Contacts
+          </Badge>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setSortBy(sortBy === 'recent' ? 'frequency' : 'recent')}
-            className="border-zinc-200 dark:border-white/10 text-xs sm:text-sm"
+            className="border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm text-xs sm:text-sm"
           >
             <ArrowUpDown className="h-4 w-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">{sortBy === 'recent' ? 'Most Recent' : 'Most Frequent'}</span>
             <span className="sm:hidden">{sortBy === 'recent' ? 'Recent' : 'Frequent'}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={fetchContacts} disabled={loading} className="border-zinc-200 dark:border-white/10">
+          <Button variant="outline" size="sm" onClick={fetchContacts} disabled={loading} className="border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm">
             <RefreshCw className={`h-4 w-4 mr-1 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>

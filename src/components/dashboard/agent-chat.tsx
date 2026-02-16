@@ -873,7 +873,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       <header className="relative z-10 border-b border-white/30 dark:border-white/[0.06] px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
         <div className="min-w-0">
           <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 px-3 py-1 text-xs font-medium tracking-wide rounded-full">
-            <Sparkles className="h-3 w-3 mr-1.5 text-amber-500" />
+            <Sparkles className="h-3 w-3 mr-1.5 text-stone-400 dark:text-zinc-500" />
             Email AI Intelligence
           </Badge>
         </div>

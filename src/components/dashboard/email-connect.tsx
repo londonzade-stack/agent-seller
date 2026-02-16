@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   Mail,
   CheckCircle2,
@@ -11,6 +12,7 @@ import {
   AlertCircle,
   Loader2,
   ExternalLink,
+  Link2,
 } from 'lucide-react'
 
 interface EmailConnectProps {
@@ -132,14 +134,17 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
   }
 
   return (
-    <div className="flex-1 p-4 sm:p-6 overflow-auto">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl font-semibold mb-2">Email Connection</h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Connect your Gmail to enable AI-powered lead detection and email drafting.
-          </p>
+    <div className="flex-1 flex flex-col h-full">
+      <header className="relative z-10 border-b border-white/30 dark:border-white/[0.06] px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+        <div className="min-w-0">
+          <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 px-3 py-1 text-xs font-medium tracking-wide rounded-full">
+            <Link2 className="h-3 w-3 mr-1.5 text-stone-400 dark:text-zinc-500" />
+            Email Connection
+          </Badge>
         </div>
+      </header>
+      <div className="flex-1 p-4 sm:p-6 overflow-auto">
+      <div className="max-w-2xl mx-auto">
 
         {error && (
           <Card className="p-4 mb-6 border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-900/10">
@@ -252,6 +257,7 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
             </p>
           </>
         )}
+      </div>
       </div>
     </div>
   )
