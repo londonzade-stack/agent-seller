@@ -323,32 +323,32 @@ export function DashboardSidebar({
   // ─── Nav Panel (shown when NOT on agent view, or user clicked Settings) ──
   const navPanel = (
     <>
-      <div className="p-4 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
-        {activeView === 'agent' ? (
-          // Back arrow to return to chats panel
-          <button
-            onClick={() => setForceNav(false)}
-            className="flex items-center gap-1.5 text-sm font-medium text-stone-600 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to chats
-          </button>
-        ) : (
-          <Link href="/" className="flex items-center gap-2">
+      <div className="p-4 border-b border-stone-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-100 dark:bg-zinc-800">
               <Brain className="h-5 w-5" />
             </div>
             <span className="text-lg font-semibold font-mono tracking-wider">EMAILLIGENCE</span>
           </Link>
-        )}
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          {onMobileClose && (
-            <Button variant="ghost" size="icon" onClick={onMobileClose} className="lg:hidden h-8 w-8">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            {onMobileClose && (
+              <Button variant="ghost" size="icon" onClick={onMobileClose} className="lg:hidden h-8 w-8">
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
+        {activeView === 'agent' && (
+          <button
+            onClick={() => setForceNav(false)}
+            className="flex items-center gap-1.5 text-sm font-medium text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors mt-3"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to chats
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
