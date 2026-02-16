@@ -99,7 +99,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/analytics?timeframe=${timeframe}`)
+      const res = await fetch(`/api/analytics?timeframe=${timeframe}&t=${Date.now()}`, { cache: 'no-store' })
       if (!res.ok) throw new Error('Failed to fetch analytics')
       const data = await res.json()
       setStats(data.stats || null)

@@ -19,11 +19,18 @@ interface DashboardClientProps {
   user: User
 }
 
-// Update the URL ?chat= param without a full navigation
-function updateChatUrl(sessionId: string | undefined) {
+// Update the URL params without a full navigation
+function updateDashboardUrl(view: string, sessionId?: string) {
   if (typeof window === 'undefined') return
   const url = new URL(window.location.href)
-  if (sessionId) {
+  // Always set the view param (except for agent which is default)
+  if (view === 'agent') {
+    url.searchParams.delete('view')
+  } else {
+    url.searchParams.set('view', view)
+  }
+  // Only set chat param when on agent view with a session
+  if (sessionId && view === 'agent') {
     url.searchParams.set('chat', sessionId)
   } else {
     url.searchParams.delete('chat')
@@ -51,24 +58,27 @@ export function DashboardClient({ user }: DashboardClientProps) {
     setConnectedEmail(email || null)
   }, [])
 
-  // On mount: read ?chat= from URL and restore that session
+  // On mount: read ?view= and ?chat= from URL and restore state
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    const urlView = params.get('view') as DashboardView | null
     const chatId = params.get('chat')
     if (chatId) {
       setChatSessionId(chatId)
       setChatKey(k => k + 1)
       setActiveView('agent')
+    } else if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'email-connect', 'billing'].includes(urlView)) {
+      setActiveView(urlView)
     }
     setUrlChatRestored(true)
   }, [])
 
-  // Sync URL whenever chatSessionId changes (but only after initial restore)
+  // Sync URL whenever view or chatSessionId changes (but only after initial restore)
   useEffect(() => {
     if (urlChatRestored) {
-      updateChatUrl(chatSessionId)
+      updateDashboardUrl(activeView, chatSessionId)
     }
-  }, [chatSessionId, urlChatRestored])
+  }, [activeView, chatSessionId, urlChatRestored])
 
   // Handle view changes — block non-billing views if billing isn't set up
   const handleViewChange = useCallback((view: DashboardView) => {
