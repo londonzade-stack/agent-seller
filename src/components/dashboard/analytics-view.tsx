@@ -35,6 +35,8 @@ interface InboxStats {
   totalEmails: number
   unreadEmails: number
   totalThreads: number
+  primaryEmails: number
+  primaryUnread: number
   sentEmails: number
   spamEmails: number
   trashedEmails: number
@@ -270,24 +272,22 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
               <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Inbox className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
+                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
                   </div>
-                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Inbox</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Primary</span>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold">{stats.totalEmails.toLocaleString()}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{stats.totalThreads.toLocaleString()} threads</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.primaryEmails.toLocaleString()}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{stats.primaryUnread.toLocaleString()} unread</p>
               </Card>
               <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-500/10 flex items-center justify-center">
+                    <Inbox className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-500" />
                   </div>
-                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Unread</span>
+                  <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">All Inbox</span>
                 </div>
-                <p className="text-xl sm:text-2xl font-bold">{stats.unreadEmails.toLocaleString()}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                  {stats.totalEmails > 0 ? Math.round((stats.unreadEmails / stats.totalEmails) * 100) : 0}% of inbox
-                </p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.totalEmails.toLocaleString()}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{stats.unreadEmails.toLocaleString()} unread</p>
               </Card>
               <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">

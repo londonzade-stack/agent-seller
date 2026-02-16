@@ -60,6 +60,8 @@ export async function GET(req: Request) {
         totalEmails: inboxStats.inbox.total,
         unreadEmails: inboxStats.inbox.unread,
         totalThreads: inboxStats.inbox.threads,
+        primaryEmails: inboxStats.primary.total,
+        primaryUnread: inboxStats.primary.unread,
         sentEmails: inboxStats.sent.total,
         spamEmails: inboxStats.spam.total,
         trashedEmails: inboxStats.trash.total,
