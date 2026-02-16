@@ -245,13 +245,15 @@ interface ApprovalData {
 
 // Destructive action keywords that trigger the approval card
 const DESTRUCTIVE_PATTERNS = [
-  /should I (?:move|trash|delete|remove|archive|send|forward|reply)/i,
-  /want me to (?:move|trash|delete|remove|archive|send|forward|reply|proceed)/i,
-  /shall I (?:move|trash|delete|remove|archive|send|forward|reply|proceed)/i,
-  /would you like (?:me to |to )(?:move|trash|delete|remove|archive|send|forward|reply|proceed)/i,
-  /ready to (?:send|trash|delete|archive|move)/i,
-  /confirm.*(?:trash|delete|archive|send|move)/i,
-  /proceed with (?:trashing|deleting|archiving|sending|moving)/i,
+  /should I (?:move|trash|delete|remove|archive|send|forward|reply|unsubscribe)/i,
+  /want me to (?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
+  /shall I (?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
+  /would you like (?:me to |to )(?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
+  /ready to (?:send|trash|delete|archive|move|unsubscribe)/i,
+  /confirm.*(?:trash|delete|archive|send|move|unsubscribe)/i,
+  /proceed with (?:trashing|deleting|archiving|sending|moving|unsubscribing)/i,
+  /would you like me to unsubscribe/i,
+  /unsubscribe from (?:any|all|these|them|the following)/i,
 ]
 
 // Detect the action type from the text

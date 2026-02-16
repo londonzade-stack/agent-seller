@@ -95,7 +95,7 @@ These actions affect the user's real email and CANNOT be undone easily. You MUST
 2. **Archiving email** (archiveEmails)
 3. **Trashing/deleting email** (trashEmails)
 4. **Drafting email** (draftEmail) — show what you'll draft
-5. **Bulk unsubscribe** (bulkUnsubscribe)
+5. **Unsubscribing** (unsubscribeFromEmail, bulkUnsubscribe)
 
 ### HOW TO ASK FOR APPROVAL
 
@@ -141,6 +141,19 @@ details: to john@example.com, subject "Follow-up on project"
 2. *user clicks Approve*
 3. *calls sendEmail* — "Email sent to john@example.com."
 
+GOOD flow for "unsubscribe me from newsletters":
+1. *calls findUnsubscribableEmails* — finds 7 senders
+2. Shows user the list of senders found
+3. Output:
+[APPROVAL_REQUIRED]
+action: Unsubscribe
+description: Unsubscribe from 7 newsletter senders
+details: 7 senders, Legacybox, Belk, Chegg, and more
+[/APPROVAL_REQUIRED]
+4. *user clicks Approve*
+5. *calls bulkUnsubscribe with confirmed=true* — "Unsubscribed from 7 senders."
+
+BAD: Immediately calling unsubscribeFromEmail/bulkUnsubscribe without the approval card.
 BAD: Immediately calling archiveEmails/trashEmails/sendEmail without the approval card.
 BAD: Asking in plain text "Should I do this?" — always use the [APPROVAL_REQUIRED] format so the UI can render buttons.
 
@@ -861,11 +874,15 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
     }),
 
     unsubscribeFromEmail: tool({
-      description: 'Unsubscribe from a specific email sender. Uses RFC 8058 one-click unsubscribe when available, otherwise returns the unsubscribe link.',
+      description: 'Unsubscribe from a specific email sender. Uses RFC 8058 one-click unsubscribe when available, otherwise returns the unsubscribe link. MUST get user approval FIRST using [APPROVAL_REQUIRED] block before calling this tool.',
       inputSchema: z.object({
         emailId: z.string().describe('The email ID to unsubscribe from'),
+        confirmed: z.boolean().describe('MUST be true — set only AFTER user approves via the approval card'),
       }),
-      execute: async ({ emailId }) => {
+      execute: async ({ emailId, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before unsubscribing. Show the approval card first.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }
@@ -880,11 +897,15 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
     }),
 
     bulkUnsubscribe: tool({
-      description: 'Unsubscribe from multiple email senders at once. Pass an array of email IDs.',
+      description: 'Unsubscribe from multiple email senders at once. Pass an array of email IDs. MUST get user approval FIRST using [APPROVAL_REQUIRED] block before calling this tool.',
       inputSchema: z.object({
         emailIds: z.array(z.string()).describe('Array of email IDs to unsubscribe from'),
+        confirmed: z.boolean().describe('MUST be true — set only AFTER user approves via the approval card'),
       }),
-      execute: async ({ emailIds }) => {
+      execute: async ({ emailIds, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before bulk unsubscribing. Show the approval card first.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
         }
@@ -1035,7 +1056,7 @@ export async function POST(req: Request) {
         '\n\n⚠️ NOTE: Gmail is not connected yet. Encourage the user to connect their Gmail to unlock all these powerful features!'
 
     const result = streamText({
-      model: 'google/gemini-2.5-flash',
+      model: 'google/gemini-3-flash',
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
       tools,
