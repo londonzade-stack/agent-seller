@@ -1031,14 +1031,33 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     prevStatusRef.current = status
   }, [status, messages, saveMessage])
 
-  // Auto-scroll only when user is near the bottom (within 150px)
+  // Track whether user has manually scrolled away
+  const userScrolledAwayRef = useRef(false)
+  const lastScrollHeightRef = useRef(0)
+
+  // Detect if user scrolls away from bottom
   useEffect(() => {
     const el = scrollAreaRef.current
     if (!el) return
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-    if (distanceFromBottom < 150) {
-      el.scrollTop = el.scrollHeight
+    const handleScroll = () => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+      userScrolledAwayRef.current = distanceFromBottom > 300
     }
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Auto-scroll as new content arrives (streaming, tool calls, new messages)
+  useEffect(() => {
+    const el = scrollAreaRef.current
+    if (!el) return
+    // Always scroll if user hasn't manually scrolled away
+    if (!userScrolledAwayRef.current) {
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight
+      })
+    }
+    lastScrollHeightRef.current = el.scrollHeight
   }, [messages, status])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1049,6 +1068,12 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     sendMessage({ text })
     setInput('')
     saveMessage('user', text)
+    // Reset scroll lock and force scroll to bottom on new message
+    userScrolledAwayRef.current = false
+    requestAnimationFrame(() => {
+      const el = scrollAreaRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    })
   }
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -1056,6 +1081,11 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     setIsTimedOut(false)
     sendMessage({ text: suggestion })
     saveMessage('user', suggestion)
+    userScrolledAwayRef.current = false
+    requestAnimationFrame(() => {
+      const el = scrollAreaRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    })
   }
 
   // Track approval responses per message ID
