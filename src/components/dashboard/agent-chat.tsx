@@ -213,18 +213,22 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
         <div className="border-t border-amber-200/60 dark:border-amber-800/20 px-3 py-2 space-y-2 bg-amber-50/20 dark:bg-amber-950/10">
           {input && Object.keys(input).length > 0 && (
             <div>
-              <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">Input</div>
-              <pre className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 overflow-x-auto max-h-32 overflow-y-auto">
-                {JSON.stringify(input, null, 2)}
-              </pre>
+              <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">What it&apos;s doing</div>
+              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+                {humanizeToolInput(toolName, input).map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </div>
             </div>
           )}
           {isDone && output && (
             <div>
               <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">Result</div>
-              <pre className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 overflow-x-auto max-h-48 overflow-y-auto">
-                {JSON.stringify(output, null, 2)}
-              </pre>
+              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+                {humanizeToolOutput(toolName, output).map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </div>
             </div>
           )}
           {isError && errorText && (
@@ -434,6 +438,235 @@ function summarizeToolInput(toolName: string, input: Record<string, unknown>): s
   if (input.draftId) return `Draft: ${String(input.draftId).slice(0, 12)}...`
   if (Array.isArray(input.emailIds)) return `${input.emailIds.length} emails`
   return null
+}
+
+// Human-friendly descriptions for tool inputs and outputs (no raw JSON)
+function humanizeToolInput(toolName: string, input: Record<string, unknown>): string[] {
+  const lines: string[] = []
+  switch (toolName) {
+    case 'searchEmails':
+      if (input.query) lines.push(`Searching for: "${input.query}"`)
+      if (input.maxResults) lines.push(`Looking at up to ${input.maxResults} results`)
+      if (input.from) lines.push(`From: ${input.from}`)
+      if (input.to) lines.push(`To: ${input.to}`)
+      if (input.after) lines.push(`After: ${input.after}`)
+      if (input.before) lines.push(`Before: ${input.before}`)
+      if (input.unreadOnly) lines.push('Unread emails only')
+      break
+    case 'readEmail':
+      lines.push('Opening and reading the full email content')
+      break
+    case 'getEmailThread':
+      lines.push('Loading the full email conversation thread')
+      break
+    case 'getRecentEmails':
+      if (input.timeframe) lines.push(`Timeframe: ${input.timeframe}`)
+      if (input.maxResults) lines.push(`Up to ${input.maxResults} emails`)
+      if (input.unreadOnly) lines.push('Unread only')
+      break
+    case 'sendEmail':
+      if (input.to) lines.push(`To: ${input.to}`)
+      if (input.subject) lines.push(`Subject: ${String(input.subject).slice(0, 60)}`)
+      if (input.cc) lines.push(`CC: ${input.cc}`)
+      break
+    case 'draftEmail':
+      if (input.to) lines.push(`To: ${input.to}`)
+      if (input.subject) lines.push(`Subject: ${String(input.subject).slice(0, 60)}`)
+      break
+    case 'sendDraft':
+      lines.push('Sending an existing draft email')
+      break
+    case 'trashEmails':
+      if (Array.isArray(input.emailIds)) lines.push(`Moving ${input.emailIds.length} email${input.emailIds.length === 1 ? '' : 's'} to trash`)
+      break
+    case 'archiveEmails':
+      if (Array.isArray(input.emailIds)) lines.push(`Archiving ${input.emailIds.length} email${input.emailIds.length === 1 ? '' : 's'}`)
+      break
+    case 'applyLabels':
+      if (Array.isArray(input.emailIds)) lines.push(`Applying labels to ${input.emailIds.length} email${input.emailIds.length === 1 ? '' : 's'}`)
+      if (Array.isArray(input.labelIds)) lines.push(`Labels: ${input.labelIds.join(', ')}`)
+      break
+    case 'createLabel':
+      if (input.name) lines.push(`Creating label: "${input.name}"`)
+      break
+    case 'removeLabels':
+      if (Array.isArray(input.emailIds)) lines.push(`Removing labels from ${input.emailIds.length} email${input.emailIds.length === 1 ? '' : 's'}`)
+      break
+    case 'markAsRead':
+    case 'markAsUnread':
+      if (Array.isArray(input.emailIds)) lines.push(`${input.emailIds.length} email${input.emailIds.length === 1 ? '' : 's'}`)
+      break
+    case 'starEmails':
+    case 'unstarEmails':
+      if (Array.isArray(input.emailIds)) lines.push(`${input.emailIds.length} email${input.emailIds.length === 1 ? '' : 's'}`)
+      break
+    case 'unsubscribeFromEmail':
+      lines.push('Unsubscribing from this sender')
+      break
+    case 'bulkUnsubscribe':
+      if (Array.isArray(input.emailIds)) lines.push(`Unsubscribing from ${input.emailIds.length} sender${input.emailIds.length === 1 ? '' : 's'}`)
+      break
+    case 'findUnsubscribableEmails':
+      lines.push('Scanning inbox for newsletters and marketing emails')
+      break
+    case 'getContactDetails':
+      if (input.email) lines.push(`Looking up: ${input.email}`)
+      break
+    case 'getSenderHistory':
+      if (input.email) lines.push(`Getting history for: ${input.email}`)
+      break
+    case 'getInboxStats':
+      lines.push('Analyzing your inbox patterns')
+      break
+    case 'getLabels':
+      lines.push('Loading all labels')
+      break
+    case 'getDrafts':
+      lines.push('Loading your drafts')
+      break
+    default:
+      // Fallback: show key-value pairs in plain English
+      for (const [key, val] of Object.entries(input)) {
+        if (key === 'confirmed') continue
+        if (val === undefined || val === null) continue
+        const displayVal = typeof val === 'string' ? val.slice(0, 60) : Array.isArray(val) ? `${val.length} items` : String(val)
+        lines.push(`${key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}: ${displayVal}`)
+      }
+  }
+  if (lines.length === 0) lines.push('Processing...')
+  return lines
+}
+
+function humanizeToolOutput(toolName: string, output: Record<string, unknown>): string[] {
+  const lines: string[] = []
+
+  // Check for errors first
+  if (output.error) {
+    lines.push(`Error: ${String(output.error).slice(0, 100)}`)
+    return lines
+  }
+  if (output.success === false) {
+    lines.push(output.message ? String(output.message) : 'Action was not completed')
+    return lines
+  }
+
+  switch (toolName) {
+    case 'searchEmails': {
+      const emails = output.emails as Array<Record<string, unknown>> | undefined
+      if (emails) {
+        lines.push(`Found ${emails.length} email${emails.length === 1 ? '' : 's'}`)
+        emails.slice(0, 3).forEach(e => {
+          const from = (e.from as string || '').split('<')[0].trim()
+          const subject = String(e.subject || 'No subject').slice(0, 50)
+          lines.push(`• ${from ? from + ': ' : ''}${subject}`)
+        })
+        if (emails.length > 3) lines.push(`  ...and ${emails.length - 3} more`)
+      } else {
+        lines.push('No emails found')
+      }
+      break
+    }
+    case 'readEmail': {
+      const subject = output.subject ? String(output.subject).slice(0, 60) : null
+      const from = output.from ? String(output.from).split('<')[0].trim() : null
+      if (from) lines.push(`From: ${from}`)
+      if (subject) lines.push(`Subject: ${subject}`)
+      if (output.date) lines.push(`Date: ${String(output.date).slice(0, 25)}`)
+      if (!from && !subject) lines.push('Email loaded')
+      break
+    }
+    case 'getEmailThread': {
+      const messages = output.messages as Array<unknown> | undefined
+      if (messages) lines.push(`Loaded thread with ${messages.length} message${messages.length === 1 ? '' : 's'}`)
+      else lines.push('Thread loaded')
+      break
+    }
+    case 'getRecentEmails': {
+      const emails = output.emails as Array<unknown> | undefined
+      if (emails) lines.push(`Got ${emails.length} recent email${emails.length === 1 ? '' : 's'}`)
+      else lines.push('Loaded recent emails')
+      break
+    }
+    case 'sendEmail':
+      lines.push(output.message ? String(output.message) : 'Email sent successfully')
+      break
+    case 'draftEmail':
+      lines.push(output.message ? String(output.message) : 'Draft created')
+      break
+    case 'sendDraft':
+      lines.push('Draft sent successfully')
+      break
+    case 'trashEmails':
+      lines.push(output.message ? String(output.message) : 'Moved to trash')
+      break
+    case 'archiveEmails':
+      lines.push(output.message ? String(output.message) : 'Emails archived')
+      break
+    case 'createLabel':
+      lines.push(output.message ? String(output.message) : 'Label created')
+      break
+    case 'applyLabels':
+      lines.push(output.message ? String(output.message) : 'Labels applied')
+      break
+    case 'removeLabels':
+      lines.push(output.message ? String(output.message) : 'Labels removed')
+      break
+    case 'unsubscribeFromEmail':
+      if (output.method === 'one-click') lines.push('Unsubscribed (one-click)')
+      else if (output.method === 'link') lines.push('Unsubscribe link provided')
+      else lines.push(output.message ? String(output.message) : 'Unsubscribed')
+      break
+    case 'bulkUnsubscribe':
+      if (output.succeeded) lines.push(`Unsubscribed from ${output.succeeded} sender${Number(output.succeeded) === 1 ? '' : 's'}`)
+      if (output.failed && Number(output.failed) > 0) lines.push(`${output.failed} failed`)
+      if (lines.length === 0) lines.push(output.message ? String(output.message) : 'Bulk unsubscribe complete')
+      break
+    case 'findUnsubscribableEmails': {
+      const emails = output.emails as Array<Record<string, unknown>> | undefined
+      if (emails) {
+        lines.push(`Found ${emails.length} sender${emails.length === 1 ? '' : 's'} with unsubscribe option`)
+        emails.slice(0, 3).forEach(e => {
+          lines.push(`• ${e.senderName || e.from || 'Unknown sender'}`)
+        })
+        if (emails.length > 3) lines.push(`  ...and ${emails.length - 3} more`)
+      } else {
+        lines.push('No unsubscribable emails found')
+      }
+      break
+    }
+    case 'getInboxStats':
+      lines.push('Inbox analysis complete')
+      if (output.totalEmails) lines.push(`Total emails: ${output.totalEmails}`)
+      if (output.unread) lines.push(`Unread: ${output.unread}`)
+      break
+    case 'getLabels': {
+      const labels = output.labels as Array<unknown> | undefined
+      if (labels) lines.push(`Found ${labels.length} label${labels.length === 1 ? '' : 's'}`)
+      else lines.push('Labels loaded')
+      break
+    }
+    case 'getContactDetails':
+      lines.push('Contact info loaded')
+      break
+    case 'getSenderHistory':
+      lines.push('Sender history loaded')
+      break
+    case 'markAsRead':
+    case 'markAsUnread':
+    case 'starEmails':
+    case 'unstarEmails':
+    case 'markAsImportant':
+    case 'markAsNotImportant':
+    case 'reportSpam':
+    case 'markNotSpam':
+      lines.push(output.message ? String(output.message) : 'Done')
+      break
+    default:
+      if (output.message) lines.push(String(output.message))
+      else if (output.success) lines.push('Completed successfully')
+      else lines.push('Done')
+  }
+  return lines
 }
 
 function TipsSkeletonContent() {
