@@ -38,17 +38,36 @@ function updateDashboardUrl(view: string, sessionId?: string) {
   window.history.replaceState({}, '', url.toString())
 }
 
+// Read URL params once for initial state (runs during SSR-safe client hydration)
+function getInitialViewFromUrl(): DashboardView {
+  if (typeof window === 'undefined') return 'agent'
+  const params = new URLSearchParams(window.location.search)
+  const chatId = params.get('chat')
+  if (chatId) return 'agent'
+  const urlView = params.get('view') as DashboardView | null
+  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'email-connect', 'billing'].includes(urlView)) {
+    return urlView
+  }
+  return 'agent'
+}
+
+function getInitialChatFromUrl(): string | undefined {
+  if (typeof window === 'undefined') return undefined
+  const params = new URLSearchParams(window.location.search)
+  return params.get('chat') || undefined
+}
+
 export function DashboardClient({ user }: DashboardClientProps) {
-  const [activeView, setActiveView] = useState<DashboardView>('agent')
+  const [activeView, setActiveView] = useState<DashboardView>(getInitialViewFromUrl)
   const [isEmailConnected, setIsEmailConnected] = useState(false)
   const [connectedEmail, setConnectedEmail] = useState<string | null>(null)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  const [chatSessionId, setChatSessionId] = useState<string | undefined>(undefined)
-  const [chatKey, setChatKey] = useState(0)
+  const [chatSessionId, setChatSessionId] = useState<string | undefined>(getInitialChatFromUrl)
+  const [chatKey, setChatKey] = useState(() => getInitialChatFromUrl() ? 1 : 0)
   const [billingStatus, setBillingStatus] = useState<string | null>(null)
   const [billingLoaded, setBillingLoaded] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
-  const [urlChatRestored, setUrlChatRestored] = useState(false)
+  const [urlChatRestored, setUrlChatRestored] = useState(true)
 
   // Whether the user has a valid subscription (active or trialing)
   const hasValidBilling = billingStatus === 'active' || billingStatus === 'trialing'
@@ -56,21 +75,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const handleConnectionChange = useCallback((connected: boolean, email?: string) => {
     setIsEmailConnected(connected)
     setConnectedEmail(email || null)
-  }, [])
-
-  // On mount: read ?view= and ?chat= from URL and restore state
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const urlView = params.get('view') as DashboardView | null
-    const chatId = params.get('chat')
-    if (chatId) {
-      setChatSessionId(chatId)
-      setChatKey(k => k + 1)
-      setActiveView('agent')
-    } else if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'email-connect', 'billing'].includes(urlView)) {
-      setActiveView(urlView)
-    }
-    setUrlChatRestored(true)
   }, [])
 
   // Sync URL whenever view or chatSessionId changes (but only after initial restore)

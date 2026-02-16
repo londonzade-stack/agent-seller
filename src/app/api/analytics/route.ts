@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { scanInboxForEmails, getInboxStats } from '@/lib/gmail/service'
 import { sanitizeError } from '@/lib/logger'
 
+// Force dynamic — never cache analytics
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: Request) {
   try {
     const supabase = await createClient()
@@ -66,6 +69,10 @@ export async function GET(req: Request) {
         emailsWithAttachments: withAttachments,
         uniqueSenders: Object.keys(senderCounts).length,
         topSenders,
+      },
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
     })
   } catch (error) {
