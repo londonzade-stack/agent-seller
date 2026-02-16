@@ -1060,7 +1060,7 @@ export async function POST(req: Request) {
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
       tools,
-      stopWhen: stepCountIs(30),
+      stopWhen: stepCountIs(100),
       abortSignal: req.signal,
     })
 
