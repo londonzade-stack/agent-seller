@@ -19,10 +19,15 @@ import {
   FileText,
   BarChart3,
   Inbox,
+  LayoutDashboard,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const isLoggedIn = !!user
   return (
     <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white transition-colors">
       {/* Navigation */}
@@ -41,12 +46,20 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" asChild>
-              <Link href="/auth/login">Log in</Link>
-            </Button>
-            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
-              <Link href="/auth/sign-up">Get Started</Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
+                <Link href="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" asChild>
+                  <Link href="/auth/login">Log in</Link>
+                </Button>
+                <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
+                  <Link href="/auth/sign-up">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -75,9 +88,15 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
-              <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
-                <Link href="/auth/sign-up">Get Started Free <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
+                  <Link href="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              ) : (
+                <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
+                  <Link href="/auth/sign-up">Get Started Free <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              )}
               <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" asChild>
                 <Link href="#how-it-works">See How It Works</Link>
               </Button>
@@ -385,14 +404,24 @@ export default function Home() {
               Join teams that are getting more done with less email busywork.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
-                <Link href="/auth/sign-up">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" asChild>
-                <Link href="/pricing">View Pricing</Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
+                  <Link href="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Back to Dashboard <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              ) : (
+                <>
+                  <Button size="lg" className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 px-8" asChild>
+                    <Link href="/auth/sign-up">Start Free Trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" asChild>
+                    <Link href="/pricing">View Pricing</Link>
+                  </Button>
+                </>
+              )}
             </div>
-            <p className="text-zinc-400 dark:text-zinc-600 text-sm mt-6">No credit card required. 14-day free trial.</p>
+            {!isLoggedIn && (
+              <p className="text-zinc-400 dark:text-zinc-600 text-sm mt-6">No credit card required. 14-day free trial.</p>
+            )}
           </div>
         </ScrollReveal>
       </section>
