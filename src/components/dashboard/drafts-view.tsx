@@ -193,23 +193,24 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
                   <div className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-3 mb-4">
                     {draft.body || 'No content'}
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Button size="sm" onClick={() => handleSendDraft(draft.id)} className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                    <Button size="sm" onClick={() => handleSendDraft(draft.id)} className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs sm:text-sm">
                       <Send className="h-3 w-3 mr-1" />
                       Send
                     </Button>
-                    <Button size="sm" variant="outline" disabled className="border-zinc-200 dark:border-white/10">
+                    <Button size="sm" variant="outline" disabled className="border-zinc-200 dark:border-white/10 text-xs sm:text-sm">
                       <Pencil className="h-3 w-3 mr-1" />
                       Edit
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ml-auto"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ml-auto text-xs sm:text-sm"
                       onClick={() => handleDeleteDraft(draft.id)}
                     >
                       <Trash2 className="h-3 w-3 mr-1" />
-                      Discard
+                      <span className="hidden sm:inline">Discard</span>
+                      <span className="sm:hidden">Del</span>
                     </Button>
                   </div>
                 </div>

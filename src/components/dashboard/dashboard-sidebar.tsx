@@ -382,13 +382,13 @@ export function DashboardSidebar({
                     : 'text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800'
               }`}
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              <item.icon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{item.label}</span>
               {item.proBadge && (
-                <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-400/10 dark:text-blue-400">PRO</span>
+                <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-400/10 dark:text-blue-400 shrink-0">PRO</span>
               )}
               {isLocked && (
-                <Lock className="h-3 w-3 ml-auto" />
+                <Lock className="h-3 w-3 ml-auto shrink-0" />
               )}
               {!isLocked && item.id === 'email' && (
                 isEmailConnected ? (
@@ -442,7 +442,7 @@ export function DashboardSidebar({
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
             onClick={onMobileClose}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-[85vw] max-w-64 bg-[#faf8f5] dark:bg-[#111113] border-r border-stone-200 dark:border-zinc-800 flex flex-col lg:hidden shadow-2xl overflow-hidden">
+          <aside className="fixed inset-y-0 left-0 z-50 w-[80vw] max-w-72 bg-[#faf8f5] dark:bg-[#111113] border-r border-stone-200 dark:border-zinc-800 flex flex-col lg:hidden shadow-2xl overflow-hidden">
             {sidebarContent}
           </aside>
         </>

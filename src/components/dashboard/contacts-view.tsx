@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { getCached, setCache } from '@/lib/cache'
 import {
   Users,
   Mail,
@@ -50,25 +51,36 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
   const [emailsError, setEmailsError] = useState<string | null>(null)
   const expandRef = useRef<HTMLDivElement>(null)
 
-  const fetchContacts = async () => {
+  const contactsCacheKey = 'contacts'
+
+  const fetchContacts = useCallback(async (bypassCache = false) => {
     if (!isEmailConnected) return
+    if (!bypassCache) {
+      const cached = getCached<Contact[]>(contactsCacheKey)
+      if (cached) {
+        setContacts(cached)
+        return
+      }
+    }
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/contacts')
       if (!res.ok) throw new Error('Failed to fetch contacts')
       const data = await res.json()
-      setContacts(data.contacts || [])
+      const result = data.contacts || []
+      setContacts(result)
+      setCache(contactsCacheKey, result)
     } catch {
       setError('Failed to load contacts. Try again.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [isEmailConnected])
 
   useEffect(() => {
     fetchContacts()
-  }, [isEmailConnected])
+  }, [fetchContacts])
 
   const fetchContactEmails = useCallback(async (email: string) => {
     setEmailsLoading(true)
@@ -149,7 +161,7 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
             <span className="hidden sm:inline">{sortBy === 'recent' ? 'Most Recent' : 'Most Frequent'}</span>
             <span className="sm:hidden">{sortBy === 'recent' ? 'Recent' : 'Frequent'}</span>
           </Button>
-          <Button variant="outline" size="sm" onClick={fetchContacts} disabled={loading} className="border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm">
+          <Button variant="outline" size="sm" onClick={() => fetchContacts(true)} disabled={loading} className="border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm">
             <RefreshCw className={`h-4 w-4 mr-1 sm:mr-2 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
@@ -208,7 +220,7 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
           <div className="flex flex-col items-center justify-center h-full">
             <AlertCircle className="h-8 w-8 text-red-500 mb-4" />
             <p className="text-zinc-500 dark:text-zinc-400 mb-4">{error}</p>
-            <Button variant="outline" onClick={fetchContacts} className="border-zinc-200 dark:border-white/10">Try Again</Button>
+            <Button variant="outline" onClick={() => fetchContacts(true)} className="border-zinc-200 dark:border-white/10">Try Again</Button>
           </div>
         ) : contacts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full">

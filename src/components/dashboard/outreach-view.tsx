@@ -113,7 +113,7 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const inputSummary = input?.query ? `"${String(input.query).slice(0, 40)}"` : null
 
   return (
-    <div className={`my-2 rounded-lg border overflow-hidden transition-colors ${
+    <div className={`my-2 rounded-lg border overflow-hidden transition-colors max-w-full ${
       isRunning
         ? 'border-blue-300 dark:border-blue-700/40 bg-blue-50/60 dark:bg-blue-950/20'
         : isError
@@ -141,9 +141,9 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
           {input && Object.keys(input).length > 0 && (
             <div>
               <div className="text-[10px] font-medium text-blue-700/60 dark:text-blue-500/50 uppercase tracking-wider mb-1">What it&apos;s doing</div>
-              <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+              <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5 break-words overflow-hidden">
                 {summarizeInput(toolName, input).map((line, i) => (
-                  <div key={i}>{line}</div>
+                  <div key={i} className="break-words">{line}</div>
                 ))}
               </div>
             </div>
@@ -151,9 +151,9 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
           {isDone && output != null && (
             <div>
               <div className="text-[10px] font-medium text-blue-700/60 dark:text-blue-500/50 uppercase tracking-wider mb-1">Result</div>
-              <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+              <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5 break-words overflow-hidden">
                 {summarizeOutput(toolName, output).map((line, i) => (
-                  <div key={i}>{line}</div>
+                  <div key={i} className="break-words">{line}</div>
                 ))}
               </div>
             </div>
@@ -188,8 +188,8 @@ const markdownComponents = {
     <li className="text-sm" {...props}>{children}</li>
   ),
   table: ({ children, ...props }: React.ComponentPropsWithoutRef<'table'>) => (
-    <div className="my-3 overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <table className="w-full border-collapse text-sm" {...props}>{children}</table>
+    <div className="my-3 -mx-1 overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <table className="min-w-[480px] w-full border-collapse text-sm" {...props}>{children}</table>
     </div>
   ),
   thead: ({ children, ...props }: React.ComponentPropsWithoutRef<'thead'>) => (
@@ -217,7 +217,7 @@ const markdownComponents = {
 
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="max-w-none text-sm break-words overflow-hidden">
+    <div className="max-w-none text-sm break-words overflow-hidden [&>*]:max-w-full">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{content}</ReactMarkdown>
     </div>
   )
@@ -586,7 +586,8 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
       <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
         {messages.length === 0 ? (
           /* Welcome screen with outreach suggestions */
-          <div className="h-full flex flex-col items-center justify-center">
+          <div className="h-full overflow-auto">
+          <div className="min-h-full flex flex-col items-center justify-center py-6">
             <div className="mb-4 sm:mb-5">
               <BlitzAvatar size="lg" variant="blue" />
             </div>
@@ -656,6 +657,7 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
                 </div>
               </div>
             </Card>
+          </div>
           </div>
         ) : (
           /* Chat messages */
@@ -747,7 +749,7 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
       )}
 
       {/* Input bar */}
-      <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113]">
+      <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113] shrink-0">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
             <Input

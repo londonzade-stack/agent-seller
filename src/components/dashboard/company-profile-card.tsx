@@ -259,12 +259,12 @@ export function CompanyProfileCard({ variant = 'inline' }: CompanyProfileCardPro
           {profile.description && (
             <p className="text-xs text-stone-500 dark:text-zinc-500 mt-0.5 line-clamp-1">{profile.description}</p>
           )}
-          <div className="flex items-center gap-3 mt-1.5">
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             {profile.user_role && (
-              <span className="text-[11px] text-stone-400 dark:text-zinc-600">{profile.user_role}</span>
+              <span className="text-[11px] text-stone-400 dark:text-zinc-600 truncate max-w-[140px] sm:max-w-none">{profile.user_role}</span>
             )}
             {profile.target_customer && (
-              <span className="text-[11px] text-stone-400 dark:text-zinc-600">Target: {profile.target_customer}</span>
+              <span className="text-[11px] text-stone-400 dark:text-zinc-600 truncate max-w-[140px] sm:max-w-none">Target: {profile.target_customer}</span>
             )}
           </div>
         </div>

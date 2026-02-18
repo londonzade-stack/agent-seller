@@ -332,29 +332,29 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-zinc-500">
-                      <span>{TASK_TYPE_LABELS[task.task_type] || task.task_type}</span>
-                      <span className="text-stone-300 dark:text-zinc-700">&#183;</span>
-                      <span>{formatSchedule(task.frequency, task.time_of_day, task.day_of_week, task.day_of_month)}</span>
+                    <div className="flex items-center gap-2 sm:gap-3 text-xs text-stone-500 dark:text-zinc-500 flex-wrap">
+                      <span className="shrink-0">{TASK_TYPE_LABELS[task.task_type] || task.task_type}</span>
+                      <span className="text-stone-300 dark:text-zinc-700 hidden sm:inline">&#183;</span>
+                      <span className="truncate">{formatSchedule(task.frequency, task.time_of_day, task.day_of_week, task.day_of_month)}</span>
                     </div>
 
                     {task.description && (
                       <p className="text-xs text-stone-400 dark:text-zinc-600 mt-1 truncate">{task.description}</p>
                     )}
 
-                    <div className="flex items-center gap-3 mt-2 text-xs">
+                    <div className="flex items-center gap-2 sm:gap-3 mt-2 text-xs flex-wrap">
                       {task.lastExecution ? (
                         <div className="flex items-center gap-1">
                           {task.lastExecution.status === 'success' ? (
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
+                            <CheckCircle2 className="h-3 w-3 text-green-500 shrink-0" />
                           ) : (
-                            <XCircle className="h-3 w-3 text-red-400" />
+                            <XCircle className="h-3 w-3 text-red-400 shrink-0" />
                           )}
                           <span className="text-stone-500 dark:text-zinc-400">
                             {formatTimeAgo(task.lastExecution.started_at)}
                           </span>
                           {task.lastExecution.status === 'success' && (
-                            <span className="text-stone-400 dark:text-zinc-500 ml-1">
+                            <span className="text-stone-400 dark:text-zinc-500 ml-1 hidden sm:inline">
                               {formatLastResult(task.lastExecution)}
                             </span>
                           )}
@@ -364,7 +364,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
                       )}
                       <span className="text-stone-300 dark:text-zinc-700">&#183;</span>
                       <div className="flex items-center gap-1 text-stone-400 dark:text-zinc-500">
-                        <Clock className="h-3 w-3" />
+                        <Clock className="h-3 w-3 shrink-0" />
                         <span>Next: {formatNextRun(task.next_run_at)}</span>
                       </div>
                     </div>
@@ -391,11 +391,11 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
 
                     {/* Delete */}
                     {confirmDeleteId === task.id ? (
-                      <div className="flex items-center gap-1 ml-2">
+                      <div className="flex items-center gap-1 ml-1 sm:ml-2">
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="h-7 px-2 text-xs"
+                          className="h-7 px-1.5 sm:px-2 text-xs"
                           disabled={deletingId === task.id}
                           onClick={() => handleDelete(task.id)}
                         >

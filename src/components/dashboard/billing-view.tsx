@@ -252,9 +252,9 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
 
             {/* Status Card */}
             <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg ${getStatusBg(billing.status)} flex items-center justify-center`}>
+              <div className="flex items-start justify-between mb-4 gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-10 h-10 rounded-lg ${getStatusBg(billing.status)} flex items-center justify-center shrink-0`}>
                     {billing.status === 'active' ? (
                       <CheckCircle2 className={`h-5 w-5 ${getStatusColor(billing.status)}`} />
                     ) : billing.status === 'trialing' ? (
@@ -263,14 +263,14 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                       <CreditCard className={`h-5 w-5 ${getStatusColor(billing.status)}`} />
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
-                    <p className="text-lg font-semibold">
+                    <p className="text-base sm:text-lg font-semibold truncate">
                       Emailligence {billing.plan === 'pro' ? 'Pro' : 'Basic'}
                     </p>
                   </div>
                 </div>
-                <span className={`text-sm font-medium px-2.5 py-1 rounded-full ${getStatusBg(billing.status)} ${getStatusColor(billing.status)}`}>
+                <span className={`text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap ${getStatusBg(billing.status)} ${getStatusColor(billing.status)}`}>
                   {getStatusLabel(billing.status)}
                 </span>
               </div>
@@ -422,10 +422,10 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
               <div className="space-y-3">
                 {(billing.status === 'trialing' || billing.status === 'canceled' || billing.status === 'paused' || billing.status === 'none') && (
                   <>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       <button
                         onClick={() => setSelectedPlan('basic')}
-                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                        className={`p-2.5 sm:p-3 rounded-xl border-2 text-left transition-all ${
                           selectedPlan === 'basic'
                             ? 'border-zinc-900 dark:border-white bg-zinc-50 dark:bg-zinc-800/50'
                             : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20'
@@ -433,11 +433,11 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                       >
                         <p className="font-semibold text-sm">Basic</p>
                         <p className="text-lg font-bold mt-1">$10<span className="text-xs font-normal text-zinc-500">/mo</span></p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Email management & automations</p>
+                        <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">Email management & automations</p>
                       </button>
                       <button
                         onClick={() => setSelectedPlan('pro')}
-                        className={`p-3 rounded-xl border-2 text-left transition-all relative ${
+                        className={`p-2.5 sm:p-3 rounded-xl border-2 text-left transition-all relative ${
                           selectedPlan === 'pro'
                             ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-500/10'
                             : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20'
@@ -446,7 +446,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                         <span className="absolute -top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500 text-white">PRO</span>
                         <p className="font-semibold text-sm">Pro</p>
                         <p className="text-lg font-bold mt-1">$40<span className="text-xs font-normal text-zinc-500">/mo</span></p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Web search, outreach, research</p>
+                        <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Web search, outreach, research</p>
                       </button>
                     </div>
                     <Button
@@ -509,7 +509,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                     <p className="text-xs text-zinc-500 dark:text-zinc-400">Enter your code to unlock free access</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-col sm:flex-row">
                   <input
                     type="text"
                     value={accessCode}

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { getCached, setCache } from '@/lib/cache'
 import {
   BarChart3,
   Mail,
@@ -96,25 +97,36 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
     }
   }
 
-  const fetchStats = async () => {
+  const cacheKey = `analytics:${timeframe}`
+
+  const fetchStats = useCallback(async (bypassCache = false) => {
     if (!isEmailConnected) return
+    if (!bypassCache) {
+      const cached = getCached<InboxStats>(cacheKey)
+      if (cached) {
+        setStats(cached)
+        return
+      }
+    }
     setLoading(true)
     setError(null)
     try {
       const res = await fetch(`/api/analytics?timeframe=${timeframe}&t=${Date.now()}`, { cache: 'no-store' })
       if (!res.ok) throw new Error('Failed to fetch analytics')
       const data = await res.json()
-      setStats(data.stats || null)
+      const result = data.stats || null
+      setStats(result)
+      if (result) setCache(cacheKey, result)
     } catch {
       setError('Failed to load analytics. Try again.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [isEmailConnected, timeframe, cacheKey])
 
   useEffect(() => {
     fetchStats()
-  }, [isEmailConnected, timeframe])
+  }, [fetchStats])
 
   if (!isEmailConnected) {
     return (
@@ -159,7 +171,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
               </button>
             ))}
           </div>
-          <Button variant="outline" size="sm" onClick={fetchStats} disabled={loading} className="border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm">
+          <Button variant="outline" size="sm" onClick={() => fetchStats(true)} disabled={loading} className="border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm">
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
@@ -255,7 +267,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
           <div className="flex flex-col items-center justify-center h-full">
             <AlertCircle className="h-8 w-8 text-red-500 mb-4" />
             <p className="text-zinc-500 dark:text-zinc-400 mb-4">{error}</p>
-            <Button variant="outline" onClick={fetchStats} className="border-zinc-200 dark:border-white/10">Try Again</Button>
+            <Button variant="outline" onClick={() => fetchStats(true)} className="border-zinc-200 dark:border-white/10">Try Again</Button>
           </div>
         ) : !stats ? (
           <div className="flex flex-col items-center justify-center h-full">
@@ -364,9 +376,9 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                       <YAxis
                         type="category"
                         dataKey="sender"
-                        width={120}
-                        tick={{ fontSize: 10 }}
-                        tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '...' : v}
+                        width={90}
+                        tick={{ fontSize: 9 }}
+                        tickFormatter={(v: string) => v.length > 14 ? v.slice(0, 14) + '...' : v}
                       />
                       <Tooltip
                         content={({ active, payload, label }) => {
@@ -440,10 +452,10 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                           />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div className="flex justify-center gap-3 sm:gap-4 mt-2 flex-wrap">
+                      <div className="flex justify-center gap-2 sm:gap-4 mt-2 flex-wrap px-2">
                         {breakdownData.map((entry, index) => (
-                          <div key={entry.name} className="flex items-center gap-2 text-xs">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                          <div key={entry.name} className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
+                            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                             {entry.name}
                           </div>
                         ))}

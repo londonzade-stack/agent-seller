@@ -159,7 +159,7 @@ function formatBriefingDetails(result: Record<string, unknown>, status: string, 
     const topSenders = (result.topSenders as Array<{ sender: string; count: number }>) || []
     return (
       <div className="space-y-2 text-sm">
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2 sm:gap-4">
           <div className="px-3 py-1.5 rounded-md bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60">
             <span className="text-stone-500 dark:text-zinc-500 text-xs">Total</span>
             <p className="text-stone-800 dark:text-zinc-200 font-semibold">{total}</p>
@@ -272,8 +272,8 @@ function getBriefingPrompt(log: { task_title: string; status: string; result: Re
 // ─── Styled markdown — Style A warm tones ───────────────────────────
 const markdownComponents = {
   table: ({ children, ...props }: React.ComponentPropsWithoutRef<'table'>) => (
-    <div className="my-3 overflow-x-auto rounded-lg border border-stone-200 dark:border-zinc-800">
-      <table className="w-full border-collapse text-sm" {...props}>{children}</table>
+    <div className="my-3 -mx-1 overflow-x-auto rounded-lg border border-stone-200 dark:border-zinc-800">
+      <table className="min-w-[480px] w-full border-collapse text-sm" {...props}>{children}</table>
     </div>
   ),
   thead: ({ children, ...props }: React.ComponentPropsWithoutRef<'thead'>) => (
@@ -322,7 +322,7 @@ const markdownComponents = {
       : <code className={className} {...props}>{children}</code>
   },
   pre: ({ children, ...props }: React.ComponentPropsWithoutRef<'pre'>) => (
-    <pre className="my-2 bg-stone-100 dark:bg-zinc-800 rounded-lg p-3 overflow-x-auto text-xs" {...props}>{children}</pre>
+    <pre className="my-2 bg-stone-100 dark:bg-zinc-800 rounded-lg p-3 overflow-x-auto text-xs max-w-full" {...props}>{children}</pre>
   ),
   blockquote: ({ children, ...props }: React.ComponentPropsWithoutRef<'blockquote'>) => (
     <blockquote className="my-2 border-l-2 border-stone-300 dark:border-zinc-600 bg-stone-50 dark:bg-zinc-900/30 pl-3 py-1 text-sm" {...props}>{children}</blockquote>
@@ -334,7 +334,7 @@ const markdownComponents = {
 
 function MarkdownContent({ content }: { content: string }) {
   return (
-    <div className="max-w-none text-sm break-words overflow-hidden">
+    <div className="max-w-none text-sm break-words overflow-hidden [&>*]:max-w-full">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{content}</ReactMarkdown>
     </div>
   )
@@ -361,7 +361,7 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const inputSummary = input ? summarizeToolInput(toolName, input) : null
 
   return (
-    <div className={`my-2 rounded-lg border overflow-hidden transition-colors ${
+    <div className={`my-2 rounded-lg border overflow-hidden transition-colors max-w-full ${
       isRunning
         ? 'border-amber-300 dark:border-amber-700/40 bg-amber-50/60 dark:bg-amber-950/20'
         : isError
@@ -389,9 +389,9 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
           {input && Object.keys(input).length > 0 && (
             <div>
               <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">What it&apos;s doing</div>
-              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5 break-words overflow-hidden">
                 {humanizeToolInput(toolName, input).map((line, i) => (
-                  <div key={i}>{line}</div>
+                  <div key={i} className="break-words">{line}</div>
                 ))}
               </div>
             </div>
@@ -399,9 +399,9 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
           {isDone && output && (
             <div>
               <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">Result</div>
-              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5 break-words overflow-hidden">
                 {humanizeToolOutput(toolName, output).map((line, i) => (
-                  <div key={i}>{line}</div>
+                  <div key={i} className="break-words">{line}</div>
                 ))}
               </div>
             </div>
@@ -1509,7 +1509,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       )}
 
       {/* Input — Style A bottom bar */}
-      <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113]">
+      <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113] shrink-0">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
             <Input
