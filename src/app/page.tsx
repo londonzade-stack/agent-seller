@@ -20,8 +20,11 @@ import {
   BarChart3,
   Inbox,
   LayoutDashboard,
+  Globe,
+  Search,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
+import { MockConversationDemo } from "@/components/mock-conversation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -103,47 +106,56 @@ export default async function Home() {
             </div>
 
             {/* Dashboard Preview */}
-            <Card className="w-full max-w-4xl bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-white/10 p-0 overflow-hidden">
-              <div className="flex border-b border-zinc-200 dark:border-white/10">
-                <div className="w-48 border-r border-zinc-200 dark:border-white/10 p-4 space-y-2">
-                  <div className="flex items-center gap-2 px-2 py-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-lg text-xs font-medium">
-                    <Brain className="h-3 w-3" /> AI Agent
+            <Card className="w-full max-w-4xl bg-[#faf8f5] dark:bg-[#111113] border-zinc-200 dark:border-white/10 p-0 overflow-hidden shadow-xl">
+              <div className="flex">
+                {/* Sidebar */}
+                <div className="w-48 border-r border-zinc-200/60 dark:border-white/[0.06] p-3 space-y-1 bg-[#faf8f5] dark:bg-[#111113]">
+                  <div className="flex items-center gap-2 px-2.5 py-2 bg-stone-200/60 dark:bg-white/[0.06] rounded-lg text-xs font-medium">
+                    <Brain className="h-3.5 w-3.5" /> BLITZ Agent
                   </div>
-                  <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-500">
-                    <Inbox className="h-3 w-3" /> Inbox
+                  <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
+                    <Inbox className="h-3.5 w-3.5" /> Inbox
                   </div>
-                  <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-500">
-                    <FileText className="h-3 w-3" /> Drafts
+                  <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
+                    <FileText className="h-3.5 w-3.5" /> Drafts
                   </div>
-                  <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-500">
-                    <Users className="h-3 w-3" /> Contacts
+                  <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
+                    <Users className="h-3.5 w-3.5" /> Contacts
                   </div>
-                  <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-zinc-500">
-                    <BarChart3 className="h-3 w-3" /> Analytics
+                  <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
+                    <BarChart3 className="h-3.5 w-3.5" /> Analytics
+                  </div>
+                  <div className="flex items-center justify-between px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
+                    <span className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Outreach</span>
+                    <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-blue-500/10 text-blue-500">PRO</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
+                    <Zap className="h-3.5 w-3.5" /> Automations
                   </div>
                 </div>
-                <div className="flex-1 p-6">
-                  <div className="flex flex-col items-center py-6">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mb-3">
+                {/* Main content */}
+                <div className="flex-1 p-6 bg-white dark:bg-black">
+                  <div className="flex flex-col items-center py-4">
+                    <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
                       <Brain className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
                     </div>
-                    <h3 className="text-lg font-medium mb-1">How can I help?</h3>
-                    <p className="text-zinc-500 text-xs mb-4">Search, draft, organize, analyze</p>
+                    <h3 className="text-base font-semibold mb-0.5">How can I help?</h3>
+                    <p className="text-zinc-400 dark:text-zinc-500 text-xs mb-4">Search, draft, organize, analyze</p>
                     <div className="flex flex-wrap justify-center gap-2 mb-4">
-                      <Card className="bg-zinc-100 dark:bg-zinc-800/50 border-zinc-200 dark:border-white/10 px-3 py-2 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
-                        <span className="text-xs">Show unread from today</span>
+                      <Card className="bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/60 dark:border-white/10 px-3 py-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                        <span className="text-xs">Find companies to sell to</span>
                       </Card>
-                      <Card className="bg-zinc-100 dark:bg-zinc-800/50 border-zinc-200 dark:border-white/10 px-3 py-2 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+                      <Card className="bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/60 dark:border-white/10 px-3 py-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                        <span className="text-xs">Analyze my inbox</span>
+                      </Card>
+                      <Card className="bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200/60 dark:border-white/10 px-3 py-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
                         <span className="text-xs">Draft a follow-up</span>
-                      </Card>
-                      <Card className="bg-zinc-100 dark:bg-zinc-800/50 border-zinc-200 dark:border-white/10 px-3 py-2 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
-                        <span className="text-xs">Archive old emails</span>
                       </Card>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-2">
+                  <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-2 border border-zinc-200/60 dark:border-white/10">
                     <Input
-                      placeholder="Ask your AI agent anything..."
+                      placeholder="Ask BLITZ anything..."
                       className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                       readOnly
                     />
@@ -155,6 +167,67 @@ export default async function Home() {
               </div>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* Sales & Outreach Section */}
+      <section className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
+        <div className="mx-auto max-w-7xl">
+          <ScrollReveal>
+            <div className="text-center mb-16">
+              <Badge variant="secondary" className="mb-4 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 border-0 px-3 py-1 text-xs">
+                <Sparkles className="mr-1 h-3 w-3" />
+                Pro Plan
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">Sales outreach, supercharged</h2>
+              <p className="text-zinc-500 max-w-2xl mx-auto">
+                Research companies, find contacts, and draft personalized outreach emails — all powered by AI and real web data.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <ScrollReveal delay={0}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 h-full">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center mb-4">
+                  <Globe className="h-6 w-6 text-blue-500 dark:text-blue-400" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Web Search</h3>
+                <p className="text-zinc-500 text-sm">Search the web for companies, news, and market intel. Powered by neural search for relevant results.</p>
+              </Card>
+            </ScrollReveal>
+            <ScrollReveal delay={100}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 h-full">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center mb-4">
+                  <Search className="h-6 w-6 text-blue-500 dark:text-blue-400" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Company Research</h3>
+                <p className="text-zinc-500 text-sm">Deep dive into any company — website, recent news, leadership, and competitive landscape — in seconds.</p>
+              </Card>
+            </ScrollReveal>
+            <ScrollReveal delay={200}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 h-full">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center mb-4">
+                  <Mail className="h-6 w-6 text-blue-500 dark:text-blue-400" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">AI Cold Outreach</h3>
+                <p className="text-zinc-500 text-sm">Draft personalized cold emails backed by real research. Reference specific news, products, and values.</p>
+              </Card>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Mock Conversation Demo */}
+      <section className="py-12 px-6">
+        <div className="mx-auto max-w-4xl">
+          <ScrollReveal>
+            <div className="text-center mb-8">
+              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">See It In Action</p>
+              <h3 className="text-3xl md:text-4xl font-bold">Let BLITZ handle the work</h3>
+            </div>
+            <MockConversationDemo />
+          </ScrollReveal>
         </div>
       </section>
 
@@ -439,7 +512,7 @@ export default async function Home() {
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</Link>
-              <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
+              <a href="mailto:support@emailligence.ai" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
               &copy; 2026 Emailligence. All rights reserved.

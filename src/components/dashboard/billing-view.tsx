@@ -22,6 +22,7 @@ import {
 
 interface BillingStatus {
   status: string
+  plan: string | null
   trialEnd: string | null
   currentPeriodEnd: string | null
   hasStripeCustomer: boolean
@@ -29,9 +30,10 @@ interface BillingStatus {
 
 interface BillingViewProps {
   onStatusChange?: (status: string) => void
+  onPlanChange?: (plan: string) => void
 }
 
-export function BillingView({ onStatusChange }: BillingViewProps) {
+export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) {
   const router = useRouter()
   const [billing, setBilling] = useState<BillingStatus | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,6 +58,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
       const data = await res.json()
       setBilling(data)
       onStatusChange?.(data.status)
+      if (data.plan) onPlanChange?.(data.plan)
     } catch {
       setError('Failed to load billing information. Try again.')
     } finally {
@@ -67,11 +70,18 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
     fetchBillingStatus()
   }, [])
 
-  const handleCheckout = async () => {
+  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro'>('basic')
+
+  const handleCheckout = async (plan?: 'basic' | 'pro') => {
+    const checkoutPlan = plan || selectedPlan
     setActionLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/billing/checkout', { method: 'POST' })
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: checkoutPlan }),
+      })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'Failed to start checkout. Please try again.')
@@ -255,7 +265,9 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                   </div>
                   <div>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
-                    <p className="text-lg font-semibold">Emailligence Pro</p>
+                    <p className="text-lg font-semibold">
+                      Emailligence {billing.plan === 'pro' ? 'Pro' : 'Basic'}
+                    </p>
                   </div>
                 </div>
                 <span className={`text-sm font-medium px-2.5 py-1 rounded-full ${getStatusBg(billing.status)} ${getStatusColor(billing.status)}`}>
@@ -266,7 +278,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
               <div className="border-t border-zinc-200 dark:border-white/10 pt-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500 dark:text-zinc-400">Price</span>
-                  <span className="font-medium">$10 / month</span>
+                  <span className="font-medium">{billing.plan === 'pro' ? '$40' : '$10'} / month</span>
                 </div>
 
                 {billing.status === 'trialing' && (
@@ -319,7 +331,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                         : 'Subscribe before your trial ends to keep uninterrupted access.'}
                     </p>
                     <Button
-                      onClick={handleCheckout}
+                      onClick={() => handleCheckout()}
                       disabled={actionLoading}
                       className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
                       size="sm"
@@ -349,7 +361,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                       Subscribe to unlock full access to your AI-powered sales assistant.
                     </p>
                     <Button
-                      onClick={handleCheckout}
+                      onClick={() => handleCheckout()}
                       disabled={actionLoading}
                       className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
                       size="sm"
@@ -385,7 +397,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
                         : 'Subscribe again to regain access to all features.'}
                     </p>
                     <Button
-                      onClick={handleCheckout}
+                      onClick={() => handleCheckout()}
                       disabled={actionLoading}
                       className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
                       size="sm"
@@ -402,22 +414,68 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
               </Card>
             )}
 
-            {/* Actions Card */}
+            {/* Plan Selection / Actions */}
             <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
-              <h3 className="font-medium mb-4">Quick Actions</h3>
+              <h3 className="font-medium mb-4">
+                {(billing.status === 'active' || billing.status === 'past_due') ? 'Manage Subscription' : 'Choose a Plan'}
+              </h3>
               <div className="space-y-3">
                 {(billing.status === 'trialing' || billing.status === 'canceled' || billing.status === 'paused' || billing.status === 'none') && (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setSelectedPlan('basic')}
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                          selectedPlan === 'basic'
+                            ? 'border-zinc-900 dark:border-white bg-zinc-50 dark:bg-zinc-800/50'
+                            : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20'
+                        }`}
+                      >
+                        <p className="font-semibold text-sm">Basic</p>
+                        <p className="text-lg font-bold mt-1">$10<span className="text-xs font-normal text-zinc-500">/mo</span></p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Email management & automations</p>
+                      </button>
+                      <button
+                        onClick={() => setSelectedPlan('pro')}
+                        className={`p-3 rounded-xl border-2 text-left transition-all relative ${
+                          selectedPlan === 'pro'
+                            ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-500/10'
+                            : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20'
+                        }`}
+                      >
+                        <span className="absolute -top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500 text-white">PRO</span>
+                        <p className="font-semibold text-sm">Pro</p>
+                        <p className="text-lg font-bold mt-1">$40<span className="text-xs font-normal text-zinc-500">/mo</span></p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Web search, outreach, hourly cron</p>
+                      </button>
+                    </div>
+                    <Button
+                      onClick={() => handleCheckout()}
+                      disabled={actionLoading}
+                      className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <CreditCard className="h-4 w-4 mr-2" />
+                      )}
+                      Subscribe — {selectedPlan === 'pro' ? '$40' : '$10'}/month
+                    </Button>
+                  </>
+                )}
+
+                {billing.plan === 'basic' && (billing.status === 'active') && (
                   <Button
-                    onClick={handleCheckout}
+                    onClick={() => handleCheckout('pro')}
                     disabled={actionLoading}
-                    className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
                   >
                     {actionLoading ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
-                      <CreditCard className="h-4 w-4 mr-2" />
+                      <ArrowRight className="h-4 w-4 mr-2" />
                     )}
-                    Subscribe Now — $10/month
+                    Upgrade to Pro — $40/month
                   </Button>
                 )}
 
@@ -440,7 +498,7 @@ export function BillingView({ onStatusChange }: BillingViewProps) {
             </Card>
 
             {/* Access Code */}
-            {(billing.status === 'none' || billing.status === 'canceled' || billing.status === 'paused') && (
+            {(billing.status === 'none' || billing.status === 'trialing' || billing.status === 'canceled' || billing.status === 'paused') && (
               <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">

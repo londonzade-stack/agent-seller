@@ -52,7 +52,7 @@ export default function PrivacyPage() {
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 Emailligence (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) provides an AI-powered email management
                 platform. This Privacy Policy explains how we collect, use, store, and protect your personal
-                information when you use our service at agentseller.com (the &quot;Service&quot;).
+                information when you use our service at emailligence.ai (the &quot;Service&quot;).
               </p>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mt-3">
                 By using Emailligence, you agree to the collection and use of information as described in
@@ -238,7 +238,7 @@ export default function PrivacyPage() {
                 please contact us at:
               </p>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mt-3">
-                <strong className="text-zinc-900 dark:text-white">Email:</strong> privacy@agentseller.com
+                <strong className="text-zinc-900 dark:text-white">Email:</strong> privacy@emailligence.ai
               </p>
             </section>
           </div>
@@ -258,7 +258,7 @@ export default function PrivacyPage() {
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</Link>
-              <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
+              <a href="mailto:support@emailligence.ai" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
               &copy; 2026 Emailligence. All rights reserved.

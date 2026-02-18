@@ -254,7 +254,7 @@ export function StyleCTerminal() {
         <div className="flex items-center gap-2 ml-3">
           <Terminal className="h-4 w-4 text-cyan-500" />
           <span className="text-sm text-zinc-400">
-            agent-seller
+            emailligence
           </span>
           <span className="text-zinc-700">~</span>
           <span className="text-sm text-cyan-400 font-medium">

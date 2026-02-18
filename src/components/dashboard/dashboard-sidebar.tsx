@@ -26,9 +26,11 @@ import {
   Trash2,
   ChevronDown,
   Settings,
+  Repeat2,
+  Globe,
 } from 'lucide-react'
 
-export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'billing'
+export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'automations' | 'outreach' | 'billing'
 
 interface ChatSession {
   id: string
@@ -47,6 +49,7 @@ interface DashboardSidebarProps {
   onMobileClose?: () => void
   billingGated?: boolean
   activeChatId?: string
+  userPlan?: string
 }
 
 function formatShortTime(dateStr: string) {
@@ -97,6 +100,7 @@ export function DashboardSidebar({
   onMobileClose,
   billingGated,
   activeChatId,
+  userPlan,
 }: DashboardSidebarProps) {
   const router = useRouter()
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
@@ -181,11 +185,13 @@ export function DashboardSidebar({
   // Show chats panel when on agent view (unless user forced nav open)
   const showChatsPanel = activeView === 'agent' && !forceNav
 
-  const navItems: { id: DashboardView; label: string; icon: typeof Zap }[] = [
+  const navItems: { id: DashboardView; label: string; icon: typeof Zap; proBadge?: boolean }[] = [
     { id: 'agent', label: 'BLITZ', icon: Zap },
+    { id: 'outreach', label: 'Outreach', icon: Globe, proBadge: true },
     { id: 'drafts', label: 'Drafts', icon: FileText },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'automations', label: 'Automations', icon: Repeat2 },
     { id: 'email', label: 'Email Connection', icon: Mail },
     { id: 'billing', label: 'Billing', icon: CreditCard },
   ]
@@ -369,6 +375,9 @@ export function DashboardSidebar({
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {item.proBadge && (
+                <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-400/10 dark:text-blue-400">PRO</span>
+              )}
               {isLocked && (
                 <Lock className="h-3 w-3 ml-auto" />
               )}

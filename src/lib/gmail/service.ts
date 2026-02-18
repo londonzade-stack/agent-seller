@@ -1,6 +1,7 @@
 import { gmail_v1 } from 'googleapis'
 import { getGmailClient, refreshAccessToken } from './client'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseAdmin, SupabaseClient } from '@supabase/supabase-js'
 
 interface EmailConnection {
   id: string
@@ -11,9 +12,25 @@ interface EmailConnection {
   token_expiry: string
 }
 
+// Create a Supabase admin client (service role) for server-side/cron usage
+function getAdminClient(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error('Missing Supabase environment variables for admin client')
+  }
+  return createSupabaseAdmin(url, serviceKey)
+}
+
 // Get user's Gmail connection from Supabase
-export async function getUserEmailConnection(userId: string): Promise<EmailConnection | null> {
-  const supabase = await createClient()
+// Uses cookie-based client for user-facing requests, admin client for cron/server-side
+export async function getUserEmailConnection(userId: string, adminClient?: SupabaseClient): Promise<EmailConnection | null> {
+  let supabase: SupabaseClient
+  if (adminClient) {
+    supabase = adminClient
+  } else {
+    supabase = await createClient()
+  }
 
   const { data, error } = await supabase
     .from('user_email_connections')
@@ -30,8 +47,9 @@ export async function getUserEmailConnection(userId: string): Promise<EmailConne
 }
 
 // Get authenticated Gmail client for a user
-export async function getAuthenticatedGmailClient(userId: string) {
-  const connection = await getUserEmailConnection(userId)
+// Pass adminClient when calling from cron jobs / server-side contexts without cookies
+export async function getAuthenticatedGmailClient(userId: string, adminClient?: SupabaseClient) {
+  const connection = await getUserEmailConnection(userId, adminClient)
 
   if (!connection) {
     throw new Error('No Gmail connection found for user')
@@ -45,8 +63,8 @@ export async function getAuthenticatedGmailClient(userId: string) {
     // Refresh the token
     const newCredentials = await refreshAccessToken(connection.refresh_token)
 
-    // Update the token in database
-    const supabase = await createClient()
+    // Update the token in database — use admin client if available, otherwise cookie-based
+    const supabase = adminClient || getAdminClient()
     await supabase
       .from('user_email_connections')
       .update({
@@ -145,15 +163,17 @@ function extractAttachments(payload: gmail_v1.Schema$MessagePart, _messageId: st
 }
 
 // Scan inbox for recent emails
+// Pass adminClient when calling from cron/server-side contexts
 export async function scanInboxForEmails(
   userId: string,
   options: {
     maxResults?: number
     query?: string
     after?: Date
+    adminClient?: SupabaseClient
   } = {}
 ) {
-  const gmail = await getAuthenticatedGmailClient(userId)
+  const gmail = await getAuthenticatedGmailClient(userId, options.adminClient)
 
   const { maxResults = 20, query = '', after } = options
 
@@ -557,8 +577,8 @@ export async function createLabel(userId: string, name: string, options?: {
   }
 }
 
-export async function applyLabels(userId: string, emailIds: string[], labelIds: string[]) {
-  const gmail = await getAuthenticatedGmailClient(userId)
+export async function applyLabels(userId: string, emailIds: string[], labelIds: string[], adminClient?: SupabaseClient) {
+  const gmail = await getAuthenticatedGmailClient(userId, adminClient)
 
   // Use batch modify for efficiency
   await gmail.users.messages.batchModify({
@@ -587,8 +607,8 @@ export async function removeLabels(userId: string, emailIds: string[], labelIds:
 }
 
 // ARCHIVE, TRASH, DELETE
-export async function archiveEmails(userId: string, emailIds: string[]) {
-  const gmail = await getAuthenticatedGmailClient(userId)
+export async function archiveEmails(userId: string, emailIds: string[], adminClient?: SupabaseClient) {
+  const gmail = await getAuthenticatedGmailClient(userId, adminClient)
 
   await gmail.users.messages.batchModify({
     userId: 'me',
@@ -599,6 +619,62 @@ export async function archiveEmails(userId: string, emailIds: string[]) {
   })
 
   return { success: true, archivedCount: emailIds.length }
+}
+
+// Bulk trash by search query — paginates through ALL results automatically
+// This runs server-side in one tool call, no AI looping needed
+export async function bulkTrashByQuery(userId: string, query: string, maxToTrash: number = 50000, adminClient?: SupabaseClient) {
+  const gmail = await getAuthenticatedGmailClient(userId, adminClient)
+
+  let totalTrashed = 0
+  let pageToken: string | undefined
+  const SEARCH_PAGE = 500    // Gmail max per page
+  const BATCH_SIZE = 1000    // batchModify max per call
+
+  while (totalTrashed < maxToTrash) {
+    // Search for matching emails
+    const response = await gmail.users.messages.list({
+      userId: 'me',
+      maxResults: Math.min(SEARCH_PAGE, maxToTrash - totalTrashed),
+      q: query.trim() || undefined,
+      pageToken,
+    })
+
+    if (!response.data.messages || response.data.messages.length === 0) break
+
+    const ids = response.data.messages.map(m => m.id!).filter(Boolean)
+
+    // Trash in batches of 1000
+    for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+      const batch = ids.slice(i, i + BATCH_SIZE)
+      await gmail.users.messages.batchModify({
+        userId: 'me',
+        requestBody: {
+          ids: batch,
+          addLabelIds: ['TRASH'],
+          removeLabelIds: ['INBOX'],
+        },
+      })
+      totalTrashed += batch.length
+    }
+
+    pageToken = response.data.nextPageToken || undefined
+    // If no more pages, break — but also re-search without pageToken
+    // because trashing removes emails from results, so next page shifts
+    if (!pageToken) {
+      // Check if there are still more matching emails
+      const check = await gmail.users.messages.list({
+        userId: 'me',
+        maxResults: 1,
+        q: query.trim() || undefined,
+      })
+      if (!check.data.messages || check.data.messages.length === 0) break
+      // Still more to trash, loop again from the start
+      pageToken = undefined
+    }
+  }
+
+  return { success: true, trashedCount: totalTrashed }
 }
 
 export async function trashEmails(userId: string, emailIds: string[]) {
@@ -1021,9 +1097,9 @@ function parseUnsubscribeHeader(header: string): { urls: string[]; mailto: strin
 // Scan emails for unsubscribe options
 export async function findUnsubscribableEmails(
   userId: string,
-  options: { maxResults?: number; query?: string } = {}
+  options: { maxResults?: number; query?: string; adminClient?: SupabaseClient } = {}
 ) {
-  const gmail = await getAuthenticatedGmailClient(userId)
+  const gmail = await getAuthenticatedGmailClient(userId, options.adminClient)
   const { maxResults = 50, query = '' } = options
 
   // Search for emails with List-Unsubscribe header (common in newsletters/marketing)
@@ -1102,9 +1178,10 @@ export async function findUnsubscribableEmails(
 // Execute one-click unsubscribe (RFC 8058)
 export async function unsubscribeFromEmail(
   userId: string,
-  emailId: string
+  emailId: string,
+  adminClient?: SupabaseClient
 ): Promise<{ success: boolean; method: string; message: string }> {
-  const gmail = await getAuthenticatedGmailClient(userId)
+  const gmail = await getAuthenticatedGmailClient(userId, adminClient)
 
   const message = await gmail.users.messages.get({
     userId: 'me',
@@ -1167,7 +1244,8 @@ export async function unsubscribeFromEmail(
 // Bulk unsubscribe from multiple emails
 export async function bulkUnsubscribe(
   userId: string,
-  emailIds: string[]
+  emailIds: string[],
+  adminClient?: SupabaseClient
 ): Promise<{ succeeded: number; failed: number; results: Array<{ from: string; success: boolean; method: string; message: string }> }> {
   const results = []
   let succeeded = 0
@@ -1175,7 +1253,7 @@ export async function bulkUnsubscribe(
 
   for (const emailId of emailIds) {
     try {
-      const result = await unsubscribeFromEmail(userId, emailId)
+      const result = await unsubscribeFromEmail(userId, emailId, adminClient)
       results.push({ from: '', ...result })
       if (result.success) succeeded++
       else failed++

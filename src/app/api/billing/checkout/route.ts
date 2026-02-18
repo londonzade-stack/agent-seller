@@ -12,7 +12,20 @@ function getAdminClient() {
   return createSupabaseAdmin(url, serviceKey)
 }
 
-export async function POST() {
+const PLAN_CONFIG = {
+  basic: {
+    name: 'Emailligence Basic',
+    description: 'Email management, automations, and analytics',
+    amount: 1000, // $10.00
+  },
+  pro: {
+    name: 'Emailligence Pro',
+    description: 'Everything in Basic + Web Search, Sales Outreach, Hourly Automations',
+    amount: 4000, // $40.00
+  },
+} as const
+
+export async function POST(req: Request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -20,6 +33,17 @@ export async function POST() {
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
     }
+
+    // Parse plan from request body (default to 'basic')
+    let plan: 'basic' | 'pro' = 'basic'
+    try {
+      const body = await req.json()
+      if (body.plan === 'pro') plan = 'pro'
+    } catch {
+      // No body or invalid JSON — default to basic
+    }
+
+    const planConfig = PLAN_CONFIG[plan]
 
     // Use admin client to bypass RLS for writes
     const admin = getAdminClient()
@@ -56,7 +80,7 @@ export async function POST() {
     // Determine the app URL for redirects
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    // Create a Checkout session for $10/month subscription
+    // Create a Checkout session with plan-specific pricing
     const session = await getStripe().checkout.sessions.create({
       customer: stripeCustomerId,
       mode: 'subscription',
@@ -65,10 +89,10 @@ export async function POST() {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'Emailligence Pro',
-              description: 'Full access to Emailligence — AI-powered sales assistant',
+              name: planConfig.name,
+              description: planConfig.description,
             },
-            unit_amount: 1000, // $10.00
+            unit_amount: planConfig.amount,
             recurring: { interval: 'month' },
           },
           quantity: 1,
@@ -76,10 +100,17 @@ export async function POST() {
       ],
       subscription_data: {
         trial_period_days: 14,
+        metadata: { plan }, // Store plan in Stripe subscription metadata
       },
       success_url: `${appUrl}/dashboard?billing=success`,
       cancel_url: `${appUrl}/dashboard?billing=canceled`,
     })
+
+    // Store the plan in subscriptions table immediately
+    await admin
+      .from('subscriptions')
+      .update({ plan })
+      .eq('user_id', user.id)
 
     return Response.json({ url: session.url })
   } catch (error) {

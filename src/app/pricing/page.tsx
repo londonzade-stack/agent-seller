@@ -18,18 +18,32 @@ import {
   Settings,
   UserCog,
   BadgePercent,
+  Globe,
+  Search,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function PricingPage() {
-  const individualFeatures = [
+  const basicFeatures = [
     "Unlimited AI-generated email drafts",
     "Smart lead detection from inbox",
     "Custom persona templates",
     "Review before send workflow",
     "Activity tracking & analytics",
     "Email integration (Gmail, Outlook)",
-    "Quick actions & automations",
+    "Daily/weekly/monthly automations",
+    "30+ email management tools",
+  ];
+
+  const proFeatures = [
+    "Everything in Basic",
+    "Web search & research via Exa.ai",
+    "Sales outreach dashboard",
+    "Company research & intel",
+    "Contact discovery tools",
+    "Hourly automations",
+    "AI-powered cold outreach drafts",
     "Priority support",
   ];
 
@@ -82,82 +96,118 @@ export default function PricingPage() {
                 Simple, transparent pricing
               </h1>
               <p className="text-zinc-500 max-w-2xl mx-auto text-lg">
-                Start with a simple per-user plan, or talk to us about custom pricing for your team.
+                Start with Basic email management or unlock the full power of AI-driven sales outreach with Pro.
               </p>
             </div>
           </ScrollReveal>
 
-          {/* Pricing Cards */}
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Individual Plan */}
+          {/* Pricing Cards — 3 columns */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Basic Plan */}
             <ScrollReveal delay={0}>
-              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 h-full">
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 h-full flex flex-col">
                 <div className="text-center mb-8">
                   <Badge variant="secondary" className="mb-4 bg-zinc-100 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/10">
                     <Users className="mr-2 h-3 w-3" />
-                    Per User
+                    Basic
                   </Badge>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-5xl md:text-6xl font-bold">$10</span>
+                    <span className="text-5xl font-bold">$10</span>
                     <span className="text-zinc-500">/month</span>
                   </div>
-                  <p className="text-zinc-500 text-sm">per user account</p>
+                  <p className="text-zinc-500 text-sm">per user</p>
                 </div>
 
-                <div className="space-y-4 mb-8">
-                  {individualFeatures.map((feature, i) => (
+                <div className="space-y-3 mb-8 flex-1">
+                  {basicFeatures.map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                       <span className="text-sm">{feature}</span>
                     </div>
                   ))}
                 </div>
 
                 <Link href="/auth/sign-up">
-                  <Button className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" size="lg">
+                  <Button variant="outline" className="w-full border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" size="lg">
                     Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
                 <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
                   14-day free trial. No credit card required.
                 </p>
-                <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-2">
-                  Already have an account?{" "}
-                  <Link href="/dashboard" className="underline hover:text-zinc-600 dark:hover:text-zinc-400">
-                    Go to Billing in your dashboard
-                  </Link>
+              </Card>
+            </ScrollReveal>
+
+            {/* Pro Plan — highlighted */}
+            <ScrollReveal delay={100}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-blue-500 dark:border-blue-400 p-8 relative h-full flex flex-col">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-blue-500 text-white hover:bg-blue-500 px-3 py-1 text-xs">
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    Most Popular
+                  </Badge>
+                </div>
+
+                <div className="text-center mb-8">
+                  <Badge variant="secondary" className="mb-4 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-400/10">
+                    <Zap className="mr-2 h-3 w-3" />
+                    Pro
+                  </Badge>
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="text-5xl font-bold">$40</span>
+                    <span className="text-zinc-500">/month</span>
+                  </div>
+                  <p className="text-zinc-500 text-sm">per user</p>
+                </div>
+
+                <div className="space-y-3 mb-8 flex-1">
+                  {proFeatures.map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <CheckCircle2 className={`h-4 w-4 shrink-0 ${i === 0 ? 'text-emerald-500' : 'text-blue-500'}`} />
+                      <span className={`text-sm ${i === 0 ? 'text-zinc-500' : 'font-medium'}`}>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link href="/auth/sign-up">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600" size="lg">
+                    Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
+                  14-day free trial. No credit card required.
                 </p>
               </Card>
             </ScrollReveal>
 
             {/* Business Plan */}
-            <ScrollReveal delay={150}>
-              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-zinc-300 dark:border-white/20 p-8 relative h-full">
+            <ScrollReveal delay={200}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 h-full flex flex-col">
                 <div className="text-center mb-8">
                   <Badge variant="secondary" className="mb-4 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-900 dark:hover:bg-white">
                     <Building className="mr-2 h-3 w-3" />
                     Business
                   </Badge>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-5xl md:text-6xl font-bold">Custom</span>
+                    <span className="text-5xl font-bold">Custom</span>
                   </div>
                   <p className="text-zinc-500 text-sm">tailored to your team</p>
                 </div>
 
                 <p className="text-zinc-500 text-sm text-center mb-6">
-                  Get a discounted per-user rate with volume pricing, plus dedicated support and custom integrations for your team.
+                  Everything in Pro plus dedicated support and custom integrations.
                 </p>
 
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3 mb-8 flex-1">
                   {businessFeatures.map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <feature.icon className="h-5 w-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                      <feature.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
                       <span className="text-sm">{feature.text}</span>
                     </div>
                   ))}
                 </div>
 
-                <a href="mailto:sales@agentseller.com">
+                <a href="mailto:sales@emailligence.ai">
                   <Button variant="outline" className="w-full border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" size="lg">
                     Contact Sales <Mail className="ml-2 h-4 w-4" />
                   </Button>
@@ -168,16 +218,23 @@ export default function PricingPage() {
               </Card>
             </ScrollReveal>
           </div>
+
+          <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-6">
+            Already have an account?{" "}
+            <Link href="/dashboard" className="underline hover:text-zinc-600 dark:hover:text-zinc-400">
+              Go to Billing in your dashboard
+            </Link>
+          </p>
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* Features Comparison */}
       <section className="py-20 px-6 border-t border-zinc-200 dark:border-white/10">
         <div className="mx-auto max-w-7xl">
           <ScrollReveal>
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything included</h2>
-              <p className="text-zinc-500">No feature gates. Every user gets full access.</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Compare plans</h2>
+              <p className="text-zinc-500">See what each plan includes.</p>
             </div>
           </ScrollReveal>
 
@@ -185,33 +242,33 @@ export default function PricingPage() {
             {[
               {
                 icon: Mail,
-                title: "Smart Lead Detection",
-                description: "Automatically scan your inbox for potential leads and opportunities."
+                title: "Email Management",
+                description: "30+ tools to search, draft, send, archive, label, and organize your inbox with AI."
               },
               {
                 icon: Brain,
                 title: "AI-Powered Drafts",
-                description: "Generate personalized email drafts based on context and persona."
+                description: "Generate personalized email drafts based on context, thread history, and persona."
               },
               {
                 icon: Shield,
                 title: "Review Before Send",
-                description: "Every AI-generated email goes through you first for approval."
+                description: "Every AI-generated email goes through you first for approval. Full control, always."
               },
               {
-                icon: FileText,
-                title: "Custom Personas",
-                description: "Create different persona templates for different contexts."
+                icon: Globe,
+                title: "Web Search (Pro)",
+                description: "Search the web for companies, news, and intel. Powered by Exa.ai neural search."
               },
               {
-                icon: Zap,
-                title: "Quick Actions",
-                description: "One-click actions for common tasks and automations."
+                icon: Search,
+                title: "Company Research (Pro)",
+                description: "Deep dive into any company — website, recent news, leadership, and competitive info."
               },
               {
                 icon: Clock,
-                title: "Activity Tracking",
-                description: "Track all your email activity and get AI-powered insights."
+                title: "Hourly Automations (Pro)",
+                description: "Run your automations every hour for faster response times and real-time inbox management."
               },
             ].map((feature, i) => (
               <ScrollReveal key={i} delay={i * 80}>
@@ -244,8 +301,12 @@ export default function PricingPage() {
                 a: "You get 14 days of full access to Emailligence with no credit card required. After the trial, you can choose to subscribe or your account will be paused."
               },
               {
-                q: "Can I add more users later?",
-                a: "Yes, you can add or remove users at any time. Each user is billed at $10/month and gets full access to all features."
+                q: "What's the difference between Basic and Pro?",
+                a: "Basic includes all email management tools, AI drafts, automations, and analytics. Pro adds web search via Exa.ai, company research, sales outreach dashboard, contact discovery, hourly automations, and priority support."
+              },
+              {
+                q: "Can I upgrade from Basic to Pro later?",
+                a: "Yes! You can upgrade to Pro at any time from your dashboard's billing page. You'll immediately get access to all Pro features."
               },
               {
                 q: "What email providers do you support?",
@@ -287,9 +348,11 @@ export default function PricingPage() {
                   Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10">
-                Schedule a Demo
-              </Button>
+              <a href="mailto:sales@emailligence.ai">
+                <Button size="lg" variant="outline" className="border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10">
+                  Schedule a Demo
+                </Button>
+              </a>
             </div>
           </div>
         </ScrollReveal>
@@ -308,7 +371,7 @@ export default function PricingPage() {
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</Link>
-              <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
+              <a href="mailto:support@emailligence.ai" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
               &copy; 2026 Emailligence. All rights reserved.

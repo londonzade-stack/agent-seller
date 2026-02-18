@@ -9,6 +9,8 @@ import { DraftsView } from './drafts-view'
 import { ContactsView } from './contacts-view'
 import { AnalyticsView } from './analytics-view'
 import { BillingView } from './billing-view'
+import { AutomationsView } from './automations-view'
+import { OutreachView } from './outreach-view'
 import { CommandPalette } from './command-palette'
 import { Brain, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -45,7 +47,7 @@ function getInitialViewFromUrl(): DashboardView {
   const chatId = params.get('chat')
   if (chatId) return 'agent'
   const urlView = params.get('view') as DashboardView | null
-  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'email-connect', 'billing'].includes(urlView)) {
+  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'automations', 'outreach', 'email-connect', 'billing'].includes(urlView)) {
     return urlView
   }
   return 'agent'
@@ -64,7 +66,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [chatSessionId, setChatSessionId] = useState<string | undefined>(getInitialChatFromUrl)
   const [chatKey, setChatKey] = useState(() => getInitialChatFromUrl() ? 1 : 0)
+  const [pendingPrompt, setPendingPrompt] = useState<string | undefined>()
   const [billingStatus, setBillingStatus] = useState<string | null>(null)
+  const [userPlan, setUserPlan] = useState<string>('basic')
   const [billingLoaded, setBillingLoaded] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [urlChatRestored, setUrlChatRestored] = useState(true)
@@ -92,6 +96,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
     // Clear session ID when navigating to agent via sidebar (starts new chat)
     if (view === 'agent') {
       setChatSessionId(undefined)
+      setPendingPrompt(undefined)
       setChatKey(k => k + 1)
     }
     setActiveView(view)
@@ -100,6 +105,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const searchParams = useSearchParams()
 
   // Check billing status on mount (and after returning from Stripe checkout)
+  // Only runs once on mount — not on every searchParams change
   useEffect(() => {
     const checkBilling = async () => {
       try {
@@ -107,6 +113,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         if (res.ok) {
           const data = await res.json()
           setBillingStatus(data.status)
+          if (data.plan) setUserPlan(data.plan)
           const isValid = data.status === 'active' || data.status === 'trialing'
           // If returning from successful checkout, go to agent view
           if (isValid && searchParams.get('billing') === 'success') {
@@ -115,6 +122,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             // If no valid billing, force to billing view
             setActiveView('billing')
           }
+          // Otherwise, leave the current view alone (don't redirect away from billing)
         }
       } catch (err) {
         console.error('Failed to check billing status:', err)
@@ -123,7 +131,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
       }
     }
     checkBilling()
-  }, [searchParams])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Check Gmail connection status on dashboard mount
   useEffect(() => {
@@ -166,6 +175,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         onMobileClose={() => setMobileSidebarOpen(false)}
         billingGated={billingLoaded && !hasValidBilling}
         activeChatId={chatSessionId}
+        userPlan={userPlan}
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -196,6 +206,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               user={user}
               isEmailConnected={isEmailConnected}
               initialSessionId={chatSessionId}
+              initialPrompt={pendingPrompt}
               onOpenCommandPalette={() => setCommandPaletteOpen(true)}
               onSessionCreated={(sid) => setChatSessionId(sid)}
             />
@@ -225,8 +236,22 @@ export function DashboardClient({ user }: DashboardClientProps) {
               onConnectEmail={() => setActiveView('email')}
             />
           )}
+          {activeView === 'automations' && (
+            <AutomationsView
+              isEmailConnected={isEmailConnected}
+              onConnectEmail={() => setActiveView('email')}
+              onNavigateToAgent={(prompt?: string) => { setChatSessionId(undefined); setPendingPrompt(prompt); setChatKey(k => k + 1); setActiveView('agent') }}
+            />
+          )}
+          {activeView === 'outreach' && (
+            <OutreachView
+              userPlan={userPlan}
+              onNavigateToAgent={(prompt?: string) => { setChatSessionId(undefined); setPendingPrompt(prompt); setChatKey(k => k + 1); setActiveView('agent') }}
+              onNavigateToBilling={() => setActiveView('billing')}
+            />
+          )}
           {activeView === 'billing' && (
-            <BillingView onStatusChange={(status) => setBillingStatus(status)} />
+            <BillingView onStatusChange={(status) => { setBillingStatus(status) }} onPlanChange={(plan) => setUserPlan(plan)} />
           )}
         </main>
       </div>

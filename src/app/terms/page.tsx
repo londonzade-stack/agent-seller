@@ -225,7 +225,7 @@ export default function TermsPage() {
                 If you have questions about these Terms of Service, please contact us at:
               </p>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed mt-3">
-                <strong className="text-zinc-900 dark:text-white">Email:</strong> legal@agentseller.com
+                <strong className="text-zinc-900 dark:text-white">Email:</strong> legal@emailligence.ai
               </p>
             </section>
           </div>
@@ -245,7 +245,7 @@ export default function TermsPage() {
             <div className="flex items-center gap-8 text-sm text-zinc-500">
               <Link href="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
               <Link href="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</Link>
-              <a href="mailto:support@agentseller.com" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
+              <a href="mailto:support@emailligence.ai" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
             <div className="text-sm text-zinc-400 dark:text-zinc-600">
               &copy; 2026 Emailligence. All rights reserved.

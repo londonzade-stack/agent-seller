@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 import { BlitzAvatar } from '@/components/blitz-avatar'
+import { MockConversationDropdown } from '@/components/mock-conversation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -44,6 +45,7 @@ interface AgentChatProps {
   user: User
   isEmailConnected: boolean
   initialSessionId?: string
+  initialPrompt?: string
   onOpenCommandPalette?: () => void
   onSessionCreated?: (sessionId: string) => void
 }
@@ -73,6 +75,7 @@ const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
   removeLabels: { label: 'Removing labels', icon: Tag },
   archiveEmails: { label: 'Archiving emails', icon: Archive },
   trashEmails: { label: 'Trashing emails', icon: Trash2 },
+  bulkTrashByQuery: { label: 'Bulk trashing emails', icon: Trash2 },
   untrashEmails: { label: 'Restoring emails', icon: Archive },
   markAsRead: { label: 'Marking as read', icon: Eye },
   markAsUnread: { label: 'Marking as unread', icon: EyeOff },
@@ -88,10 +91,170 @@ const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
   findUnsubscribableEmails: { label: 'Scanning for unsubscribe options', icon: Mail },
   unsubscribeFromEmail: { label: 'Unsubscribing', icon: Mail },
   bulkUnsubscribe: { label: 'Bulk unsubscribing', icon: Mail },
+  createRecurringTask: { label: 'Creating automation', icon: RotateCcw },
+  webSearch: { label: 'Searching the web', icon: Search },
+  findCompanies: { label: 'Finding companies', icon: Users },
+  researchCompany: { label: 'Researching company', icon: Search },
 }
 
 function getToolMeta(toolName: string) {
   return TOOL_META[toolName] || { label: toolName, icon: Wrench }
+}
+
+// Format a morning briefing log result into a readable summary
+function formatBriefingResult(result: Record<string, unknown>): string {
+  const action = result.action as string
+  if (action === 'archive') {
+    const count = result.archived as number || 0
+    return count > 0 ? `— ${count} emails archived` : '— no emails to archive'
+  }
+  if (action === 'trash') {
+    const count = result.trashed as number || 0
+    return count > 0 ? `— ${count} emails trashed` : '— no emails to trash'
+  }
+  if (action === 'unsubscribe') {
+    const count = result.unsubscribed as number || 0
+    return count > 0 ? `— ${count} unsubscribed` : '— no new subscriptions found'
+  }
+  if (action === 'stats') {
+    const total = result.totalEmails as number || 0
+    const unread = result.unread as number || 0
+    return `— ${total} emails, ${unread} unread`
+  }
+  if (action === 'label') {
+    const count = result.labeled as number || 0
+    return count > 0 ? `— ${count} emails labeled` : '— no emails to label'
+  }
+  return ''
+}
+
+// Format detailed morning briefing result for expanded view
+function formatBriefingDetails(result: Record<string, unknown>, status: string, errorMessage: string | null): React.ReactNode {
+  if (status === 'failed') {
+    return (
+      <div className="text-sm text-red-400 dark:text-red-500">
+        <span className="font-medium">Error:</span> {errorMessage || 'Unknown error'}
+      </div>
+    )
+  }
+
+  const action = result.action as string
+
+  if (action === 'stats') {
+    const total = result.totalEmails as number || 0
+    const unread = result.unread as number || 0
+    const timeframe = result.timeframe as string || 'today'
+    const topSenders = (result.topSenders as Array<{ sender: string; count: number }>) || []
+    return (
+      <div className="space-y-2 text-sm">
+        <div className="flex gap-4">
+          <div className="px-3 py-1.5 rounded-md bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60">
+            <span className="text-stone-500 dark:text-zinc-500 text-xs">Total</span>
+            <p className="text-stone-800 dark:text-zinc-200 font-semibold">{total}</p>
+          </div>
+          <div className="px-3 py-1.5 rounded-md bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60">
+            <span className="text-stone-500 dark:text-zinc-500 text-xs">Unread</span>
+            <p className="text-stone-800 dark:text-zinc-200 font-semibold">{unread}</p>
+          </div>
+          <div className="px-3 py-1.5 rounded-md bg-stone-100 dark:bg-zinc-800 border border-stone-200/60 dark:border-zinc-700/60">
+            <span className="text-stone-500 dark:text-zinc-500 text-xs">Period</span>
+            <p className="text-stone-800 dark:text-zinc-200 font-semibold capitalize">{timeframe}</p>
+          </div>
+        </div>
+        {topSenders.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-stone-400 dark:text-zinc-500 mb-1.5">Top Senders</p>
+            <div className="space-y-1">
+              {topSenders.slice(0, 5).map((s, i) => {
+                const senderName = s.sender.replace(/<[^>]+>/g, '').replace(/"/g, '').trim()
+                const shortName = senderName.length > 35 ? senderName.slice(0, 35) + '…' : senderName
+                return (
+                  <div key={i} className="flex items-center justify-between text-xs">
+                    <span className="text-stone-600 dark:text-zinc-400 truncate mr-2">{shortName}</span>
+                    <span className="text-stone-400 dark:text-zinc-600 shrink-0">{s.count}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (action === 'archive') {
+    const found = result.emailsFound as number || 0
+    const archived = result.archived as number || 0
+    return (
+      <div className="space-y-1 text-sm">
+        <div className="flex gap-4">
+          <span className="text-stone-500 dark:text-zinc-500">Emails found: <span className="text-stone-700 dark:text-zinc-300 font-medium">{found}</span></span>
+          <span className="text-stone-500 dark:text-zinc-500">Archived: <span className="text-stone-700 dark:text-zinc-300 font-medium">{archived}</span></span>
+        </div>
+      </div>
+    )
+  }
+
+  if (action === 'trash') {
+    const trashed = result.trashed as number || 0
+    return (
+      <div className="text-sm text-stone-500 dark:text-zinc-500">
+        Emails trashed: <span className="text-stone-700 dark:text-zinc-300 font-medium">{trashed}</span>
+      </div>
+    )
+  }
+
+  if (action === 'unsubscribe') {
+    const found = result.found as number || 0
+    const unsubscribed = result.unsubscribed as number || 0
+    const failed = result.failed as number || 0
+    return (
+      <div className="space-y-1 text-sm">
+        <div className="flex gap-4">
+          <span className="text-stone-500 dark:text-zinc-500">Found: <span className="text-stone-700 dark:text-zinc-300 font-medium">{found}</span></span>
+          <span className="text-stone-500 dark:text-zinc-500">Unsubscribed: <span className="text-emerald-600 dark:text-emerald-400 font-medium">{unsubscribed}</span></span>
+          {failed > 0 && <span className="text-stone-500 dark:text-zinc-500">Failed: <span className="text-red-400 font-medium">{failed}</span></span>}
+        </div>
+      </div>
+    )
+  }
+
+  if (action === 'label') {
+    const found = result.found as number || 0
+    const labeled = result.labeled as number || 0
+    return (
+      <div className="space-y-1 text-sm">
+        <div className="flex gap-4">
+          <span className="text-stone-500 dark:text-zinc-500">Emails found: <span className="text-stone-700 dark:text-zinc-300 font-medium">{found}</span></span>
+          <span className="text-stone-500 dark:text-zinc-500">Labeled: <span className="text-stone-700 dark:text-zinc-300 font-medium">{labeled}</span></span>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
+// Generate contextual BLITZ prompt for a briefing log entry
+function getBriefingPrompt(log: { task_title: string; status: string; result: Record<string, unknown> }): string {
+  if (log.status === 'failed') {
+    return `My "${log.task_title}" automation failed. Can you help me troubleshoot it?`
+  }
+  const action = log.result?.action as string
+  switch (action) {
+    case 'stats':
+      return 'Give me a detailed breakdown of my inbox activity from today'
+    case 'archive':
+      return 'Show me what emails were archived in my last automation run'
+    case 'trash':
+      return 'What emails were trashed by my automation?'
+    case 'unsubscribe':
+      return 'Show me my recent unsubscribe results and any newsletters I should still unsubscribe from'
+    case 'label':
+      return 'Show me the emails that were labeled by my automation'
+    default:
+      return `Tell me more about my "${log.task_title}" automation results`
+  }
 }
 
 // ─── Styled markdown — Style A warm tones ───────────────────────────
@@ -506,6 +669,10 @@ function humanizeToolInput(toolName: string, input: Record<string, unknown>): st
     case 'bulkUnsubscribe':
       if (Array.isArray(input.emailIds)) lines.push(`Unsubscribing from ${input.emailIds.length} sender${input.emailIds.length === 1 ? '' : 's'}`)
       break
+    case 'bulkTrashByQuery':
+      if (input.query) lines.push(`Trashing all emails matching: "${input.query}"`)
+      lines.push('This runs server-side and handles unlimited emails automatically')
+      break
     case 'findUnsubscribableEmails':
       lines.push('Scanning inbox for newsletters and marketing emails')
       break
@@ -621,6 +788,10 @@ function humanizeToolOutput(toolName: string, output: Record<string, unknown>): 
       if (output.failed && Number(output.failed) > 0) lines.push(`${output.failed} failed`)
       if (lines.length === 0) lines.push(output.message ? String(output.message) : 'Bulk unsubscribe complete')
       break
+    case 'bulkTrashByQuery':
+      if (output.message) lines.push(String(output.message))
+      else lines.push('Bulk trash complete')
+      break
     case 'findUnsubscribableEmails': {
       const emails = output.emails as Array<Record<string, unknown>> | undefined
       if (emails) {
@@ -669,164 +840,12 @@ function humanizeToolOutput(toolName: string, output: Record<string, unknown>): 
   return lines
 }
 
-function TipsSkeletonContent() {
-  return (
-    <div className="p-4 sm:p-5 space-y-5 sm:space-y-6 animate-pulse">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-        {Array.from({ length: 6 }).map((_, idx) => (
-          <div key={idx} className="rounded-xl bg-stone-100/80 dark:bg-zinc-800/30 border border-stone-200/50 dark:border-zinc-700/30 p-3 sm:p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-7 w-7 rounded-lg bg-stone-200/80 dark:bg-zinc-700/50" />
-              <div className="h-4 w-24 rounded bg-stone-200/80 dark:bg-zinc-700/50" />
-            </div>
-            <div className="space-y-2">
-              <div className="h-3 w-full rounded bg-stone-200/60 dark:bg-zinc-700/30" />
-              <div className="h-3 w-5/6 rounded bg-stone-200/60 dark:bg-zinc-700/30" />
-              <div className="h-3 w-4/6 rounded bg-stone-200/60 dark:bg-zinc-700/30" />
-              <div className="h-3 w-3/4 rounded bg-stone-200/60 dark:bg-zinc-700/30" />
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="border-t border-stone-200/50 dark:border-zinc-800/50" />
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="h-4 w-4 rounded bg-stone-200/80 dark:bg-zinc-700/50" />
-          <div className="h-4 w-36 rounded bg-stone-200/80 dark:bg-zinc-700/50" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-lg bg-stone-100/80 dark:bg-zinc-800/30 border border-stone-200/50 dark:border-zinc-700/30 px-3 py-2.5">
-              <div className="h-4 w-3/4 rounded bg-stone-200/60 dark:bg-zinc-700/30 mb-1.5" />
-              <div className="h-3 w-full rounded bg-stone-200/40 dark:bg-zinc-700/20" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function TipsDropdown({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [showContent, setShowContent] = useState(false)
-
-  useEffect(() => {
-    if (isOpen) {
-      setShowContent(false)
-      const timer = setTimeout(() => setShowContent(true), 300)
-      return () => clearTimeout(timer)
-    }
-    setShowContent(false)
-  }, [isOpen])
-
-  if (!isOpen) return null
-
-  const capabilities = [
-    { icon: Mail, title: 'Send & Draft Emails', items: [
-      'Send emails to anyone on your behalf',
-      'Draft emails for you to review before sending',
-      'Edit, update, or delete saved drafts',
-      'Reply to emails with context-aware responses',
-    ]},
-    { icon: Search, title: 'Search & Read', items: [
-      'Find any email by sender, subject, date, or keyword',
-      'Read full email threads and conversations',
-      'Pull up your recent inbox at a glance',
-      'Search with filters like "has attachment" or "is unread"',
-    ]},
-    { icon: Tag, title: 'Labels & Folders', items: [
-      'Create new labels to organize your inbox',
-      'Sort emails into labels automatically',
-      'Apply or remove labels in bulk',
-      'Build custom folders like "Receipts" or "Clients"',
-    ]},
-    { icon: Archive, title: 'Inbox Cleanup', items: [
-      'Archive old emails you don\'t need in your inbox',
-      'Trash or restore emails',
-      'Mark emails as read, unread, starred, or important',
-      'Bulk clean — e.g. "archive all promos older than 30 days"',
-    ]},
-    { icon: Shield, title: 'Spam & Unsubscribe', items: [
-      'Find all newsletters and subscriptions in your inbox',
-      'One-click unsubscribe from junk mail in bulk',
-      'Report spam or rescue emails from spam folder',
-      'Clean up your inbox by removing unwanted senders',
-    ]},
-    { icon: BarChart3, title: 'Analytics & Insights', items: [
-      'See your inbox stats — how many emails, top senders, etc.',
-      'Look up contact details and sender history',
-      'Get a breakdown of your email activity for any time period',
-    ]},
-  ]
-
-  const examples = [
-    { text: 'Clean up my inbox', desc: 'Archives old promos, unsubscribes from junk' },
-    { text: 'Unsubscribe me from all newsletters', desc: 'Finds and bulk-unsubscribes in one shot' },
-    { text: 'Show me everything from Amazon this month', desc: 'Searches by sender and date range' },
-    { text: 'Draft a follow-up to that client email', desc: 'Reads the thread, then writes a smart reply' },
-    { text: 'Create a "Receipts" folder and move all receipts there', desc: 'Creates label + searches + organizes' },
-    { text: 'Give me a table of my top 10 senders this week', desc: 'Analyzes your inbox and formats results' },
-  ]
-
-  return (
-    <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="fixed inset-3 z-50 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[600px] max-h-[90vh] sm:max-h-[70vh] overflow-auto rounded-2xl border border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sm:bg-white/95 sm:dark:bg-zinc-900/95 backdrop-blur-xl rounded-t-2xl">
-          <div className="flex items-center gap-2">
-            <div className="p-1 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-              <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-            </div>
-            <h3 className="font-semibold text-base sm:text-lg">What I Can Do</h3>
-            <span className="ml-1 sm:ml-2 inline-flex items-center rounded-full bg-stone-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-stone-500 dark:text-zinc-400">33 abilities</span>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-stone-100 dark:hover:bg-zinc-800"><X className="h-4 w-4" /></Button>
-        </div>
-
-        {!showContent ? (
-          <TipsSkeletonContent />
-        ) : (
-          <div className="p-4 sm:p-5 space-y-5 sm:space-y-6 animate-in fade-in duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {capabilities.map((category, idx) => (
-                <div key={idx} className="rounded-xl bg-stone-50 dark:bg-zinc-800/50 border border-stone-200 dark:border-zinc-700 p-3 sm:p-4 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors">
-                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                    <div className="p-1.5 rounded-lg bg-stone-200 dark:bg-zinc-700"><category.icon className="h-4 w-4 text-stone-600 dark:text-zinc-300" /></div>
-                    <h4 className="font-medium text-sm">{category.title}</h4>
-                  </div>
-                  <ul className="space-y-1 sm:space-y-1.5">
-                    {category.items.map((item, i) => (
-                      <li key={i} className="text-xs text-stone-500 dark:text-zinc-400 flex items-start gap-1.5">
-                        <span className="text-stone-400 dark:text-zinc-500 mt-0.5">&#8226;</span><span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            <div className="border-t border-stone-200 dark:border-zinc-800" />
-            <div>
-              <div className="flex items-center gap-2 mb-3"><Lightbulb className="h-4 w-4 text-amber-400" /><h4 className="font-medium text-sm">Try saying things like:</h4></div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {examples.map((example, i) => (
-                  <div key={i} className="rounded-lg bg-stone-50 dark:bg-zinc-800 border border-stone-200 dark:border-zinc-700 px-3 py-2.5 hover:bg-stone-100 dark:hover:bg-zinc-700 transition-colors cursor-default">
-                    <p className="text-sm font-medium text-stone-900 dark:text-white">&ldquo;{example.text}&rdquo;</p>
-                    <p className="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">{example.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </>
-  )
-}
+// TipsDropdown replaced by MockConversationDropdown — see mock-conversation/index.tsx
 
 const REQUEST_TIMEOUT = 120000
 
 // Wrapper that loads history / creates session before rendering the actual chat
-export function AgentChat({ user, isEmailConnected, initialSessionId, onOpenCommandPalette, onSessionCreated }: AgentChatProps) {
+export function AgentChat({ user, isEmailConnected, initialSessionId, initialPrompt, onOpenCommandPalette, onSessionCreated }: AgentChatProps) {
   const [ready, setReady] = useState(false)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
@@ -894,6 +913,7 @@ export function AgentChat({ user, isEmailConnected, initialSessionId, onOpenComm
       isEmailConnected={isEmailConnected}
       sessionId={sessionId}
       initialMessages={initialMessages}
+      initialPrompt={initialPrompt}
       onOpenCommandPalette={onOpenCommandPalette}
       onSessionCreated={onSessionCreated}
     />
@@ -905,11 +925,12 @@ interface AgentChatInnerProps {
   isEmailConnected: boolean
   sessionId: string | null
   initialMessages: UIMessage[]
+  initialPrompt?: string
   onOpenCommandPalette?: () => void
   onSessionCreated?: (sessionId: string) => void
 }
 
-function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, onOpenCommandPalette, onSessionCreated }: AgentChatInnerProps) {
+function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, initialPrompt, onOpenCommandPalette, onSessionCreated }: AgentChatInnerProps) {
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -919,6 +940,29 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId)
   const sessionCreatingRef = useRef(false)
+  const [briefingLogs, setBriefingLogs] = useState<{ task_title: string; status: string; result: Record<string, unknown>; error_message: string | null; started_at: string }[]>([])
+  const [briefingLoaded, setBriefingLoaded] = useState(false)
+  const [briefingExpanded, setBriefingExpanded] = useState(true)
+  const [expandedLogIndex, setExpandedLogIndex] = useState<number | null>(null)
+
+  // Fetch morning briefing logs on mount (only for new chats)
+  useEffect(() => {
+    if (initialMessages.length > 0 || !isEmailConnected) return
+    const fetchBriefing = async () => {
+      try {
+        const res = await fetch('/api/recurring-tasks/logs?hours=24')
+        if (res.ok) {
+          const data = await res.json()
+          setBriefingLogs(data.logs || [])
+        }
+      } catch {
+        // Silently fail — morning briefing is optional
+      } finally {
+        setBriefingLoaded(true)
+      }
+    }
+    fetchBriefing()
+  }, [initialMessages.length, isEmailConnected])
 
   const historyMessageCount = initialMessages.length
 
@@ -932,6 +976,8 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
 
   const prevStatusRef = useRef(status)
   const isLoading = status === 'streaming' || status === 'submitted'
+
+  const initialPromptSentRef = useRef(false)
 
   // Figure out what the agent is actively doing right now (for the streaming indicator)
   const activeToolInfo = useMemo(() => {
@@ -1014,6 +1060,15 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     }
   }, [ensureSession])
 
+  // Auto-send initial prompt if provided (e.g. from automations example click)
+  useEffect(() => {
+    if (initialPrompt && !initialPromptSentRef.current && initialMessages.length === 0) {
+      initialPromptSentRef.current = true
+      sendMessage({ text: initialPrompt })
+      saveMessage('user', initialPrompt)
+    }
+  }, [initialPrompt, initialMessages.length, sendMessage, saveMessage])
+
   // Save assistant message when streaming completes
   useEffect(() => {
     if (prevStatusRef.current === 'streaming' && status === 'ready') {
@@ -1088,6 +1143,12 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     })
   }
 
+  const handleMockPromptSelect = (prompt: string) => {
+    setInput(prompt)
+    setShowTips(false)
+    inputRef.current?.focus()
+  }
+
   // Track approval responses per message ID
   const [approvalResponses, setApprovalResponses] = useState<Record<string, 'approved' | 'denied'>>({})
 
@@ -1160,11 +1221,11 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
               onClick={() => setShowTips(!showTips)}
             >
               <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
-              <span className="text-xs font-medium hidden sm:inline">Tips & Commands</span>
-              <span className="text-xs font-medium sm:hidden">Tips</span>
+              <span className="text-xs font-medium hidden sm:inline">Examples</span>
+              <span className="text-xs font-medium sm:hidden">Examples</span>
               <ChevronDown className={`h-3 w-3 text-stone-400 dark:text-zinc-500 transition-transform duration-200 ${showTips ? 'rotate-180' : ''}`} />
             </button>
-            <TipsDropdown isOpen={showTips} onClose={() => setShowTips(false)} />
+            <MockConversationDropdown isOpen={showTips} onClose={() => setShowTips(false)} onPromptSelect={handleMockPromptSelect} />
           </div>
           {!isEmailConnected && (
             <div className="hidden sm:flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg text-sm border border-amber-200/60 dark:border-amber-800/30">
@@ -1199,6 +1260,94 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
             <button onClick={() => setShowTips(true)} className="text-sm text-stone-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
               <Lightbulb className="h-3.5 w-3.5" />See everything I can do
             </button>
+
+            {/* Morning Briefing — Interactive expandable */}
+            {briefingLoaded && briefingLogs.length > 0 && (
+              <div className="max-w-2xl w-full px-2 mb-6">
+                <Card className="border-amber-200/60 dark:border-amber-800/30 bg-amber-50/30 dark:bg-amber-950/10 overflow-hidden">
+                  {/* Clickable header */}
+                  <button
+                    onClick={() => setBriefingExpanded(!briefingExpanded)}
+                    className="w-full flex items-center gap-2 p-4 pb-3 cursor-pointer hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors"
+                  >
+                    <span className="text-lg">&#9728;&#65039;</span>
+                    <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">Morning Briefing</span>
+                    <span className="text-xs text-stone-500 dark:text-zinc-500">Last 24 hours</span>
+                    <span className="ml-auto text-stone-400 dark:text-zinc-600">
+                      {briefingExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </span>
+                  </button>
+
+                  {/* Expandable log list */}
+                  {briefingExpanded && (
+                    <div className="px-4 pb-4 space-y-1">
+                      {briefingLogs.slice(0, 8).map((log, i) => {
+                        const isExpanded = expandedLogIndex === i
+                        return (
+                          <div key={i} className="rounded-lg border border-stone-200/50 dark:border-zinc-800/50 overflow-hidden">
+                            {/* Clickable row */}
+                            <button
+                              onClick={() => setExpandedLogIndex(isExpanded ? null : i)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/30 transition-colors"
+                            >
+                              {log.status === 'success' ? (
+                                <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-red-400 shrink-0" />
+                              )}
+                              <div className="min-w-0 text-left flex-1">
+                                <span className="text-stone-700 dark:text-zinc-300">{log.task_title}</span>
+                                {log.status === 'success' && log.result && (
+                                  <span className="text-stone-500 dark:text-zinc-500 ml-1">
+                                    {formatBriefingResult(log.result)}
+                                  </span>
+                                )}
+                                {log.status === 'failed' && log.error_message && (
+                                  <span className="text-red-400 dark:text-red-500 ml-1 text-xs">
+                                    {' '}&#8212; {log.error_message.length > 40 ? log.error_message.slice(0, 40) + '…' : log.error_message}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-stone-400 dark:text-zinc-600 shrink-0">
+                                {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                              </span>
+                            </button>
+
+                            {/* Expanded detail panel */}
+                            {isExpanded && (
+                              <div className="px-3 pb-3 pt-1 border-t border-stone-100 dark:border-zinc-800/50 bg-stone-50/50 dark:bg-zinc-900/30">
+                                <div className="mb-3">
+                                  {formatBriefingDetails(log.result, log.status, log.error_message)}
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    const prompt = getBriefingPrompt(log)
+                                    sendMessage({ text: prompt })
+                                    saveMessage('user', prompt)
+                                    setExpandedLogIndex(null)
+                                  }}
+                                  className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                                >
+                                  <Sparkles className="h-3.5 w-3.5" />
+                                  Ask BLITZ
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                      {briefingLogs.length > 8 && (
+                        <p className="text-xs text-stone-400 dark:text-zinc-600 pt-1 px-1">
+                          +{briefingLogs.length - 8} more
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-2xl w-full px-2">
               {suggestions.map((suggestion, i) => (
                 <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion)}>

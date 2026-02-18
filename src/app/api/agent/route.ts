@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeError } from '@/lib/logger'
+import { calculateNextRun, formatSchedule } from '@/lib/recurring-tasks'
 import {
   scanInboxForEmails,
   getContactFromEmail,
@@ -40,7 +41,13 @@ import {
   findUnsubscribableEmails,
   unsubscribeFromEmail,
   bulkUnsubscribe,
+  bulkTrashByQuery,
 } from '@/lib/gmail/service'
+import {
+  searchWeb,
+  findCompanies,
+  researchCompany,
+} from '@/lib/exa/service'
 
 export const maxDuration = 120
 
@@ -202,10 +209,49 @@ Common useful operators:
 - When unsubscribing, use bulkUnsubscribe for multiple at once. If one-click isn't available, provide the unsubscribe link.
 - For vague requests like "help me with email" — pull their recent unread and summarize what needs attention.
 - When drafting replies, read the original thread first so you write something contextually relevant.
-- Match the tone of the original email in your drafts (formal → formal, casual → casual).`
+- Match the tone of the original email in your drafts (formal → formal, casual → casual).
+
+## RECURRING TASKS / AUTOMATIONS
+When the user wants something automated, scheduled, or recurring, use the createRecurringTask tool.
+- "Archive old promos every week" → taskType: 'archive_by_query', frequency: 'weekly', taskConfig: { query: 'category:promotions older_than:30d' }
+- "Give me inbox stats every morning" → taskType: 'inbox_stats', frequency: 'daily', taskConfig: { timeframe: 'week' }
+- "Trash LinkedIn emails every month" → taskType: 'trash_by_query', frequency: 'monthly', taskConfig: { query: 'from:linkedin older_than:60d' }
+- "Unsubscribe from new newsletters daily" → taskType: 'unsubscribe_sweep', frequency: 'daily'
+- Always confirm what was created and when it will next run.
+- If the user asks to "do this every day/week/month" after a regular action, offer to set it up as a recurring task.`
+
+// Pro plan system prompt addition
+const PRO_SYSTEM_PROMPT = `
+
+## WEB SEARCH & SALES OUTREACH (Pro Plan)
+
+You have powerful web search and company research tools. Use them when users want to:
+- Research a company before reaching out
+- Find potential leads or companies in an industry
+- Gather intel on a prospect (website, news, team, etc.)
+- Draft cold outreach emails backed by real research
+
+### WEB SEARCH WORKFLOW
+1. Use webSearch for general web queries
+2. Use findCompanies to discover companies by industry, location, or criteria
+3. Use researchCompany for deep dives — gets website, recent news, and overview in parallel
+
+### SALES OUTREACH FLOW
+When a user wants to reach out to a company:
+1. Research the company first with researchCompany
+2. Use the research to craft a personalized, compelling email
+3. Draft the email with context from the research
+4. Always reference specific things about the company (recent news, products, values) to show the email isn't generic
+
+### IMPORTANT
+- When using web search results, cite your sources naturally ("According to their recent announcement...")
+- If a tool returns requiresProPlan: true, tell the user they need to upgrade to Pro to use web search and outreach features
+- Don't overwhelm the user with raw data — synthesize and present key insights`
 
 // Create all the powerful tools
-function createTools(userId: string | null, isEmailConnected: boolean) {
+function createTools(userId: string | null, isEmailConnected: boolean, plan: string = 'basic') {
+  const isPro = plan === 'pro'
+
   return {
     // ============ SEARCH & READ ============
     searchEmails: tool({
@@ -564,6 +610,29 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
         } catch (error) {
           sanitizeError('Trash error', error)
           return { success: false, error: 'Failed to trash emails.' }
+        }
+      },
+    }),
+
+    bulkTrashByQuery: tool({
+      description: 'Trash ALL emails matching a Gmail search query in one shot. Automatically paginates through all results — no 500 limit. Use this when user wants to delete ALL emails, or a huge number (1000+). MUST get user approval FIRST using the [APPROVAL_REQUIRED] block.',
+      inputSchema: z.object({
+        query: z.string().describe('Gmail search query, e.g. "in:inbox", "from:example.com", "category:promotions", "older_than:1y", "is:unread". Use "in:inbox" to trash everything in inbox.'),
+        confirmed: z.boolean().describe('MUST be true — set only AFTER user approves via the approval card'),
+      }),
+      execute: async ({ query, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before bulk trashing. Show the approval card first.' }
+        }
+        if (!isEmailConnected || !userId) {
+          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+        }
+        try {
+          const result = await bulkTrashByQuery(userId, query)
+          return { success: true, message: `Trashed ${result.trashedCount.toLocaleString()} emails matching "${query}"!` }
+        } catch (error) {
+          sanitizeError('Bulk trash by query error', error)
+          return { success: false, error: 'Failed to bulk trash emails.' }
         }
       },
     }),
@@ -981,6 +1050,175 @@ function createTools(userId: string | null, isEmailConnected: boolean) {
         }
       },
     }),
+
+    // ============ WEB SEARCH & RESEARCH (Pro Plan) ============
+    webSearch: tool({
+      description: 'Search the web using Exa.ai. Pro plan only. Use for general web queries, finding information, news, or any web content.',
+      inputSchema: z.object({
+        query: z.string().describe('The search query'),
+        numResults: z.number().optional().default(5).describe('Number of results (default 5, max 10)'),
+        category: z.enum(['company', 'news', 'research paper', 'tweet', 'personal site']).optional().describe('Filter by content category'),
+      }),
+      execute: async ({ query, numResults, category }) => {
+        if (!isPro) {
+          return { success: false, requiresProPlan: true, message: 'Web search is a Pro plan feature. Upgrade to Pro ($40/mo) to unlock web search, company research, and sales outreach tools.' }
+        }
+        try {
+          const results = await searchWeb(query, {
+            numResults: Math.min(numResults || 5, 10),
+            category: category as 'company' | 'news' | 'research paper' | 'tweet' | 'personal site' | undefined,
+            includeText: true,
+            includeSummary: true,
+          })
+          return {
+            success: true,
+            query,
+            totalResults: results.results.length,
+            results: results.results.map(r => ({
+              title: r.title,
+              url: r.url,
+              summary: r.summary || r.text?.slice(0, 300),
+              publishedDate: r.publishedDate,
+            })),
+          }
+        } catch (error) {
+          sanitizeError('Web search error', error)
+          return { success: false, error: 'Failed to search the web.' }
+        }
+      },
+    }),
+
+    findCompanies: tool({
+      description: 'Find companies matching criteria like industry, location, or description. Pro plan only. Returns company websites with descriptions.',
+      inputSchema: z.object({
+        query: z.string().describe('What kind of companies to find, e.g. "AI startups in Austin" or "sustainable fashion brands"'),
+        numResults: z.number().optional().default(5).describe('Number of results (default 5, max 10)'),
+      }),
+      execute: async ({ query, numResults }) => {
+        if (!isPro) {
+          return { success: false, requiresProPlan: true, message: 'Company search is a Pro plan feature. Upgrade to Pro ($40/mo) to unlock web search, company research, and sales outreach tools.' }
+        }
+        try {
+          const results = await findCompanies(query, { numResults: Math.min(numResults || 5, 10) })
+          return {
+            success: true,
+            query,
+            totalResults: results.results.length,
+            companies: results.results.map(r => ({
+              name: r.title,
+              url: r.url,
+              description: r.summary || r.text?.slice(0, 300),
+              publishedDate: r.publishedDate,
+            })),
+          }
+        } catch (error) {
+          sanitizeError('Find companies error', error)
+          return { success: false, error: 'Failed to find companies.' }
+        }
+      },
+    }),
+
+    researchCompany: tool({
+      description: 'Deep research on a specific company. Gets their website, recent news, and company overview in parallel. Pro plan only. Use this before drafting outreach emails.',
+      inputSchema: z.object({
+        companyName: z.string().describe('The company name to research'),
+        domain: z.string().optional().describe('The company domain/website if known (e.g. "acme.com")'),
+      }),
+      execute: async ({ companyName, domain }) => {
+        if (!isPro) {
+          return { success: false, requiresProPlan: true, message: 'Company research is a Pro plan feature. Upgrade to Pro ($40/mo) to unlock web search, company research, and sales outreach tools.' }
+        }
+        try {
+          const research = await researchCompany(companyName, { domain })
+          return {
+            success: true,
+            companyName,
+            website: research.website ? {
+              title: research.website.title,
+              url: research.website.url,
+              description: research.website.text?.slice(0, 500),
+            } : null,
+            recentNews: research.news.map(n => ({
+              title: n.title,
+              url: n.url,
+              date: n.publishedDate,
+              summary: n.text?.slice(0, 200),
+            })),
+            overview: research.overview.map(o => ({
+              title: o.title,
+              url: o.url,
+              summary: o.summary || o.text?.slice(0, 300),
+            })),
+          }
+        } catch (error) {
+          sanitizeError('Research company error', error)
+          return { success: false, error: 'Failed to research company.' }
+        }
+      },
+    }),
+
+    // ============ RECURRING TASKS / AUTOMATIONS ============
+    createRecurringTask: tool({
+      description: 'Create a recurring automated email task that runs on a schedule. Use this when the user wants something to happen automatically (hourly, daily, weekly, or monthly). Examples: "archive old promos every Sunday", "give me inbox stats every morning", "trash LinkedIn emails monthly". Hourly frequency requires Pro plan.',
+      inputSchema: z.object({
+        title: z.string().describe('Short descriptive name for the task'),
+        description: z.string().optional().describe('What this task does in detail'),
+        taskType: z.enum(['archive_by_query', 'trash_by_query', 'unsubscribe_sweep', 'inbox_stats', 'label_emails', 'custom']).describe('The type of action to perform'),
+        taskConfig: z.record(z.unknown()).describe('Task-specific configuration. For archive_by_query/trash_by_query: { query: "Gmail search query", maxResults: number }. For inbox_stats: { timeframe: "today"|"week"|"month" }. For label_emails: { query: "search query", labelIds: ["label_id"] }. For unsubscribe_sweep: { maxResults: number }.'),
+        frequency: z.enum(['hourly', 'daily', 'weekly', 'monthly']).describe('How often the task runs. "hourly" requires Pro plan.'),
+        dayOfWeek: z.number().min(0).max(6).optional().describe('For weekly tasks: 0=Sunday, 1=Monday, ..., 6=Saturday'),
+        dayOfMonth: z.number().min(1).max(28).optional().describe('For monthly tasks: day of month (1-28)'),
+        timeOfDay: z.string().optional().default('09:00').describe('Time to run in HH:MM format (24-hour, UTC). For hourly tasks, this is the starting hour.'),
+      }),
+      execute: async ({ title, description, taskType, taskConfig, frequency, dayOfWeek, dayOfMonth, timeOfDay }) => {
+        if (!isEmailConnected || !userId) {
+          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+        }
+        if (frequency === 'hourly' && !isPro) {
+          return { success: false, requiresProPlan: true, message: 'Hourly automations require a Pro plan. Upgrade to Pro ($40/mo) to unlock hourly automations, web search, and sales outreach tools.' }
+        }
+        try {
+          const time = timeOfDay || '09:00'
+          const nextRun = calculateNextRun(frequency, time, dayOfWeek, dayOfMonth)
+          const schedule = formatSchedule(frequency, time, dayOfWeek, dayOfMonth)
+
+          const supabase = await createClient()
+          const { data, error } = await supabase
+            .from('recurring_tasks')
+            .insert({
+              user_id: userId,
+              title,
+              description: description || null,
+              task_type: taskType,
+              task_config: taskConfig || {},
+              frequency,
+              day_of_week: dayOfWeek ?? null,
+              day_of_month: dayOfMonth ?? null,
+              time_of_day: time,
+              next_run_at: nextRun.toISOString(),
+            })
+            .select()
+            .single()
+
+          if (error) throw error
+
+          return {
+            success: true,
+            message: `Recurring task "${title}" created successfully!`,
+            task: {
+              id: data.id,
+              title: data.title,
+              schedule,
+              nextRun: nextRun.toISOString(),
+              enabled: true,
+            },
+          }
+        } catch (error) {
+          sanitizeError('Create recurring task error', error)
+          return { success: false, error: 'Failed to create recurring task.' }
+        }
+      },
+    }),
   }
 }
 
@@ -1001,21 +1239,21 @@ export async function POST(req: Request) {
       )
     }
 
-    // Check billing status — block usage if no valid subscription
-    if (userId) {
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', userId)
-        .single()
+    // Check billing status and plan — block usage if no valid subscription
+    const { data: subscription } = await supabase
+      .from('subscriptions')
+      .select('status, plan')
+      .eq('user_id', userId)
+      .single()
 
-      const billingStatus = subscription?.status
-      if (billingStatus !== 'active' && billingStatus !== 'trialing') {
-        return new Response(
-          JSON.stringify({ error: 'Please set up billing to use the AI agent.' }),
-          { status: 403, headers: { 'Content-Type': 'application/json' } }
-        )
-      }
+    const billingStatus = subscription?.status
+    const userPlan = subscription?.plan || 'basic'
+
+    if (billingStatus !== 'active' && billingStatus !== 'trialing') {
+      return new Response(
+        JSON.stringify({ error: 'Please set up billing to use the AI agent.' }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      )
     }
 
     // Rate limit: 20 requests per minute per user (or per IP for unauthenticated)
@@ -1048,12 +1286,15 @@ export async function POST(req: Request) {
       isEmailConnected = !!connection
     }
 
-    const tools = createTools(userId, isEmailConnected)
+    const tools = createTools(userId, isEmailConnected, userPlan)
 
-    const systemPrompt = isEmailConnected
-      ? SYSTEM_PROMPT
-      : SYSTEM_PROMPT +
-        '\n\n⚠️ NOTE: Gmail is not connected yet. Encourage the user to connect their Gmail to unlock all these powerful features!'
+    let systemPrompt = SYSTEM_PROMPT
+    if (!isEmailConnected) {
+      systemPrompt += '\n\n⚠️ NOTE: Gmail is not connected yet. Encourage the user to connect their Gmail to unlock all these powerful features!'
+    }
+    if (userPlan === 'pro') {
+      systemPrompt += PRO_SYSTEM_PROMPT
+    }
 
     const result = streamText({
       model: 'google/gemini-3-flash',

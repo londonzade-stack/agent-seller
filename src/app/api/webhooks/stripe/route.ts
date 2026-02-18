@@ -71,6 +71,10 @@ export async function POST(req: Request) {
             ? subscription.customer
             : subscription.customer.id
 
+        // Extract plan from subscription metadata (set during checkout)
+        const createdMeta = subscription.metadata as Record<string, string> | undefined
+        const createdPlan = createdMeta?.plan || 'basic'
+
         // Extract period dates — cast through unknown for Stripe API version compatibility
         const subAny = subscription as unknown as Record<string, unknown>
         const itemAny = subscription.items.data[0] as unknown as Record<string, unknown> | undefined
@@ -79,13 +83,22 @@ export async function POST(req: Request) {
         const periodStart = rawStart ? new Date(rawStart * 1000).toISOString() : null
         const periodEnd = rawEnd ? new Date(rawEnd * 1000).toISOString() : null
 
+        // Extract trial dates
+        const rawTrialStart = subAny.trial_start as number | undefined
+        const rawTrialEnd = subAny.trial_end as number | undefined
+        const trialStart = rawTrialStart ? new Date(rawTrialStart * 1000).toISOString() : null
+        const trialEnd = rawTrialEnd ? new Date(rawTrialEnd * 1000).toISOString() : null
+
         const { error: createError } = await supabase
           .from('subscriptions')
           .update({
             stripe_subscription_id: subscription.id,
             status: subscription.status === 'trialing' ? 'trialing' : 'active',
+            plan: createdPlan,
             current_period_start: periodStart,
             current_period_end: periodEnd,
+            trial_start: trialStart,
+            trial_end: trialEnd,
           })
           .eq('stripe_customer_id', customerId)
         if (createError) {
@@ -107,6 +120,10 @@ export async function POST(req: Request) {
           status = 'past_due'
         }
 
+        // Extract plan from subscription metadata
+        const updatedMeta = subscription.metadata as Record<string, string> | undefined
+        const updatedPlan = updatedMeta?.plan || undefined // only update if present
+
         const updSubAny = subscription as unknown as Record<string, unknown>
         const updItemAny = subscription.items.data[0] as unknown as Record<string, unknown> | undefined
         const updRawStart = (updSubAny.current_period_start ?? updItemAny?.current_period_start) as number | undefined
@@ -114,14 +131,25 @@ export async function POST(req: Request) {
         const updatedPeriodStart = updRawStart ? new Date(updRawStart * 1000).toISOString() : null
         const updatedPeriodEnd = updRawEnd ? new Date(updRawEnd * 1000).toISOString() : null
 
+        // Extract trial dates
+        const updRawTrialStart = updSubAny.trial_start as number | undefined
+        const updRawTrialEnd = updSubAny.trial_end as number | undefined
+        const updTrialStart = updRawTrialStart ? new Date(updRawTrialStart * 1000).toISOString() : null
+        const updTrialEnd = updRawTrialEnd ? new Date(updRawTrialEnd * 1000).toISOString() : null
+
+        const updateData: Record<string, unknown> = {
+          stripe_subscription_id: subscription.id,
+          status,
+          current_period_start: updatedPeriodStart,
+          current_period_end: updatedPeriodEnd,
+          trial_start: updTrialStart,
+          trial_end: updTrialEnd,
+        }
+        if (updatedPlan) updateData.plan = updatedPlan
+
         const { error: updateError } = await supabase
           .from('subscriptions')
-          .update({
-            stripe_subscription_id: subscription.id,
-            status,
-            current_period_start: updatedPeriodStart,
-            current_period_end: updatedPeriodEnd,
-          })
+          .update(updateData)
           .eq('stripe_customer_id', customerId)
         if (updateError) {
           sanitizeError('Stripe webhook: failed to update subscription', updateError)
