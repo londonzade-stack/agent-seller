@@ -40,14 +40,14 @@ export default async function PricingPage() {
   ];
 
   const proFeatures = [
-    "Everything in Basic",
-    "Web search & research via Exa.ai",
-    "Sales outreach dashboard",
-    "Company research & intel",
-    "Contact discovery tools",
-    "AI-powered cold outreach drafts",
-    "Daily/weekly/monthly automations",
-    "Priority support",
+    { text: "Everything in Basic" },
+    { text: "Web search & research via Exa.ai", isNew: true },
+    { text: "Daily/weekly/monthly automations", isNew: true },
+    { text: "Sales outreach dashboard" },
+    { text: "Company research & intel" },
+    { text: "Contact discovery tools" },
+    { text: "AI-powered cold outreach drafts" },
+    { text: "Priority support" },
   ];
 
   const businessFeatures = [
@@ -175,7 +175,10 @@ export default async function PricingPage() {
                   {proFeatures.map((feature, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <CheckCircle2 className={`h-4 w-4 shrink-0 ${i === 0 ? 'text-emerald-500' : 'text-blue-500'}`} />
-                      <span className={`text-sm ${i === 0 ? 'text-zinc-500' : 'font-medium'}`}>{feature}</span>
+                      <span className={`text-sm ${i === 0 ? 'text-zinc-500' : 'font-medium'}`}>{feature.text}</span>
+                      {feature.isNew && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500 text-white shrink-0">NEW</span>
+                      )}
                     </div>
                   ))}
                 </div>
