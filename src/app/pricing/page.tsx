@@ -263,6 +263,11 @@ export default function PricingPage() {
                 title: "Company Research (Pro)",
                 description: "Deep dive into any company — website, recent news, leadership, and competitive info."
               },
+              {
+                icon: Zap,
+                title: "Automations",
+                description: "Set up recurring tasks on daily, weekly, or monthly schedules. BLITZ runs them automatically."
+              },
             ].map((feature, i) => (
               <ScrollReveal key={i} delay={i * 80}>
                 <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 h-full">
