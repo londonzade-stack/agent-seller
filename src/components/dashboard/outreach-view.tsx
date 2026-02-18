@@ -246,19 +246,10 @@ const REQUEST_TIMEOUT = 120000
 
 export function OutreachView({ user, isEmailConnected, userPlan, initialSessionId, onNavigateToBilling, onSessionCreated }: OutreachViewProps) {
   const isPro = userPlan === 'pro'
-  const [input, setInput] = useState('')
-  const [showExamples, setShowExamples] = useState(false)
-  const [isTimedOut, setIsTimedOut] = useState(false)
-  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
-  const [loadingHistory, setLoadingHistory] = useState(!!initialSessionId)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
-  const sessionCreatingRef = useRef(false)
+  const [ready, setReady] = useState(!initialSessionId)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
 
-  // Load chat history when opening an existing session
+  // Load chat history when opening an existing session — MUST complete before rendering useChat
   useEffect(() => {
     if (initialSessionId) {
       const loadHistory = async () => {
@@ -276,12 +267,53 @@ export function OutreachView({ user, isEmailConnected, userPlan, initialSessionI
         } catch (err) {
           console.error('Failed to load outreach chat history:', err)
         } finally {
-          setLoadingHistory(false)
+          setReady(true)
         }
       }
       loadHistory()
     }
   }, [initialSessionId])
+
+  // Show loading skeleton while fetching history
+  if (!ready) {
+    return (
+      <div className="flex-1 flex flex-col h-full bg-[#faf8f5] dark:bg-[#111113]">
+        <header className="relative z-10 border-b border-white/30 dark:border-white/[0.06] px-3 py-3 sm:px-6 sm:py-4 bg-[#faf8f5] dark:bg-[#111113] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+          <div className="h-6 w-40 rounded-full bg-stone-200/80 dark:bg-zinc-700/50 animate-pulse" />
+        </header>
+        <div className="flex-1 p-6 space-y-4 animate-pulse">
+          <div className="h-16 w-3/4 ml-auto rounded-xl bg-stone-200/50 dark:bg-zinc-800/50" />
+          <div className="h-32 w-3/4 rounded-xl bg-stone-200/50 dark:bg-zinc-800/50" />
+        </div>
+      </div>
+    )
+  }
+
+  // Render the actual chat once history is loaded (or immediately for new chats)
+  return (
+    <OutreachViewInner
+      user={user}
+      isEmailConnected={isEmailConnected}
+      userPlan={userPlan}
+      initialSessionId={initialSessionId}
+      initialMessages={initialMessages}
+      onNavigateToBilling={onNavigateToBilling}
+      onSessionCreated={onSessionCreated}
+    />
+  )
+}
+
+function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId, initialMessages, onNavigateToBilling, onSessionCreated }: OutreachViewProps & { initialMessages: UIMessage[] }) {
+  const isPro = userPlan === 'pro'
+  const [input, setInput] = useState('')
+  const [showExamples, setShowExamples] = useState(false)
+  const [isTimedOut, setIsTimedOut] = useState(false)
+  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
+  const sessionCreatingRef = useRef(false)
 
   const { messages, sendMessage, status, error, stop } = useChat({
     messages: initialMessages,
