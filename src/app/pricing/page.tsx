@@ -11,7 +11,6 @@ import {
   Brain,
   Shield,
   Zap,
-  Clock,
   FileText,
   Building,
   Headphones,
@@ -42,7 +41,6 @@ export default function PricingPage() {
     "Sales outreach dashboard",
     "Company research & intel",
     "Contact discovery tools",
-    "Hourly automations",
     "AI-powered cold outreach drafts",
     "Priority support",
   ];
@@ -265,11 +263,6 @@ export default function PricingPage() {
                 title: "Company Research (Pro)",
                 description: "Deep dive into any company — website, recent news, leadership, and competitive info."
               },
-              {
-                icon: Clock,
-                title: "Hourly Automations (Pro)",
-                description: "Run your automations every hour for faster response times and real-time inbox management."
-              },
             ].map((feature, i) => (
               <ScrollReveal key={i} delay={i * 80}>
                 <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-6 h-full">
@@ -302,7 +295,7 @@ export default function PricingPage() {
               },
               {
                 q: "What's the difference between Basic and Pro?",
-                a: "Basic includes all email management tools, AI drafts, automations, and analytics. Pro adds web search via Exa.ai, company research, sales outreach dashboard, contact discovery, hourly automations, and priority support."
+                a: "Basic includes all email management tools, AI drafts, automations, and analytics. Pro adds web search via Exa.ai, company research, sales outreach dashboard, contact discovery, and priority support."
               },
               {
                 q: "Can I upgrade from Basic to Pro later?",

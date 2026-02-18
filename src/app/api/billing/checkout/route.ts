@@ -20,7 +20,7 @@ const PLAN_CONFIG = {
   },
   pro: {
     name: 'Emailligence Pro',
-    description: 'Everything in Basic + Web Search, Sales Outreach, Hourly Automations',
+    description: 'Everything in Basic + Web Search, Sales Outreach, Company Research',
     amount: 4000, // $40.00
   },
 } as const

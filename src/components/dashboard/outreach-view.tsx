@@ -121,7 +121,7 @@ export function OutreachView({ userPlan, onNavigateToAgent, onNavigateToBilling 
                 { icon: Building2, title: 'Company Research', desc: 'Deep dive into any company — website, recent news, leadership, and competitive info.' },
                 { icon: Mail, title: 'AI Outreach Drafts', desc: 'Draft personalized cold emails backed by real research. No more generic templates.' },
                 { icon: Users, title: 'Contact Discovery', desc: 'Find decision makers and key contacts at target companies.' },
-                { icon: Zap, title: 'Hourly Automations', desc: 'Run your automations every hour instead of just daily for faster response times.' },
+                { icon: Zap, title: 'Smart Automations', desc: 'Set up recurring tasks that run on a schedule to keep your inbox organized automatically.' },
                 { icon: BarChart3, title: 'Campaign Tracking', desc: 'Track outreach campaigns from research to draft to sent.' },
               ].map((feat, i) => (
                 <Card key={i} className="p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">

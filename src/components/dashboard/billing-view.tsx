@@ -446,7 +446,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                         <span className="absolute -top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500 text-white">PRO</span>
                         <p className="font-semibold text-sm">Pro</p>
                         <p className="text-lg font-bold mt-1">$40<span className="text-xs font-normal text-zinc-500">/mo</span></p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Web search, outreach, hourly cron</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Web search, outreach, research</p>
                       </button>
                     </div>
                     <Button
