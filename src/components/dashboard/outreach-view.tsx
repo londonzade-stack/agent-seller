@@ -38,7 +38,6 @@ interface OutreachViewProps {
 export function OutreachView({ userPlan, onNavigateToAgent, onNavigateToBilling }: OutreachViewProps) {
   const isPro = userPlan === 'pro'
   const [query, setQuery] = useState('')
-  const [searchType, setSearchType] = useState<'companies' | 'general'>('companies')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -55,7 +54,7 @@ export function OutreachView({ userPlan, onNavigateToAgent, onNavigateToBilling 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: query.trim(),
-          filters: { type: searchType, numResults: 10 },
+          filters: { numResults: 10 },
         }),
       })
       if (!res.ok) {
@@ -183,30 +182,6 @@ export function OutreachView({ userPlan, onNavigateToAgent, onNavigateToBilling 
                 </Button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setSearchType('companies')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    searchType === 'companies'
-                      ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                  }`}
-                >
-                  <Building2 className="h-3 w-3 inline mr-1" />
-                  Companies
-                </button>
-                <button
-                  onClick={() => setSearchType('general')}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    searchType === 'general'
-                      ? 'bg-zinc-900 dark:bg-white text-white dark:text-black'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                  }`}
-                >
-                  <Globe className="h-3 w-3 inline mr-1" />
-                  General Web
-                </button>
-              </div>
             </div>
           </Card>
 
