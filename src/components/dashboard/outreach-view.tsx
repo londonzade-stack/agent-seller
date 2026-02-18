@@ -439,8 +439,9 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
             isOpen={showExamples}
             onClose={() => setShowExamples(false)}
             onPromptSelect={(prompt) => {
+              setInput(prompt)
               setShowExamples(false)
-              handleSuggestionClick(prompt)
+              inputRef.current?.focus()
             }}
           />
         </div>

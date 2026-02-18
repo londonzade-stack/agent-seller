@@ -157,6 +157,60 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
     ],
   },
   {
+    id: 'smart-outreach',
+    title: 'Smart Outreach',
+    description: 'BLITZ asks questions before drafting',
+    promptText: 'Contact hospital sales teams and try to sell our product, make drafts and let me review',
+    messages: [
+      {
+        id: 'p9-m1',
+        role: 'user',
+        text: 'Contact hospital sales teams and try to sell our product, make drafts and let me review',
+      },
+      {
+        id: 'p9-m2',
+        role: 'assistant',
+        text: "I'd love to help you reach out to hospital sales teams! Before I start researching and drafting, I need a few details so the emails land right:\n\n1. **What product are you selling?** (e.g., medical devices, SaaS platform, consulting services)\n2. **What's your target department?** (e.g., procurement, IT, radiology, administration)\n3. **Any specific region or hospital size?** (e.g., US-only, 200+ bed hospitals, academic medical centers)\n4. **What's your main value prop?** — the one-liner that hooks a buyer\n\nThe more context you give me, the more personalized and effective the outreach will be.",
+      },
+      {
+        id: 'p9-m3',
+        role: 'user',
+        text: "We sell a patient monitoring SaaS platform that integrates with existing EHR systems. Target is IT directors and CTOs at mid-size hospitals (200-500 beds) in the Southeast US. Our main hook is we reduce nurse alert fatigue by 60% with smart alarm filtering.",
+      },
+      {
+        id: 'p9-m4',
+        role: 'assistant',
+        text: "Great — that's a strong pitch. I found **6 mid-size hospitals** in the Southeast with active IT leadership and drafted personalized outreach for each:\n\n| Hospital | Location | Contact | Email Status |\n|----------|----------|---------|-------|\n| Piedmont Athens Regional | Athens, GA | CTO Mark Rivera | Draft ready |\n| Baptist Health Louisville | Louisville, KY | IT Director Sarah Chen | Draft ready |\n| Memorial Hospital Jacksonville | Jacksonville, FL | VP of IT James Okafor | Draft ready |\n| Carilion Roanoke Memorial | Roanoke, VA | CTO Lisa Pham | Draft ready |\n| Prisma Health Richland | Columbia, SC | IT Director David Kim | Draft ready |\n| Erlanger Medical Center | Chattanooga, TN | CTO Anita Brooks | Draft ready |\n\nEach email leads with the **60% alert fatigue reduction**, mentions their specific EHR system, and references recent news about their hospital. All 6 drafts are in your **Drafts** folder — review and send when ready.",
+        toolCalls: [
+          {
+            name: 'findCompanies',
+            label: 'Finding companies',
+            inputSummary: 'Mid-size hospitals, Southeast US, 200-500 beds',
+            outputSummary: '6 hospitals found',
+          },
+          {
+            name: 'researchCompany',
+            label: 'Researching company',
+            inputSummary: '6 hospitals — IT leadership, EHR systems',
+            outputSummary: '6 hospitals researched',
+          },
+          {
+            name: 'webSearch',
+            label: 'Searching the web',
+            inputSummary: 'Hospital IT leadership Southeast US',
+            outputSummary: '8 results found',
+          },
+          {
+            name: 'draftEmail',
+            label: 'Drafting email',
+            inputSummary: '6 personalized outreach emails',
+            outputSummary: '6 drafts created',
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'batch-outreach',
     title: 'Batch Outreach',
     description: 'Find prospects and draft emails in bulk',
