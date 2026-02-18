@@ -72,6 +72,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [billingLoaded, setBillingLoaded] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [urlChatRestored, setUrlChatRestored] = useState(true)
+  const [outreachSessionId, setOutreachSessionId] = useState<string | undefined>()
+  const [outreachKey, setOutreachKey] = useState(0)
 
   // Whether the user has a valid subscription (active or trialing)
   const hasValidBilling = billingStatus === 'active' || billingStatus === 'trialing'
@@ -98,6 +100,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
       setChatSessionId(undefined)
       setPendingPrompt(undefined)
       setChatKey(k => k + 1)
+    }
+    // Clear outreach session when navigating to outreach via sidebar (starts new chat)
+    if (view === 'outreach') {
+      setOutreachSessionId(undefined)
+      setOutreachKey(k => k + 1)
     }
     setActiveView(view)
   }, [hasValidBilling, billingLoaded])
@@ -170,11 +177,13 @@ export function DashboardClient({ user }: DashboardClientProps) {
         activeView={activeView}
         onViewChange={handleViewChange}
         onOpenChat={(sid) => { setChatSessionId(sid); setChatKey(k => k + 1); setActiveView('agent') }}
+        onOpenOutreachChat={(sid) => { setOutreachSessionId(sid); setOutreachKey(k => k + 1) }}
         isEmailConnected={isEmailConnected}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
         billingGated={billingLoaded && !hasValidBilling}
         activeChatId={chatSessionId}
+        activeOutreachChatId={outreachSessionId}
         userPlan={userPlan}
       />
 
@@ -245,11 +254,14 @@ export function DashboardClient({ user }: DashboardClientProps) {
           )}
           {activeView === 'outreach' && (
             <OutreachView
+              key={`outreach-${outreachKey}`}
               user={user}
               isEmailConnected={isEmailConnected}
               userPlan={userPlan}
+              initialSessionId={outreachSessionId}
               onNavigateToBilling={() => setActiveView('billing')}
               onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+              onSessionCreated={(sid) => setOutreachSessionId(sid)}
             />
           )}
           {activeView === 'billing' && (

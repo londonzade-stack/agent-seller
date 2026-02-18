@@ -225,29 +225,66 @@ function MarkdownContent({ content }: { content: string }) {
 
 // ─── Component ────────────────────────────────────────────────────
 
+interface SavedMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  created_at: string
+}
+
 interface OutreachViewProps {
   user: User
   isEmailConnected: boolean
   userPlan?: string
+  initialSessionId?: string
   onNavigateToBilling?: () => void
   onOpenCommandPalette?: () => void
+  onSessionCreated?: (sessionId: string) => void
 }
 
 const REQUEST_TIMEOUT = 120000
 
-export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBilling }: OutreachViewProps) {
+export function OutreachView({ user, isEmailConnected, userPlan, initialSessionId, onNavigateToBilling, onSessionCreated }: OutreachViewProps) {
   const isPro = userPlan === 'pro'
   const [input, setInput] = useState('')
   const [showExamples, setShowExamples] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
+  const [loadingHistory, setLoadingHistory] = useState(!!initialSessionId)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
   const sessionCreatingRef = useRef(false)
+  const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
+
+  // Load chat history when opening an existing session
+  useEffect(() => {
+    if (initialSessionId) {
+      const loadHistory = async () => {
+        try {
+          const res = await fetch(`/api/chats/${initialSessionId}`)
+          if (res.ok) {
+            const data = await res.json()
+            const msgs = (data.messages || []) as SavedMessage[]
+            setInitialMessages(msgs.map(m => ({
+              id: m.id,
+              role: m.role,
+              parts: [{ type: 'text' as const, text: m.content }],
+            } as UIMessage)))
+          }
+        } catch (err) {
+          console.error('Failed to load outreach chat history:', err)
+        } finally {
+          setLoadingHistory(false)
+        }
+      }
+      loadHistory()
+    }
+  }, [initialSessionId])
 
   const { messages, sendMessage, status, error, stop } = useChat({
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: '/api/agent',
       body: { userId: user.id, userEmail: user.email, isEmailConnected },
@@ -306,11 +343,12 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
       const res = await fetch('/api/chats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ chatType: 'outreach' }),
       })
       if (res.ok) {
         const data = await res.json()
         setSessionId(data.session.id)
+        onSessionCreated?.(data.session.id)
         return data.session.id
       }
     } catch (err) {
@@ -319,7 +357,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
       sessionCreatingRef.current = false
     }
     return null
-  }, [sessionId])
+  }, [sessionId, onSessionCreated])
 
   const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string) => {
     if (!content.trim()) return

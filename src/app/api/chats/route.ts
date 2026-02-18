@@ -1,16 +1,21 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Filter by chat_type if provided (e.g. ?type=outreach)
+  const url = new URL(req.url)
+  const chatType = url.searchParams.get('type') || 'agent'
 
   // Only return sessions that have at least one message
   const { data, error } = await supabase
     .from('chat_sessions')
     .select('id, title, created_at, updated_at, chat_messages(id)')
     .eq('user_id', user.id)
+    .eq('chat_type', chatType)
     .order('updated_at', { ascending: false })
     .limit(50)
 
@@ -43,10 +48,11 @@ export async function POST(req: Request) {
 
   const body = await req.json()
   const title = body.title || 'New Chat'
+  const chatType = body.chatType || 'agent'
 
   const { data, error } = await supabase
     .from('chat_sessions')
-    .insert({ user_id: user.id, title })
+    .insert({ user_id: user.id, title, chat_type: chatType })
     .select('id, title, created_at, updated_at')
     .single()
 

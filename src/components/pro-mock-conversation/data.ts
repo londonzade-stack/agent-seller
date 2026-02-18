@@ -485,4 +485,30 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
       },
     ],
   },
+  {
+    id: 'outreach-automation',
+    title: 'Outreach Automation',
+    description: 'Set up recurring outreach tasks',
+    promptText: 'Every Monday, find 5 new companies in my target market and draft cold emails for each',
+    messages: [
+      {
+        id: 'p10-m1',
+        role: 'user',
+        text: 'Every Monday, find 5 new companies in my target market and draft cold emails for each',
+      },
+      {
+        id: 'p10-m2',
+        role: 'assistant',
+        text: "I've set up a **weekly automation** that runs every Monday morning:\n\n**Recurring Task: Weekly Prospect Outreach**\n- Searches for 5 new companies matching your target market\n- Researches each company for recent news and key contacts\n- Drafts personalized cold emails referencing your product\n- Saves all drafts to your **Drafts** folder for review\n\nYou'll see the results in your Monday Morning Briefing each week. The first run is scheduled for next Monday at 9:00 AM.\n\nWant me to also set up a follow-up automation that checks for replies every Wednesday?",
+        toolCalls: [
+          {
+            name: 'createRecurringTask',
+            label: 'Creating automation',
+            inputSummary: 'Weekly: find prospects + draft outreach',
+            outputSummary: 'Automation created — runs every Monday',
+          },
+        ],
+      },
+    ],
+  },
 ]
