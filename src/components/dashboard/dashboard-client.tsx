@@ -158,6 +158,14 @@ export function DashboardClient({ user }: DashboardClientProps) {
     checkGmailStatus()
   }, [])
 
+  // Handler for "Send to BLITZ" from contacts/analytics
+  const handleSendToBlitz = useCallback((context: string) => {
+    setChatSessionId(undefined)
+    setPendingPrompt(context)
+    setChatKey(k => k + 1)
+    setActiveView('agent')
+  }, [])
+
   // Global Cmd+K / Ctrl+K shortcut to toggle command palette
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -237,12 +245,14 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <ContactsView
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
+              onSendToBlitz={handleSendToBlitz}
             />
           )}
           {activeView === 'analytics' && (
             <AnalyticsView
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
+              onSendToBlitz={handleSendToBlitz}
             />
           )}
           {activeView === 'automations' && (

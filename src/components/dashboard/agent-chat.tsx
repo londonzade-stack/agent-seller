@@ -39,6 +39,7 @@ import {
   Wrench,
   Eye,
   EyeOff,
+  Zap,
 } from 'lucide-react'
 
 interface CustomWelcome {
@@ -945,6 +946,9 @@ interface AgentChatInnerProps {
 }
 
 function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome }: AgentChatInnerProps) {
+  // Check if this is a "Send to BLITZ" context (from contacts/analytics)
+  const isBlitzContext = initialPrompt?.startsWith('[Contact:') || initialPrompt?.startsWith('[Sender:')
+  const [blitzContext, setBlitzContext] = useState<string | null>(isBlitzContext ? initialPrompt! : null)
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -1075,13 +1079,14 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
   }, [ensureSession])
 
   // Auto-send initial prompt if provided (e.g. from automations example click)
+  // But NOT for BLITZ context items — those wait for user input
   useEffect(() => {
-    if (initialPrompt && !initialPromptSentRef.current && initialMessages.length === 0) {
+    if (initialPrompt && !initialPromptSentRef.current && initialMessages.length === 0 && !isBlitzContext) {
       initialPromptSentRef.current = true
       sendMessage({ text: initialPrompt })
       saveMessage('user', initialPrompt)
     }
-  }, [initialPrompt, initialMessages.length, sendMessage, saveMessage])
+  }, [initialPrompt, initialMessages.length, sendMessage, saveMessage, isBlitzContext])
 
   // Save assistant message when streaming completes
   useEffect(() => {
@@ -1133,7 +1138,12 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     e.preventDefault()
     if (!input.trim() || isLoading) return
     setIsTimedOut(false)
-    const text = input
+    // If there's BLITZ context, prepend it to the user's message
+    let text = input
+    if (blitzContext) {
+      text = `${blitzContext}\n\nUser request: ${input}`
+      setBlitzContext(null) // Clear context after sending
+    }
     sendMessage({ text })
     setInput('')
     saveMessage('user', text)
@@ -1510,13 +1520,28 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
 
       {/* Input — Style A bottom bar */}
       <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113] shrink-0">
+        <div className="max-w-3xl mx-auto">
+          {/* BLITZ context banner */}
+          {blitzContext && (
+            <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
+              <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Sent to BLITZ</p>
+                <p className="text-[11px] text-amber-600/80 dark:text-amber-500/70 truncate">{blitzContext.replace(/^\[(Contact|Sender): .*?\]\s*/, '').slice(0, 80)}...</p>
+              </div>
+              <button onClick={() => setBlitzContext(null)} className="p-0.5 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/30 text-amber-500 shrink-0">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask your AI email agent anything..."
+              placeholder={blitzContext ? "What do you want BLITZ to do with this?" : "Ask your AI email agent anything..."}
               className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-base"
               disabled={isLoading}
             />

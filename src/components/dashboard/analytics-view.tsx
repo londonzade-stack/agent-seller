@@ -18,6 +18,7 @@ import {
   ShieldAlert,
   Trash2,
   ChevronDown,
+  Zap,
 } from 'lucide-react'
 import {
   BarChart,
@@ -59,11 +60,12 @@ interface SenderEmail {
 interface AnalyticsViewProps {
   isEmailConnected: boolean
   onConnectEmail: () => void
+  onSendToBlitz?: (context: string) => void
 }
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#f43f5e', '#14b8a6']
 
-export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsViewProps) {
+export function AnalyticsView({ isEmailConnected, onConnectEmail, onSendToBlitz }: AnalyticsViewProps) {
   const [stats, setStats] = useState<InboxStats | null>(null)
   const [timeframe, setTimeframe] = useState<'today' | 'week' | 'month'>('week')
   const [loading, setLoading] = useState(false)
@@ -525,10 +527,25 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail }: AnalyticsVie
                                   style={{ animationDelay: `${idx * 120}ms` }}
                                 >
                                   <div className="flex items-start justify-between gap-2 mb-1">
-                                    <p className="font-medium text-sm truncate">{email.subject}</p>
-                                    <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap shrink-0">
-                                      {new Date(email.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                    </span>
+                                    <p className="font-medium text-sm truncate flex-1">{email.subject}</p>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap">
+                                        {new Date(email.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                      </span>
+                                      {onSendToBlitz && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            onSendToBlitz(`[Sender: ${sender.sender}] Email: "${email.subject}" from ${email.from} on ${new Date(email.date).toLocaleDateString()} — "${email.snippet}"`)
+                                          }}
+                                          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/20 hover:border-amber-400/40 text-amber-600 dark:text-amber-400 transition-colors text-[11px] font-medium"
+                                          title="Send to BLITZ"
+                                        >
+                                          <Zap className="h-3 w-3" />
+                                          <span className="hidden sm:inline">BLITZ</span>
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
                                   <p className="text-sm text-zinc-400 line-clamp-2">{email.snippet}</p>
                                 </div>

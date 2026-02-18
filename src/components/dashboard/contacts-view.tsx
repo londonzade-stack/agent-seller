@@ -16,6 +16,7 @@ import {
   Clock,
   MessageSquare,
   ChevronDown,
+  Zap,
 } from 'lucide-react'
 
 interface Contact {
@@ -37,9 +38,10 @@ interface ContactEmail {
 interface ContactsViewProps {
   isEmailConnected: boolean
   onConnectEmail: () => void
+  onSendToBlitz?: (context: string) => void
 }
 
-export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewProps) {
+export function ContactsView({ isEmailConnected, onConnectEmail, onSendToBlitz }: ContactsViewProps) {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -325,15 +327,30 @@ export function ContactsView({ isEmailConnected, onConnectEmail }: ContactsViewP
                                 <p className="font-medium text-sm truncate flex-1">
                                   {email.subject || '(No subject)'}
                                 </p>
-                                <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap shrink-0">
-                                  {email.date
-                                    ? new Date(email.date).toLocaleDateString(undefined, {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                      })
-                                    : ''}
-                                </span>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="text-xs text-zinc-500 dark:text-zinc-500 whitespace-nowrap">
+                                    {email.date
+                                      ? new Date(email.date).toLocaleDateString(undefined, {
+                                          month: 'short',
+                                          day: 'numeric',
+                                          year: 'numeric',
+                                        })
+                                      : ''}
+                                  </span>
+                                  {onSendToBlitz && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        onSendToBlitz(`[Contact: ${contact.name || contact.email}] Email: "${email.subject || '(No subject)'}" from ${email.from} on ${email.date ? new Date(email.date).toLocaleDateString() : 'unknown date'} — "${email.snippet || ''}"`)
+                                      }}
+                                      className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/20 hover:border-amber-400/40 text-amber-600 dark:text-amber-400 transition-colors text-[11px] font-medium"
+                                      title="Send to BLITZ"
+                                    >
+                                      <Zap className="h-3 w-3" />
+                                      <span className="hidden sm:inline">BLITZ</span>
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                               <p className="text-sm text-zinc-400 line-clamp-2">
                                 {email.snippet || 'No preview available.'}
