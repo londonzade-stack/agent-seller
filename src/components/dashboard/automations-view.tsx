@@ -19,6 +19,8 @@ import {
   BarChart3,
   Tag,
   Shield,
+  Lock,
+  ArrowRight,
 } from 'lucide-react'
 import { formatSchedule, TASK_TYPE_LABELS } from '@/lib/recurring-tasks'
 
@@ -48,6 +50,8 @@ interface AutomationsViewProps {
   isEmailConnected: boolean
   onConnectEmail: () => void
   onNavigateToAgent: (prompt?: string) => void
+  userPlan?: string
+  onNavigateToBilling?: () => void
 }
 
 function formatTimeAgo(dateStr: string): string {
@@ -147,7 +151,7 @@ const EXAMPLE_AUTOMATIONS = [
   },
 ]
 
-export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateToAgent }: AutomationsViewProps) {
+export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateToAgent, userPlan, onNavigateToBilling }: AutomationsViewProps) {
   const [tasks, setTasks] = useState<RecurringTask[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -204,6 +208,27 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
       setDeletingId(null)
       setConfirmDeleteId(null)
     }
+  }
+
+  // Gate automations to Pro plan only
+  if (userPlan && userPlan !== 'pro' && userPlan !== 'access_code') {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-[#faf8f5] dark:bg-[#111113]">
+        <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30 mb-4">
+          <Lock className="h-7 w-7 text-blue-500" />
+        </div>
+        <h2 className="text-xl font-semibold text-stone-900 dark:text-white mb-2">Automations is a Pro Feature</h2>
+        <p className="text-stone-500 dark:text-zinc-400 text-center max-w-md mb-4">
+          Set up recurring tasks that BLITZ runs automatically — daily inbox cleanup, weekly stats, monthly unsubscribe sweeps, and more.
+        </p>
+        <Button
+          onClick={onNavigateToBilling}
+          className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+        >
+          Upgrade to Pro <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
+      </div>
+    )
   }
 
   if (!isEmailConnected) {

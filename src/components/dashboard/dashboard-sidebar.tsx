@@ -203,7 +203,7 @@ export function DashboardSidebar({
     { id: 'drafts', label: 'Drafts', icon: FileText },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'automations', label: 'Automations', icon: Repeat2 },
+    { id: 'automations', label: 'Automations', icon: Repeat2, proBadge: true },
     { id: 'email', label: 'Email Connection', icon: Mail },
     { id: 'billing', label: 'Billing', icon: CreditCard },
   ]

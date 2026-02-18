@@ -148,7 +148,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-semibold mb-4">8. Subscription and Payment</h2>
               <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 Emailligence offers a 14-day free trial. After the trial period, continued use requires
-                a paid subscription at $10 per user per month. Pricing is subject to change with 30
+                a paid subscription starting at $20 per user per month. Pricing is subject to change with 30
                 days&apos; notice. Refunds are handled on a case-by-case basis.
               </p>
             </section>

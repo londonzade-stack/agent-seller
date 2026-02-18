@@ -16,7 +16,7 @@ const PLAN_CONFIG = {
   basic: {
     name: 'Emailligence Basic',
     description: 'Email management, automations, and analytics',
-    amount: 1000, // $10.00
+    amount: 2000, // $20.00
   },
   pro: {
     name: 'Emailligence Pro',

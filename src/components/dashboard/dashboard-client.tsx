@@ -274,6 +274,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
               onNavigateToAgent={(prompt?: string) => { setChatSessionId(undefined); setPendingPrompt(prompt); setChatKey(k => k + 1); setActiveView('agent') }}
+              userPlan={userPlan}
+              onNavigateToBilling={() => setActiveView('billing')}
             />
           )}
           {activeView === 'outreach' && (

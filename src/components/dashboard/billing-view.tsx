@@ -278,7 +278,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
               <div className="border-t border-zinc-200 dark:border-white/10 pt-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500 dark:text-zinc-400">Price</span>
-                  <span className="font-medium">{billing.plan === 'pro' ? '$40' : '$10'} / month</span>
+                  <span className="font-medium">{billing.plan === 'pro' ? '$40' : '$20'} / month</span>
                 </div>
 
                 {billing.status === 'trialing' && (
@@ -432,8 +432,8 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                         }`}
                       >
                         <p className="font-semibold text-sm">Basic</p>
-                        <p className="text-lg font-bold mt-1">$10<span className="text-xs font-normal text-zinc-500">/mo</span></p>
-                        <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">Email management & automations</p>
+                        <p className="text-lg font-bold mt-1">$20<span className="text-xs font-normal text-zinc-500">/mo</span></p>
+                        <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">Email management & analytics</p>
                       </button>
                       <button
                         onClick={() => setSelectedPlan('pro')}
@@ -446,7 +446,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                         <span className="absolute -top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500 text-white">PRO</span>
                         <p className="font-semibold text-sm">Pro</p>
                         <p className="text-lg font-bold mt-1">$40<span className="text-xs font-normal text-zinc-500">/mo</span></p>
-                        <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Web search, outreach, research</p>
+                        <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Automations, outreach, research</p>
                       </button>
                     </div>
                     <Button
@@ -459,7 +459,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                       ) : (
                         <CreditCard className="h-4 w-4 mr-2" />
                       )}
-                      Subscribe — {selectedPlan === 'pro' ? '$40' : '$10'}/month
+                      Subscribe — {selectedPlan === 'pro' ? '$40' : '$20'}/month
                     </Button>
                   </>
                 )}

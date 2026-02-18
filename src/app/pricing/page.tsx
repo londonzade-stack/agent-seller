@@ -31,7 +31,6 @@ export default function PricingPage() {
     "Review before send workflow",
     "Activity tracking & analytics",
     "Email integration (Gmail, Outlook)",
-    "Daily/weekly/monthly automations",
     "30+ email management tools",
   ];
 
@@ -42,6 +41,7 @@ export default function PricingPage() {
     "Company research & intel",
     "Contact discovery tools",
     "AI-powered cold outreach drafts",
+    "Daily/weekly/monthly automations",
     "Priority support",
   ];
 
@@ -110,7 +110,7 @@ export default function PricingPage() {
                     Basic
                   </Badge>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-5xl font-bold">$10</span>
+                    <span className="text-5xl font-bold">$20</span>
                     <span className="text-zinc-500">/month</span>
                   </div>
                   <p className="text-zinc-500 text-sm">per user</p>
@@ -265,7 +265,7 @@ export default function PricingPage() {
               },
               {
                 icon: Zap,
-                title: "Automations",
+                title: "Automations (Pro)",
                 description: "Set up recurring tasks on daily, weekly, or monthly schedules. BLITZ runs them automatically."
               },
             ].map((feature, i) => (
@@ -300,7 +300,7 @@ export default function PricingPage() {
               },
               {
                 q: "What's the difference between Basic and Pro?",
-                a: "Basic includes all email management tools, AI drafts, automations, and analytics. Pro adds web search via Exa.ai, company research, sales outreach dashboard, contact discovery, and priority support."
+                a: "Basic includes all email management tools, AI drafts, and analytics. Pro adds automations, web search via Exa.ai, company research, sales outreach dashboard, contact discovery, and priority support."
               },
               {
                 q: "Can I upgrade from Basic to Pro later?",
