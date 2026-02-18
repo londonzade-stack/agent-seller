@@ -536,14 +536,14 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
               {[
                 {
                   title: 'Find companies to sell to',
-                  desc: 'Search the web for prospects in any industry',
-                  prompt: 'Find companies that could be a good fit for our product. Research the top results and give me a breakdown of each company, what they do, and who the decision makers are.',
+                  desc: 'Search for prospects that fit my target market',
+                  prompt: 'Find companies that would be a great fit for our product. Research the top results and give me a breakdown of each company, what they do, and who the decision makers are.',
                   icon: Building2,
                 },
                 {
                   title: 'Research & draft cold emails',
-                  desc: 'Deep-dive a company, then draft a personalized email',
-                  prompt: 'Research 5 companies in our target market, find what makes each one unique, and draft personalized cold outreach emails for each. Let me review before sending.',
+                  desc: 'Deep-dive prospects and draft personalized outreach',
+                  prompt: 'Research 5 companies in my target market, find what makes each one unique, and draft personalized cold outreach emails for each. Let me review before sending.',
                   icon: Mail,
                 },
                 {
@@ -554,7 +554,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
                 },
                 {
                   title: 'Competitive research',
-                  desc: 'Research competitors before your next pitch',
+                  desc: 'Research my competitors before the next pitch',
                   prompt: 'Research our top competitors — what are they doing lately, what are their strengths and weaknesses, and how should we position against them?',
                   icon: BarChart3,
                 },
