@@ -1254,7 +1254,8 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       {/* Messages area */}
       <div className="flex-1 overflow-auto px-3 py-4 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]" ref={scrollAreaRef}>
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center">
+          <div className="h-full overflow-auto">
+           <div className="min-h-full flex flex-col items-center justify-center py-6">
             <div className="mb-4 sm:mb-5 relative group cursor-pointer">
               <BlitzAvatar size="lg" />
               <div className="pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 absolute left-1/2 -translate-x-1/2 top-full mt-3 w-72 sm:w-80 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl dark:shadow-black/40 p-4 z-20">
@@ -1390,6 +1391,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                 ))
               )}
             </div>
+           </div>
           </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
