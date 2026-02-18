@@ -245,9 +245,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
           )}
           {activeView === 'outreach' && (
             <OutreachView
+              user={user}
+              isEmailConnected={isEmailConnected}
               userPlan={userPlan}
-              onNavigateToAgent={(prompt?: string) => { setChatSessionId(undefined); setPendingPrompt(prompt); setChatKey(k => k + 1); setActiveView('agent') }}
               onNavigateToBilling={() => setActiveView('billing')}
+              onOpenCommandPalette={() => setCommandPaletteOpen(true)}
             />
           )}
           {activeView === 'billing' && (

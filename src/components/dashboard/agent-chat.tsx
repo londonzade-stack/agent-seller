@@ -41,6 +41,17 @@ import {
   EyeOff,
 } from 'lucide-react'
 
+interface CustomWelcome {
+  title: string
+  subtitle: string
+  headerBadge?: React.ReactNode
+  suggestions: Array<{
+    label: string
+    prompt: string
+    icon?: React.ReactNode
+  }>
+}
+
 interface AgentChatProps {
   user: User
   isEmailConnected: boolean
@@ -48,6 +59,7 @@ interface AgentChatProps {
   initialPrompt?: string
   onOpenCommandPalette?: () => void
   onSessionCreated?: (sessionId: string) => void
+  customWelcome?: CustomWelcome
 }
 
 interface SavedMessage {
@@ -845,7 +857,7 @@ function humanizeToolOutput(toolName: string, output: Record<string, unknown>): 
 const REQUEST_TIMEOUT = 120000
 
 // Wrapper that loads history / creates session before rendering the actual chat
-export function AgentChat({ user, isEmailConnected, initialSessionId, initialPrompt, onOpenCommandPalette, onSessionCreated }: AgentChatProps) {
+export function AgentChat({ user, isEmailConnected, initialSessionId, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome }: AgentChatProps) {
   const [ready, setReady] = useState(false)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
@@ -916,6 +928,7 @@ export function AgentChat({ user, isEmailConnected, initialSessionId, initialPro
       initialPrompt={initialPrompt}
       onOpenCommandPalette={onOpenCommandPalette}
       onSessionCreated={onSessionCreated}
+      customWelcome={customWelcome}
     />
   )
 }
@@ -928,9 +941,10 @@ interface AgentChatInnerProps {
   initialPrompt?: string
   onOpenCommandPalette?: () => void
   onSessionCreated?: (sessionId: string) => void
+  customWelcome?: CustomWelcome
 }
 
-function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, initialPrompt, onOpenCommandPalette, onSessionCreated }: AgentChatInnerProps) {
+function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome }: AgentChatInnerProps) {
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -1198,10 +1212,12 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       {/* Header — liquid glass bar (opaque, glossy finish) */}
       <header className="relative z-10 border-b border-white/30 dark:border-white/[0.06] px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
         <div className="min-w-0">
-          <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 px-3 py-1 text-xs font-medium tracking-wide rounded-full">
-            <Sparkles className="h-3 w-3 mr-1.5 text-stone-400 dark:text-zinc-500" />
-            Email AI Intelligence
-          </Badge>
+          {customWelcome?.headerBadge || (
+            <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 px-3 py-1 text-xs font-medium tracking-wide rounded-full">
+              <Sparkles className="h-3 w-3 mr-1.5 text-stone-400 dark:text-zinc-500" />
+              Email AI Intelligence
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {onOpenCommandPalette && (
@@ -1253,13 +1269,18 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                 </p>
               </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">Hello, {userName}</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">
+              {customWelcome ? customWelcome.title : `Hello, ${userName}`}
+            </h2>
             <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
-              {"I'm BLITZ, your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
+              {customWelcome ? customWelcome.subtitle : "I'm BLITZ, your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
             </p>
-            <button onClick={() => setShowTips(true)} className="text-sm text-stone-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
-              <Lightbulb className="h-3.5 w-3.5" />See everything I can do
-            </button>
+            {!customWelcome && (
+              <button onClick={() => setShowTips(true)} className="text-sm text-stone-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
+                <Lightbulb className="h-3.5 w-3.5" />See everything I can do
+              </button>
+            )}
+            {customWelcome && <div className="mb-6 sm:mb-8" />}
 
             {/* Morning Briefing — Interactive expandable */}
             {briefingLoaded && briefingLogs.length > 0 && (
@@ -1349,14 +1370,25 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-2xl w-full px-2">
-              {suggestions.map((suggestion, i) => (
-                <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion)}>
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                    <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion}</span>
-                  </div>
-                </Card>
-              ))}
+              {customWelcome ? (
+                customWelcome.suggestions.map((suggestion, i) => (
+                  <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion.prompt)}>
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      {suggestion.icon || <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />}
+                      <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion.label}</span>
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                suggestions.map((suggestion, i) => (
+                  <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion)}>
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                      <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion}</span>
+                    </div>
+                  </Card>
+                ))
+              )}
             </div>
           </div>
         ) : (
