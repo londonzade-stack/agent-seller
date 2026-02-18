@@ -28,10 +28,9 @@ import {
   Settings,
   Repeat2,
   Globe,
-  Building2,
 } from 'lucide-react'
 
-export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'automations' | 'outreach' | 'company-profile' | 'billing'
+export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'automations' | 'outreach' | 'billing'
 
 interface ChatSession {
   id: string
@@ -189,7 +188,6 @@ export function DashboardSidebar({
   const navItems: { id: DashboardView; label: string; icon: typeof Zap; proBadge?: boolean }[] = [
     { id: 'agent', label: 'BLITZ', icon: Zap },
     { id: 'outreach', label: 'Outreach', icon: Globe, proBadge: true },
-    { id: 'company-profile', label: 'My Company', icon: Building2, proBadge: true },
     { id: 'drafts', label: 'Drafts', icon: FileText },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
