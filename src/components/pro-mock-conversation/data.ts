@@ -30,31 +30,31 @@ export interface ProMockConversationData {
 
 export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
   {
-    id: 'find-companies',
-    title: 'Find Companies',
-    description: 'Search for target companies to sell to',
-    promptText: 'Find SaaS companies in Austin that might need our analytics platform',
+    id: 'find-prospects',
+    title: 'Find Prospects',
+    description: 'Search for companies to sell to',
+    promptText: 'Find companies in my target market that could use our product',
     messages: [
       {
         id: 'p1-m1',
         role: 'user',
-        text: 'Find SaaS companies in Austin that might need our analytics platform',
+        text: 'Find companies in my target market that could use our product',
       },
       {
         id: 'p1-m2',
         role: 'assistant',
-        text: "I found **8 SaaS companies** in Austin that could be strong prospects for your analytics platform:\n\n| Company | Focus | Size | Why They Fit |\n|---------|-------|------|-------------|\n| DataStack | Data pipeline tools | ~120 employees | No built-in analytics layer |\n| CloudMetrics | Infrastructure monitoring | ~80 employees | Currently using legacy BI tools |\n| Revio | Revenue operations | ~200 employees | Recently raised Series B, scaling fast |\n| FormFlow | Form automation | ~50 employees | Blog mentions needing better insights |\n| ShipLane | Logistics SaaS | ~150 employees | Job posting for data engineer |\n\n+3 more results. Want me to deep-dive into any of these companies or start drafting outreach emails?",
+        text: "Based on your company profile, I searched for prospects that match your ideal customer. Here are **8 strong matches**:\n\n| Company | Industry | Size | Why They Fit |\n|---------|----------|------|-------------|\n| Meridian Health Systems | Healthcare | ~200 employees | Actively hiring for ops roles — scaling fast |\n| Vantage Financial | Fintech | ~120 employees | Blog mentions switching from legacy tools |\n| NovaTech Solutions | Enterprise SaaS | ~300 employees | Just raised Series B, expanding sales team |\n| Pinecrest Logistics | Supply chain | ~80 employees | Job posting mentions needing better tooling |\n| Atlas Group | Professional services | ~150 employees | Recent press about digital transformation |\n\n+3 more results. Want me to deep-dive into any of these or start drafting outreach?",
         toolCalls: [
           {
             name: 'findCompanies',
             label: 'Finding companies',
-            inputSummary: 'SaaS companies in Austin, TX',
+            inputSummary: 'Companies matching target market profile',
             outputSummary: '8 companies found',
           },
           {
             name: 'webSearch',
             label: 'Searching the web',
-            inputSummary: 'Austin SaaS companies analytics needs',
+            inputSummary: 'Company hiring signals and recent news',
             outputSummary: '12 results found',
           },
         ],
@@ -65,34 +65,34 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
     id: 'company-research',
     title: 'Company Deep Dive',
     description: 'Research a prospect before outreach',
-    promptText: 'Research Stripe — I want to pitch them our developer tools',
+    promptText: 'Research Shopify — I want to see if they\'d be a good prospect',
     messages: [
       {
         id: 'p2-m1',
         role: 'user',
-        text: 'Research Stripe — I want to pitch them our developer tools',
+        text: "Research Shopify — I want to see if they'd be a good prospect",
       },
       {
         id: 'p2-m2',
         role: 'assistant',
-        text: "Here's your full research brief on **Stripe**:\n\n**Company Overview:**\n- Global payments infrastructure for the internet\n- Founded 2010, HQ in San Francisco + Dublin\n- ~8,000 employees, valued at $50B+\n- Processes hundreds of billions in payments annually\n\n**Recent News & Signals:**\n- Launched Stripe Billing v3 with usage-based pricing support\n- Expanding embedded finance offerings for platforms\n- New developer experience team hiring 12+ roles\n- Published blog post about improving API latency by 40%\n\n**Key Decision Makers:**\n- David Singleton — CTO\n- Dev Ittycheria — Head of Developer Platform\n- Emily Zhang — VP of Engineering, Developer Experience\n\n**Pain Points & Opportunities:**\n- Actively investing in developer tooling (hiring signal)\n- Blog mentions challenges with internal observability\n- Could benefit from better developer analytics\n\nWant me to draft a personalized outreach email referencing these insights?",
+        text: "Here's your research brief on **Shopify**:\n\n**Company Overview:**\n- E-commerce platform powering millions of businesses\n- Founded 2006, HQ in Ottawa, Canada\n- ~12,000 employees, publicly traded (NYSE: SHOP)\n- Revenue $7B+, focused on merchants and enterprise\n\n**Recent News & Signals:**\n- Launched Shopify Magic (AI-powered tools for merchants)\n- Expanding B2B wholesale features for enterprise sellers\n- New developer platform with improved APIs\n- CEO posted about operational efficiency as top priority\n\n**Key Decision Makers:**\n- Kaz Nejatian — COO & VP Product\n- Glen Worthington — VP Sales & Revenue\n- Farhan Thawar — VP Engineering\n\n**Opportunities:**\n- Heavy investment in developer tooling (hiring signal)\n- Public focus on merchant efficiency and automation\n- Growing enterprise segment could need your solution\n\nWant me to draft a personalized outreach email using these insights?",
         toolCalls: [
           {
             name: 'researchCompany',
             label: 'Researching company',
-            inputSummary: 'Stripe (stripe.com)',
+            inputSummary: 'Shopify (shopify.com)',
             outputSummary: 'Website, 8 articles, 4 overviews',
           },
           {
             name: 'webSearch',
             label: 'Searching the web',
-            inputSummary: 'Stripe developer tools news 2026',
+            inputSummary: 'Shopify recent news and leadership',
             outputSummary: '6 results found',
           },
           {
             name: 'webSearch',
             label: 'Searching the web',
-            inputSummary: 'Stripe engineering leadership team',
+            inputSummary: 'Shopify leadership team 2026',
             outputSummary: '4 results found',
           },
         ],
@@ -103,108 +103,54 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
     id: 'cold-outreach',
     title: 'Cold Outreach',
     description: 'Research and draft a personalized cold email',
-    promptText: 'Research Notion and draft a cold email pitching our integration',
+    promptText: 'Research HubSpot and draft a cold email to their partnerships team',
     messages: [
       {
         id: 'p3-m1',
         role: 'user',
-        text: 'Research Notion and draft a cold email pitching our integration',
+        text: 'Research HubSpot and draft a cold email to their partnerships team',
       },
       {
         id: 'p3-m2',
         role: 'assistant',
-        text: "I've researched Notion and drafted a personalized cold email. Here's what I found and the draft I put together:\n\n**Research Highlights:**\n- Notion recently launched their API v2 with improved integrations\n- They're actively building an ecosystem of 3rd-party tools\n- Ivan Zhao (CEO) has publicly said they want to be \"the connected workspace\"\n- Currently 30M+ users, growing in enterprise segment\n\n**Draft ready for your review:**\n- To: partnerships@makenotion.com\n- Subject: Integration partnership — complementing Notion's connected workspace vision",
+        text: "I've researched HubSpot and drafted a personalized cold email:\n\n**Research Highlights:**\n- HubSpot recently launched their AI assistant \"Breeze\" across their CRM suite\n- Active partner ecosystem with 1,500+ integrations in their marketplace\n- Yamini Rangan (CEO) has publicly focused on growing the partner ecosystem\n- App marketplace seeing 40% YoY growth in installations\n\n**Draft ready for your review:**\n- To: partnerships@hubspot.com\n- Subject: Quick idea for your growing partner ecosystem",
         toolCalls: [
           {
             name: 'researchCompany',
             label: 'Researching company',
-            inputSummary: 'Notion (notion.so)',
+            inputSummary: 'HubSpot (hubspot.com)',
             outputSummary: 'Website, 6 articles, 3 overviews',
           },
           {
             name: 'webSearch',
             label: 'Searching the web',
-            inputSummary: 'Notion integrations partnerships 2026',
+            inputSummary: 'HubSpot partnerships ecosystem 2026',
             outputSummary: '5 results found',
           },
           {
             name: 'draftEmail',
             label: 'Drafting email',
-            inputSummary: 'Cold outreach to Notion partnerships',
+            inputSummary: 'Cold outreach to HubSpot partnerships',
             outputSummary: 'Draft created',
           },
         ],
         approval: {
           action: 'Send Email',
-          description: 'Send personalized outreach email to partnerships@makenotion.com',
-          details: ['References their API v2 launch', 'Highlights integration value prop', 'Proposes 15-min discovery call'],
+          description: 'Send personalized outreach email to partnerships@hubspot.com',
+          details: ['References their Breeze AI launch', 'Highlights ecosystem fit', 'Proposes 15-min intro call'],
           responded: 'approved',
         },
       },
       {
         id: 'p3-m3',
         role: 'assistant',
-        text: "Email sent to **partnerships@makenotion.com**.\n\nThe email references their API v2 launch and connected workspace vision, positioning your tool as a natural complement. I kept it to 4 short paragraphs with a specific CTA for a 15-minute call.\n\nWant me to find more companies in the productivity tools space to reach out to?",
+        text: "Email sent to **partnerships@hubspot.com**.\n\nThe email leads with their partner ecosystem growth and Breeze AI launch, positioning your product as a natural fit. I kept it to 4 short paragraphs with a CTA for a 15-minute call.\n\nWant me to find more companies like HubSpot to reach out to?",
         toolCalls: [
           {
             name: 'sendEmail',
             label: 'Sending email',
-            inputSummary: 'To: partnerships@makenotion.com',
+            inputSummary: 'To: partnerships@hubspot.com',
             outputSummary: 'Email sent',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'smart-outreach',
-    title: 'Smart Outreach',
-    description: 'BLITZ asks questions before drafting',
-    promptText: 'Contact hospital sales teams and try to sell our product, make drafts and let me review',
-    messages: [
-      {
-        id: 'p9-m1',
-        role: 'user',
-        text: 'Contact hospital sales teams and try to sell our product, make drafts and let me review',
-      },
-      {
-        id: 'p9-m2',
-        role: 'assistant',
-        text: "I'd love to help you reach out to hospital sales teams! Before I start researching and drafting, I need a few details so the emails land right:\n\n1. **What product are you selling?** (e.g., medical devices, SaaS platform, consulting services)\n2. **What's your target department?** (e.g., procurement, IT, radiology, administration)\n3. **Any specific region or hospital size?** (e.g., US-only, 200+ bed hospitals, academic medical centers)\n4. **What's your main value prop?** — the one-liner that hooks a buyer\n\nThe more context you give me, the more personalized and effective the outreach will be.",
-      },
-      {
-        id: 'p9-m3',
-        role: 'user',
-        text: "We sell a patient monitoring SaaS platform that integrates with existing EHR systems. Target is IT directors and CTOs at mid-size hospitals (200-500 beds) in the Southeast US. Our main hook is we reduce nurse alert fatigue by 60% with smart alarm filtering.",
-      },
-      {
-        id: 'p9-m4',
-        role: 'assistant',
-        text: "Great — that's a strong pitch. I found **6 mid-size hospitals** in the Southeast with active IT leadership and drafted personalized outreach for each:\n\n| Hospital | Location | Contact | Email Status |\n|----------|----------|---------|-------|\n| Piedmont Athens Regional | Athens, GA | CTO Mark Rivera | Draft ready |\n| Baptist Health Louisville | Louisville, KY | IT Director Sarah Chen | Draft ready |\n| Memorial Hospital Jacksonville | Jacksonville, FL | VP of IT James Okafor | Draft ready |\n| Carilion Roanoke Memorial | Roanoke, VA | CTO Lisa Pham | Draft ready |\n| Prisma Health Richland | Columbia, SC | IT Director David Kim | Draft ready |\n| Erlanger Medical Center | Chattanooga, TN | CTO Anita Brooks | Draft ready |\n\nEach email leads with the **60% alert fatigue reduction**, mentions their specific EHR system, and references recent news about their hospital. All 6 drafts are in your **Drafts** folder — review and send when ready.",
-        toolCalls: [
-          {
-            name: 'findCompanies',
-            label: 'Finding companies',
-            inputSummary: 'Mid-size hospitals, Southeast US, 200-500 beds',
-            outputSummary: '6 hospitals found',
-          },
-          {
-            name: 'researchCompany',
-            label: 'Researching company',
-            inputSummary: '6 hospitals — IT leadership, EHR systems',
-            outputSummary: '6 hospitals researched',
-          },
-          {
-            name: 'webSearch',
-            label: 'Searching the web',
-            inputSummary: 'Hospital IT leadership Southeast US',
-            outputSummary: '8 results found',
-          },
-          {
-            name: 'draftEmail',
-            label: 'Drafting email',
-            inputSummary: '6 personalized outreach emails',
-            outputSummary: '6 drafts created',
           },
         ],
       },
@@ -214,22 +160,22 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
     id: 'batch-outreach',
     title: 'Batch Outreach',
     description: 'Find prospects and draft emails in bulk',
-    promptText: 'Find 5 fintech startups and draft personalized outreach for each',
+    promptText: 'Find 5 companies in our space and draft personalized outreach for each',
     messages: [
       {
         id: 'p4-m1',
         role: 'user',
-        text: 'Find 5 fintech startups and draft personalized outreach for each',
+        text: 'Find 5 companies in our space and draft personalized outreach for each',
       },
       {
         id: 'p4-m2',
         role: 'assistant',
-        text: "I found 5 fintech startups and researched each one. Here's the full breakdown:\n\n| Company | What They Do | Key Signal | Email Status |\n|---------|-------------|------------|--------|\n| Ramp | Corporate card & spend mgmt | Just launched expense AI features | Draft ready |\n| Mercury | Banking for startups | Expanding to enterprise segment | Draft ready |\n| Brex | Financial OS for companies | Hiring 8 data engineers | Draft ready |\n| Plaid | Financial data infrastructure | New partnerships API launched | Draft ready |\n| Sardine | Fraud & compliance platform | Series B, scaling engineering | Draft ready |\n\nAll 5 drafts are personalized based on each company's recent news and hiring signals. Each email is in your **Drafts** folder — review and send when ready.\n\nWant me to schedule follow-ups for any that don't respond within 3 days?",
+        text: "I found 5 companies that match your target profile and researched each one:\n\n| Company | What They Do | Key Signal | Email Status |\n|---------|-------------|------------|--------|\n| Ramp | Corporate card & spend mgmt | Just launched AI expense features | Draft ready |\n| Mercury | Banking for startups | Expanding to enterprise segment | Draft ready |\n| Brex | Financial OS for companies | Hiring 8 data engineers | Draft ready |\n| Plaid | Financial data infrastructure | New partnerships API launched | Draft ready |\n| Sardine | Fraud & compliance platform | Series B, scaling fast | Draft ready |\n\nEach email is personalized based on their recent news and hiring activity. All 5 drafts are in your **Drafts** folder — review and send when ready.\n\nWant me to schedule follow-ups for any that don't respond within 3 days?",
         toolCalls: [
           {
             name: 'findCompanies',
             label: 'Finding companies',
-            inputSummary: 'Fintech startups, Series A-C',
+            inputSummary: 'Companies matching target profile',
             outputSummary: '5 companies found',
           },
           {
@@ -286,12 +232,12 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
       {
         id: 'p5-m2',
         role: 'assistant',
-        text: "I checked all your recent outreach emails. Here's the status:\n\n**Got Replies (2):**\n- **Vercel** — Emily from partnerships responded, interested in a call next week\n- **Linear** — Auto-reply: out of office until Monday\n\n**No Response Yet (3):**\n- **Notion** — Sent 4 days ago, no reply\n- **Plaid** — Sent 3 days ago, no reply\n- **Ramp** — Sent 5 days ago, no reply\n\nI've drafted follow-up emails for the 3 that haven't responded. Each follow-up adds a new angle:\n- Notion: References their latest community update\n- Plaid: Mentions mutual connection found on LinkedIn\n- Ramp: Includes a relevant case study link\n\nAll 3 drafts are in your **Drafts** folder. Want me to send them now?",
+        text: "I checked all your recent outreach emails. Here's the status:\n\n**Got Replies (2):**\n- **Vercel** — Emily from partnerships responded, interested in a call next week\n- **Linear** — Auto-reply: out of office until Monday\n\n**No Response Yet (3):**\n- **HubSpot** — Sent 4 days ago, no reply\n- **Plaid** — Sent 3 days ago, no reply\n- **Ramp** — Sent 5 days ago, no reply\n\nI've drafted follow-up emails for the 3 that haven't responded. Each follow-up adds a new angle:\n- HubSpot: References their latest partner summit announcement\n- Plaid: Mentions a relevant case study\n- Ramp: Ties into their recent product launch\n\nAll 3 drafts are in your **Drafts** folder. Want me to send them now?",
         toolCalls: [
           {
             name: 'searchEmails',
             label: 'Searching emails',
-            inputSummary: 'sent outreach emails, last 7 days',
+            inputSummary: 'Sent outreach emails, last 7 days',
             outputSummary: 'Found 5 sent emails',
           },
           {
@@ -303,32 +249,32 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
           {
             name: 'webSearch',
             label: 'Searching the web',
-            inputSummary: 'Notion community updates recent',
+            inputSummary: 'HubSpot partner summit recent news',
             outputSummary: '3 results found',
           },
           {
             name: 'draftEmail',
             label: 'Drafting email',
-            inputSummary: 'Follow-up: Notion, Plaid, Ramp',
+            inputSummary: 'Follow-up: HubSpot, Plaid, Ramp',
             outputSummary: '3 follow-up drafts created',
           },
         ],
         approval: {
           action: 'Send Emails',
           description: 'Send 3 follow-up emails to prospects who haven\'t replied',
-          details: ['Notion — follow-up #1', 'Plaid — follow-up #1', 'Ramp — follow-up #1'],
+          details: ['HubSpot — follow-up #1', 'Plaid — follow-up #1', 'Ramp — follow-up #1'],
           responded: 'approved',
         },
       },
       {
         id: 'p5-m3',
         role: 'assistant',
-        text: "All 3 follow-up emails sent.\n\nI'll keep an eye on responses. Want me to set up an automation to check for replies daily and notify you in your Morning Briefing?",
+        text: "All 3 follow-up emails sent.\n\nI'll keep an eye on responses. Want me to set up an automation to check for replies daily and notify you?",
         toolCalls: [
           {
             name: 'sendEmail',
             label: 'Sending email',
-            inputSummary: 'Follow-up to Notion',
+            inputSummary: 'Follow-up to HubSpot',
             outputSummary: 'Email sent',
           },
           {
@@ -351,17 +297,17 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
     id: 'competitor-intel',
     title: 'Competitor Intel',
     description: 'Research competitors before a pitch',
-    promptText: 'Research what HubSpot and Salesforce are doing in the AI space so I can position against them',
+    promptText: 'Research our top competitors and help me position against them',
     messages: [
       {
         id: 'p6-m1',
         role: 'user',
-        text: 'Research what HubSpot and Salesforce are doing in the AI space so I can position against them',
+        text: 'Research our top competitors and help me position against them',
       },
       {
         id: 'p6-m2',
         role: 'assistant',
-        text: "Here's your competitive intelligence brief:\n\n**HubSpot — AI Strategy:**\n- Launched \"Breeze\" AI across their CRM suite\n- AI-powered content generation for marketing emails\n- Predictive lead scoring in Sales Hub\n- Weakness: AI features are add-ons at higher tiers, not core\n\n**Salesforce — AI Strategy:**\n- Einstein GPT embedded across Sales Cloud\n- Autonomous AI agents for customer service (Agentforce)\n- Heavy enterprise focus, complex implementation\n- Weakness: Requires dedicated admin, 6+ month onboarding\n\n**Your Positioning Angles:**\n- Speed to value — works in minutes, not months\n- Email-native — lives where reps already work\n- Research-backed outreach — real web data, not templated\n- No CRM lock-in — complements existing tools\n\nWant me to draft a comparison one-pager you can attach to your outreach emails?",
+        text: "Here's your competitive intelligence brief:\n\n**Competitor A — HubSpot:**\n- Launched \"Breeze\" AI across their CRM suite\n- AI-powered content generation for marketing emails\n- Predictive lead scoring in Sales Hub\n- Weakness: AI features are add-ons at higher tiers, not core\n\n**Competitor B — Salesforce:**\n- Einstein GPT embedded across Sales Cloud\n- Autonomous AI agents for customer service (Agentforce)\n- Heavy enterprise focus, complex implementation\n- Weakness: Requires dedicated admin, 6+ month onboarding\n\n**Your Positioning Angles:**\n- Speed to value — works in minutes, not months\n- Email-native — lives where reps already work\n- Research-backed outreach — real web data, not templated\n- No CRM lock-in — complements existing tools\n\nWant me to draft a comparison one-pager you can use in outreach?",
         toolCalls: [
           {
             name: 'researchCompany',
@@ -395,17 +341,17 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
     id: 'lead-qualification',
     title: 'Lead Qualification',
     description: 'Research inbound leads and prioritize',
-    promptText: 'I got 4 demo requests today — research each company and tell me which ones to prioritize',
+    promptText: 'I got demo requests today — research each company and tell me which ones to prioritize',
     messages: [
       {
         id: 'p7-m1',
         role: 'user',
-        text: 'I got 4 demo requests today — research each company and tell me which ones to prioritize',
+        text: 'I got demo requests today — research each company and tell me which ones to prioritize',
       },
       {
         id: 'p7-m2',
         role: 'assistant',
-        text: "I've researched all 4 companies that requested demos. Here's my prioritization:\n\n**Priority: High**\n- **Acme Corp** — 500 employees, $40M revenue, actively looking for email tools (job posting for Sales Ops Manager mentions \"email automation\")\n- **TechFlow** — 200 employees, Series C funded ($30M), CTO tweeted about needing better outreach tools last week\n\n**Priority: Medium**\n- **GreenLeaf** — 80 employees, growing but early-stage. Good long-term prospect, budget may be limited\n\n**Priority: Low**\n- **QuickByte** — 15 employees, pre-seed. Likely exploring free options first\n\nI'd recommend scheduling Acme Corp and TechFlow this week — they have budget and active need. Want me to draft confirmation emails for each demo?",
+        text: "I found 4 demo requests in your inbox and researched each company:\n\n**Priority: High**\n- **Acme Corp** — 500 employees, $40M revenue, actively looking for email tools (job posting for Sales Ops Manager mentions \"email automation\")\n- **TechFlow** — 200 employees, Series C funded ($30M), CTO tweeted about needing better outreach tools last week\n\n**Priority: Medium**\n- **GreenLeaf** — 80 employees, growing but early-stage. Good long-term prospect, budget may be limited\n\n**Priority: Low**\n- **QuickByte** — 15 employees, pre-seed. Likely exploring free options first\n\nI'd recommend scheduling Acme Corp and TechFlow this week — they have budget and active need. Want me to draft confirmation emails for each demo?",
         toolCalls: [
           {
             name: 'searchEmails',
@@ -480,6 +426,60 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
             label: 'Drafting email',
             inputSummary: '5 pre-event outreach emails',
             outputSummary: '5 drafts created',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'smart-outreach',
+    title: 'Smart Outreach',
+    description: 'BLITZ asks questions when it needs context',
+    promptText: 'Reach out to companies in the healthcare space and sell our product',
+    messages: [
+      {
+        id: 'p9-m1',
+        role: 'user',
+        text: 'Reach out to companies in the healthcare space and sell our product',
+      },
+      {
+        id: 'p9-m2',
+        role: 'assistant',
+        text: "I'd love to help you reach out to healthcare companies! Before I start researching and drafting, a quick question so the emails land right:\n\n**What's your main value prop?** — the one-liner that hooks a buyer. For example: \"We cut patient wait times by 40%\" or \"Our platform saves billing teams 10 hours a week.\"\n\nThe more context you give me, the more personalized and effective the outreach will be.",
+      },
+      {
+        id: 'p9-m3',
+        role: 'user',
+        text: "We sell a patient monitoring platform that integrates with existing EHR systems. Our main hook is we reduce nurse alert fatigue by 60% with smart alarm filtering. Target IT directors at mid-size hospitals.",
+      },
+      {
+        id: 'p9-m4',
+        role: 'assistant',
+        text: "Great — that's a strong pitch. I found **6 mid-size hospitals** with active IT leadership and drafted personalized outreach for each:\n\n| Hospital | Location | Contact | Email Status |\n|----------|----------|---------|-------|\n| Piedmont Athens Regional | Athens, GA | CTO Mark Rivera | Draft ready |\n| Baptist Health Louisville | Louisville, KY | IT Director Sarah Chen | Draft ready |\n| Memorial Hospital Jacksonville | Jacksonville, FL | VP of IT James Okafor | Draft ready |\n| Carilion Roanoke Memorial | Roanoke, VA | CTO Lisa Pham | Draft ready |\n| Prisma Health Richland | Columbia, SC | IT Director David Kim | Draft ready |\n| Erlanger Medical Center | Chattanooga, TN | CTO Anita Brooks | Draft ready |\n\nEach email leads with the **60% alert fatigue reduction**, mentions their specific EHR system, and references recent news about their hospital. All 6 drafts are in your **Drafts** folder — review and send when ready.",
+        toolCalls: [
+          {
+            name: 'findCompanies',
+            label: 'Finding companies',
+            inputSummary: 'Mid-size hospitals with IT leadership',
+            outputSummary: '6 hospitals found',
+          },
+          {
+            name: 'researchCompany',
+            label: 'Researching company',
+            inputSummary: '6 hospitals — IT leadership, EHR systems',
+            outputSummary: '6 hospitals researched',
+          },
+          {
+            name: 'webSearch',
+            label: 'Searching the web',
+            inputSummary: 'Hospital IT leadership and EHR systems',
+            outputSummary: '8 results found',
+          },
+          {
+            name: 'draftEmail',
+            label: 'Drafting email',
+            inputSummary: '6 personalized outreach emails',
+            outputSummary: '6 drafts created',
           },
         ],
       },

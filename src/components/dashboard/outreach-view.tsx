@@ -536,26 +536,26 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
               {[
                 {
                   title: 'Find companies to sell to',
-                  desc: 'Search for target companies in your industry',
-                  prompt: 'Find medical companies we can sell our medical devices to. Research the top results and give me a breakdown of each company, what they do, and who the decision makers are.',
+                  desc: 'Search the web for prospects in any industry',
+                  prompt: 'Find companies that could be a good fit for our product. Research the top results and give me a breakdown of each company, what they do, and who the decision makers are.',
                   icon: Building2,
                 },
                 {
-                  title: 'Cold outreach campaign',
-                  desc: 'Research prospects and draft personalized emails',
-                  prompt: 'Find people looking at homes in my area and draft personalized cold outreach emails to each of them introducing my real estate services. Let me review each email before sending.',
+                  title: 'Research & draft cold emails',
+                  desc: 'Deep-dive a company, then draft a personalized email',
+                  prompt: 'Research 5 companies in our target market, find what makes each one unique, and draft personalized cold outreach emails for each. Let me review before sending.',
                   icon: Mail,
                 },
                 {
-                  title: 'Draft emails for my industry',
-                  desc: 'Find prospects and batch-draft outreach',
-                  prompt: 'Reach out to consumers in our industry — find relevant companies, research them, and draft personalized cold emails for all of them. Present them in a table so I can review before sending.',
+                  title: 'Follow up on outreach',
+                  desc: 'Check replies and draft follow-ups automatically',
+                  prompt: 'Check if any of my recent outreach emails got replies. For the ones that didn\'t respond, draft personalized follow-ups with a new angle. Show me everything in a table.',
                   icon: Users,
                 },
                 {
-                  title: 'Analyze my inbox',
-                  desc: 'Get a breakdown of who needs a response',
-                  prompt: 'Analyze my inbox and see what clients I need to respond to. Give me a breakdown preview table of all the emails organized by sender, with a summary of each conversation and what action is needed.',
+                  title: 'Competitive research',
+                  desc: 'Research competitors before your next pitch',
+                  prompt: 'Research our top competitors — what are they doing lately, what are their strengths and weaknesses, and how should we position against them?',
                   icon: BarChart3,
                 },
               ].map((suggestion, i) => (
