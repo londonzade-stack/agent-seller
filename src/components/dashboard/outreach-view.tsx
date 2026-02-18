@@ -58,6 +58,40 @@ function getToolMeta(toolName: string) {
   return TOOL_META[toolName] || { label: toolName, icon: Wrench }
 }
 
+function summarizeInput(toolName: string, input: Record<string, unknown>): string[] {
+  const lines: string[] = []
+  if (input.query) lines.push(`Query: ${String(input.query)}`)
+  if (input.to) lines.push(`To: ${String(input.to)}`)
+  if (input.subject) lines.push(`Subject: ${String(input.subject)}`)
+  if (input.industry) lines.push(`Industry: ${String(input.industry)}`)
+  if (input.location) lines.push(`Location: ${String(input.location)}`)
+  if (input.company) lines.push(`Company: ${String(input.company)}`)
+  if (input.domain) lines.push(`Domain: ${String(input.domain)}`)
+  if (input.numResults) lines.push(`Results: ${String(input.numResults)}`)
+  if (lines.length === 0) {
+    // fallback: show all keys
+    for (const [k, v] of Object.entries(input)) {
+      if (v !== undefined && v !== null && String(v).length < 100) {
+        lines.push(`${k}: ${String(v)}`)
+      }
+    }
+  }
+  return lines.length > 0 ? lines : ['Running...']
+}
+
+function summarizeOutput(toolName: string, output: unknown): string[] {
+  if (!output || typeof output !== 'object') return ['Done']
+  const o = output as Record<string, unknown>
+  const lines: string[] = []
+  if (o.results && Array.isArray(o.results)) lines.push(`${o.results.length} results returned`)
+  if (o.messageId) lines.push('Email sent successfully')
+  if (o.draftId) lines.push('Draft created')
+  if (o.count !== undefined) lines.push(`${o.count} items`)
+  if (o.total !== undefined) lines.push(`Total: ${o.total}`)
+  if (lines.length === 0 && o.error) lines.push(`Error: ${String(o.error)}`)
+  return lines.length > 0 ? lines : ['Completed']
+}
+
 function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const [expanded, setExpanded] = useState(false)
   const partType = part.type as string
@@ -68,10 +102,12 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const meta = getToolMeta(toolName)
   const Icon = meta.icon
   const input = part.input as Record<string, unknown> | undefined
+  const output = part.output as unknown
 
   const isRunning = state === 'input-streaming' || state === 'input-available' || state === 'call' || state === 'partial-call'
   const isDone = state === 'output-available' || state === 'result'
   const isError = state === 'output-error'
+  const errorText = isError ? ((part.output as Record<string, unknown>)?.error as string) || 'Tool call failed' : null
 
   const inputSummary = input?.query ? `"${String(input.query).slice(0, 40)}"` : null
 
@@ -98,6 +134,34 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
         {isRunning && <span className="text-[10px] text-blue-600 dark:text-blue-400 ml-1 animate-pulse">running</span>}
         <ChevronRight className={`h-3 w-3 ml-auto text-blue-400 dark:text-blue-600 transition-transform shrink-0 ${expanded ? 'rotate-90' : ''}`} />
       </button>
+
+      {expanded && (
+        <div className="border-t border-blue-200/60 dark:border-blue-800/20 px-3 py-2 space-y-2 bg-blue-50/20 dark:bg-blue-950/10">
+          {input && Object.keys(input).length > 0 && (
+            <div>
+              <div className="text-[10px] font-medium text-blue-700/60 dark:text-blue-500/50 uppercase tracking-wider mb-1">What it&apos;s doing</div>
+              <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+                {summarizeInput(toolName, input).map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </div>
+            </div>
+          )}
+          {isDone && output != null && (
+            <div>
+              <div className="text-[10px] font-medium text-blue-700/60 dark:text-blue-500/50 uppercase tracking-wider mb-1">Result</div>
+              <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5">
+                {summarizeOutput(toolName, output).map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </div>
+            </div>
+          )}
+          {isError && errorText && (
+            <div className="text-xs text-red-500">{errorText}</div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -453,7 +517,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
           /* Welcome screen with outreach suggestions */
           <div className="h-full flex flex-col items-center justify-center">
             <div className="mb-4 sm:mb-5">
-              <BlitzAvatar size="lg" />
+              <BlitzAvatar size="lg" variant="blue" />
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">Sales Outreach</h2>
             <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
@@ -525,7 +589,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
               <div key={message.id} className={`flex gap-2 sm:gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {message.role === 'assistant' && (
                   <div className="shrink-0">
-                    <BlitzAvatar size="sm" />
+                    <BlitzAvatar size="sm" variant="blue" />
                   </div>
                 )}
                 <div className={`max-w-[90%] sm:max-w-[85%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
@@ -559,7 +623,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
             {isLoading && !lastMsgHasRunningTool && (
               <div className="flex gap-2 sm:gap-4 justify-start">
                 <div className="shrink-0">
-                  <BlitzAvatar size="sm" />
+                  <BlitzAvatar size="sm" variant="blue" />
                 </div>
                 <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm dark:shadow-none">
                   <div className="flex items-center gap-2 sm:gap-3">

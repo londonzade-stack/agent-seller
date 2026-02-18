@@ -30,6 +30,14 @@ const BLITZ_PALETTE: Record<string, string> = {
   '.': '',
 }
 
+const BLITZ_BLUE_PALETTE: Record<string, string> = {
+  Y: '#60A5FA',
+  W: '#FFFFFF',
+  K: '#1a1a1a',
+  G: '#3B82F6',
+  '.': '',
+}
+
 function PixelGrid({
   grid,
   palette,
@@ -71,9 +79,13 @@ function PixelGrid({
 interface BlitzAvatarProps {
   /** sm = 32px chat bubble avatar, lg = 80px welcome screen */
   size?: 'sm' | 'lg'
+  /** Optional color variant — default is amber/yellow, 'blue' for Pro outreach */
+  variant?: 'default' | 'blue'
 }
 
-export function BlitzAvatar({ size = 'sm' }: BlitzAvatarProps) {
+export function BlitzAvatar({ size = 'sm', variant = 'default' }: BlitzAvatarProps) {
+  const palette = variant === 'blue' ? BLITZ_BLUE_PALETTE : BLITZ_PALETTE
+
   if (size === 'lg') {
     return (
       <div
@@ -81,7 +93,7 @@ export function BlitzAvatar({ size = 'sm' }: BlitzAvatarProps) {
         style={{ imageRendering: 'pixelated' }}
       >
         <div className="scale-[1.1]">
-          <PixelGrid grid={BLITZ_GRID} palette={BLITZ_PALETTE} pixelSize={4} />
+          <PixelGrid grid={BLITZ_GRID} palette={palette} pixelSize={4} />
         </div>
       </div>
     )
@@ -94,7 +106,7 @@ export function BlitzAvatar({ size = 'sm' }: BlitzAvatarProps) {
       style={{ imageRendering: 'pixelated' }}
     >
       <div className="scale-[0.55] sm:scale-[0.6]">
-        <PixelGrid grid={BLITZ_GRID} palette={BLITZ_PALETTE} pixelSize={4} />
+        <PixelGrid grid={BLITZ_GRID} palette={palette} pixelSize={4} />
       </div>
     </div>
   )

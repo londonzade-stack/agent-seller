@@ -264,7 +264,7 @@ function ProMockMessageBubble({
   return (
     <div className="flex justify-start gap-2">
       <div className="shrink-0">
-        <BlitzAvatar size="sm" />
+        <BlitzAvatar size="sm" variant="blue" />
       </div>
       <div className="max-w-[85%] rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none">
         {message.toolCalls?.map((tool, i) => {
@@ -312,7 +312,7 @@ function ProMockConversation({
       <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 overflow-hidden">
         {/* Header — blue-themed */}
         <div className="border-b border-zinc-200 dark:border-white/10 px-5 py-3 flex items-center gap-3">
-          <BlitzAvatar size="sm" />
+          <BlitzAvatar size="sm" variant="blue" />
           <span className="font-mono font-bold text-blue-500 text-sm">BLITZ</span>
           <span className="text-xs text-zinc-400 dark:text-zinc-600">Sales Outreach Agent</span>
           <div className="ml-auto flex items-center gap-1.5">
