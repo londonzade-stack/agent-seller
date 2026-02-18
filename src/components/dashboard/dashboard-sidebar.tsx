@@ -112,7 +112,8 @@ export function DashboardSidebar({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   // Manual override: user clicked "Back" or "Settings" to force nav panel while on agent view
-  const [forceNav, setForceNav] = useState(false)
+  // Default to nav panel (true) unless user has an active chat open
+  const [forceNav, setForceNav] = useState(!activeChatId && !activeOutreachChatId)
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -121,7 +122,9 @@ export function DashboardSidebar({
   }
 
   const handleNavClick = (view: DashboardView) => {
-    setForceNav(false)
+    // Keep nav panel visible when clicking nav items (new chat starts fresh)
+    // Only show chats panel when user explicitly opens an existing chat
+    setForceNav(true)
     onViewChange(view)
     onMobileClose?.()
   }
@@ -355,7 +358,7 @@ export function DashboardSidebar({
             )}
           </div>
         </div>
-        {activeView === 'agent' && (
+        {(activeView === 'agent' || activeView === 'outreach') && (
           <button
             onClick={() => setForceNav(false)}
             className="flex items-center gap-1.5 text-sm font-medium text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors mt-3"
