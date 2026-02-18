@@ -18,7 +18,6 @@ import {
   MessageSquare,
   FileText,
   BarChart3,
-  Inbox,
   LayoutDashboard,
   Globe,
   Search,
@@ -112,9 +111,6 @@ export default async function Home() {
                 <div className="w-48 border-r border-zinc-200/60 dark:border-white/[0.06] p-3 space-y-1 bg-[#faf8f5] dark:bg-[#111113]">
                   <div className="flex items-center gap-2 px-2.5 py-2 bg-stone-200/60 dark:bg-white/[0.06] rounded-lg text-xs font-medium">
                     <Brain className="h-3.5 w-3.5" /> BLITZ Agent
-                  </div>
-                  <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
-                    <Inbox className="h-3.5 w-3.5" /> Inbox
                   </div>
                   <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
                     <FileText className="h-3.5 w-3.5" /> Drafts
