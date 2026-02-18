@@ -37,6 +37,7 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { ProMockConversationDropdown } from '@/components/pro-mock-conversation'
+import { CompanyProfileCard } from './company-profile-card'
 
 // ─── Tool display (reuse from agent-chat) ─────────────────────────
 const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
@@ -526,6 +527,10 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
             <button onClick={() => setShowExamples(true)} className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-6 sm:mb-8 flex items-center gap-1">
               <Lightbulb className="h-3.5 w-3.5" />See outreach examples
             </button>
+
+            <div className="max-w-2xl w-full px-2 mb-4">
+              <CompanyProfileCard variant="inline" />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-2xl w-full px-2">
               {[

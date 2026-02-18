@@ -11,9 +11,11 @@ import { AnalyticsView } from './analytics-view'
 import { BillingView } from './billing-view'
 import { AutomationsView } from './automations-view'
 import { OutreachView } from './outreach-view'
+import { CompanyProfileCard } from './company-profile-card'
 import { CommandPalette } from './command-palette'
-import { Brain, Menu } from 'lucide-react'
+import { Brain, Menu, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -47,7 +49,7 @@ function getInitialViewFromUrl(): DashboardView {
   const chatId = params.get('chat')
   if (chatId) return 'agent'
   const urlView = params.get('view') as DashboardView | null
-  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'automations', 'outreach', 'email-connect', 'billing'].includes(urlView)) {
+  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'automations', 'outreach', 'company-profile', 'email-connect', 'billing'].includes(urlView)) {
     return urlView
   }
   return 'agent'
@@ -251,6 +253,22 @@ export function DashboardClient({ user }: DashboardClientProps) {
               onNavigateToBilling={() => setActiveView('billing')}
               onOpenCommandPalette={() => setCommandPaletteOpen(true)}
             />
+          )}
+          {activeView === 'company-profile' && (
+            <div className="flex-1 flex flex-col h-full">
+              <header className="relative z-10 border-b border-white/30 dark:border-white/[0.06] px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
+                <Badge variant="secondary" className="bg-stone-100/80 dark:bg-zinc-800/80 text-stone-700 dark:text-zinc-300 border border-stone-200/60 dark:border-zinc-700/60 px-3 py-1 text-xs font-medium tracking-wide rounded-full">
+                  <Building2 className="h-3 w-3 mr-1.5 text-stone-400 dark:text-zinc-500" />
+                  My Company
+                  <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-400/10 dark:text-blue-400">PRO</span>
+                </Badge>
+              </header>
+              <div className="flex-1 overflow-auto p-3 sm:p-6 bg-[#faf8f5] dark:bg-[#111113]">
+                <div className="max-w-2xl mx-auto">
+                  <CompanyProfileCard variant="full" />
+                </div>
+              </div>
+            </div>
           )}
           {activeView === 'billing' && (
             <BillingView onStatusChange={(status) => { setBillingStatus(status) }} onPlanChange={(plan) => setUserPlan(plan)} />

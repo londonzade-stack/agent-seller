@@ -1249,6 +1249,25 @@ export async function POST(req: Request) {
     const billingStatus = subscription?.status
     const userPlan = subscription?.plan || 'basic'
 
+    // Query company profile for Pro users (used in system prompt)
+    let companyProfile: {
+      company_name: string | null
+      description: string | null
+      user_role: string | null
+      target_customer: string | null
+      industry: string | null
+      notes: string | null
+    } | null = null
+
+    if (userPlan === 'pro') {
+      const { data: profileData } = await supabase
+        .from('company_profiles')
+        .select('company_name, description, user_role, target_customer, industry, notes')
+        .eq('user_id', userId)
+        .single()
+      companyProfile = profileData
+    }
+
     if (billingStatus !== 'active' && billingStatus !== 'trialing') {
       return new Response(
         JSON.stringify({ error: 'Please set up billing to use the AI agent.' }),
@@ -1294,6 +1313,26 @@ export async function POST(req: Request) {
     }
     if (userPlan === 'pro') {
       systemPrompt += PRO_SYSTEM_PROMPT
+    }
+
+    // Inject company profile context for Pro users
+    if (userPlan === 'pro' && companyProfile) {
+      const profileParts: string[] = []
+      if (companyProfile.company_name) profileParts.push(`Company: ${companyProfile.company_name}`)
+      if (companyProfile.description) profileParts.push(`What they do: ${companyProfile.description}`)
+      if (companyProfile.user_role) profileParts.push(`User's role: ${companyProfile.user_role}`)
+      if (companyProfile.target_customer) profileParts.push(`Target customer: ${companyProfile.target_customer}`)
+      if (companyProfile.industry) profileParts.push(`Industry: ${companyProfile.industry}`)
+      if (companyProfile.notes) profileParts.push(`Additional context: ${companyProfile.notes}`)
+
+      if (profileParts.length > 0) {
+        systemPrompt += `\n\n## COMPANY CONTEXT (User's Company Profile)\n\nThe user has provided the following information about their company. Use this to personalize your responses, especially for outreach, drafts, and research tasks. Reference this context naturally — don't repeat it back verbatim.\n\n${profileParts.join('\n')}`
+      }
+    }
+
+    // Fallback: if Pro user has no profile, prompt agent to ask clarifying questions
+    if (userPlan === 'pro' && (!companyProfile || !companyProfile.company_name)) {
+      systemPrompt += `\n\n## NOTE: No company profile set up yet.\nIf the user's request involves outreach, cold emails, sales prospecting, or company-specific context (e.g., "find companies to sell our product to"), ask ONE brief clarifying question about their company, role, or product before proceeding. Keep it conversational — don't interrogate. Example: "Quick question — what does your company sell? That way I can tailor the outreach perfectly."`
     }
 
     const result = streamText({
