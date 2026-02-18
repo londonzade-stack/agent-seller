@@ -20,10 +20,15 @@ import {
   Globe,
   Search,
   Sparkles,
+  LayoutDashboard,
 } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const isLoggedIn = !!user
   const basicFeatures = [
     "Unlimited AI-generated email drafts",
     "Smart lead detection from inbox",
@@ -74,12 +79,20 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" asChild>
-              <Link href="/auth/login">Log in</Link>
-            </Button>
-            <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
-              <Link href="/auth/sign-up">Get Started</Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
+                <Link href="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white" asChild>
+                  <Link href="/auth/login">Log in</Link>
+                </Button>
+                <Button className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200" asChild>
+                  <Link href="/auth/sign-up">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
