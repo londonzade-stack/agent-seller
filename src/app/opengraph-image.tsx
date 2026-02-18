@@ -82,7 +82,7 @@ export default async function Image() {
               display: 'flex',
             }}
           >
-            AI Email Agent
+            Email Intelligence
           </div>
         </div>
 
@@ -118,7 +118,7 @@ export default async function Image() {
               display: 'flex',
             }}
           >
-            AI Email Agent for Teams
+            Email AI Intelligence
           </div>
         </div>
 
