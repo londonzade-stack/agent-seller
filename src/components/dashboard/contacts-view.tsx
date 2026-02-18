@@ -17,6 +17,7 @@ import {
   MessageSquare,
   ChevronDown,
   Zap,
+  Lock,
 } from 'lucide-react'
 
 interface Contact {
@@ -39,9 +40,11 @@ interface ContactsViewProps {
   isEmailConnected: boolean
   onConnectEmail: () => void
   onSendToBlitz?: (context: string) => void
+  onSendToProChat?: (context: string) => void
+  userPlan?: string
 }
 
-export function ContactsView({ isEmailConnected, onConnectEmail, onSendToBlitz }: ContactsViewProps) {
+export function ContactsView({ isEmailConnected, onConnectEmail, onSendToBlitz, onSendToProChat, userPlan }: ContactsViewProps) {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -348,6 +351,25 @@ export function ContactsView({ isEmailConnected, onConnectEmail, onSendToBlitz }
                                     >
                                       <Zap className="h-3 w-3" />
                                       <span className="hidden sm:inline">BLITZ</span>
+                                    </button>
+                                  )}
+                                  {onSendToProChat && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        if (userPlan !== 'pro') return
+                                        onSendToProChat(`[Contact: ${contact.name || contact.email}] Email: "${email.subject || '(No subject)'}" from ${email.from} on ${email.date ? new Date(email.date).toLocaleDateString() : 'unknown date'} — "${email.snippet || ''}"`)
+                                      }}
+                                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors ${
+                                        userPlan === 'pro'
+                                          ? 'bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/20 hover:border-blue-500/40 text-blue-600 dark:text-blue-400 cursor-pointer'
+                                          : 'bg-zinc-100 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/40 text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60'
+                                      }`}
+                                      title={userPlan === 'pro' ? 'Send to BLITZ Pro (web search & research)' : 'Upgrade to Pro to unlock'}
+                                      disabled={userPlan !== 'pro'}
+                                    >
+                                      {userPlan === 'pro' ? <Zap className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                                      <span className="hidden sm:inline">PRO</span>
                                     </button>
                                   )}
                                 </div>

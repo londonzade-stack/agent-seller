@@ -74,6 +74,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [urlChatRestored, setUrlChatRestored] = useState(true)
   const [outreachSessionId, setOutreachSessionId] = useState<string | undefined>()
   const [outreachKey, setOutreachKey] = useState(0)
+  const [pendingOutreachPrompt, setPendingOutreachPrompt] = useState<string | undefined>()
 
   // Whether the user has a valid subscription (active or trialing)
   const hasValidBilling = billingStatus === 'active' || billingStatus === 'trialing'
@@ -104,6 +105,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
     // Clear outreach session when navigating to outreach via sidebar (starts new chat)
     if (view === 'outreach') {
       setOutreachSessionId(undefined)
+      setPendingOutreachPrompt(undefined)
       setOutreachKey(k => k + 1)
     }
     setActiveView(view)
@@ -164,6 +166,14 @@ export function DashboardClient({ user }: DashboardClientProps) {
     setPendingPrompt(context)
     setChatKey(k => k + 1)
     setActiveView('agent')
+  }, [])
+
+  // Handler for "Send to BLITZ Pro" — navigates to outreach view with context
+  const handleSendToProChat = useCallback((context: string) => {
+    setOutreachSessionId(undefined)
+    setPendingOutreachPrompt(context)
+    setOutreachKey(k => k + 1)
+    setActiveView('outreach')
   }, [])
 
   // Global Cmd+K / Ctrl+K shortcut to toggle command palette
@@ -246,6 +256,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
               onSendToBlitz={handleSendToBlitz}
+              onSendToProChat={handleSendToProChat}
+              userPlan={userPlan}
             />
           )}
           {activeView === 'analytics' && (
@@ -253,6 +265,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
               onSendToBlitz={handleSendToBlitz}
+              onSendToProChat={handleSendToProChat}
+              userPlan={userPlan}
             />
           )}
           {activeView === 'automations' && (
@@ -269,6 +283,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               isEmailConnected={isEmailConnected}
               userPlan={userPlan}
               initialSessionId={outreachSessionId}
+              initialPrompt={pendingOutreachPrompt}
               onNavigateToBilling={() => setActiveView('billing')}
               onOpenCommandPalette={() => setCommandPaletteOpen(true)}
               onSessionCreated={(sid) => setOutreachSessionId(sid)}

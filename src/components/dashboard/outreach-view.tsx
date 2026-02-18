@@ -35,6 +35,7 @@ import {
   Eye,
   Lightbulb,
   ChevronDown,
+  X,
 } from 'lucide-react'
 import { ProMockConversationDropdown } from '@/components/pro-mock-conversation'
 import { CompanyProfileCard } from './company-profile-card'
@@ -237,6 +238,7 @@ interface OutreachViewProps {
   isEmailConnected: boolean
   userPlan?: string
   initialSessionId?: string
+  initialPrompt?: string
   onNavigateToBilling?: () => void
   onOpenCommandPalette?: () => void
   onSessionCreated?: (sessionId: string) => void
@@ -244,7 +246,7 @@ interface OutreachViewProps {
 
 const REQUEST_TIMEOUT = 120000
 
-export function OutreachView({ user, isEmailConnected, userPlan, initialSessionId, onNavigateToBilling, onSessionCreated }: OutreachViewProps) {
+export function OutreachView({ user, isEmailConnected, userPlan, initialSessionId, initialPrompt, onNavigateToBilling, onSessionCreated }: OutreachViewProps) {
   const isPro = userPlan === 'pro'
   const [ready, setReady] = useState(!initialSessionId)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
@@ -296,6 +298,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, initialSessionI
       isEmailConnected={isEmailConnected}
       userPlan={userPlan}
       initialSessionId={initialSessionId}
+      initialPrompt={initialPrompt}
       initialMessages={initialMessages}
       onNavigateToBilling={onNavigateToBilling}
       onSessionCreated={onSessionCreated}
@@ -303,8 +306,11 @@ export function OutreachView({ user, isEmailConnected, userPlan, initialSessionI
   )
 }
 
-function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId, initialMessages, onNavigateToBilling, onSessionCreated }: OutreachViewProps & { initialMessages: UIMessage[] }) {
+function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId, initialPrompt, initialMessages, onNavigateToBilling, onSessionCreated }: OutreachViewProps & { initialMessages: UIMessage[] }) {
   const isPro = userPlan === 'pro'
+  // Check if this is a "Send to BLITZ Pro" context (from contacts/analytics)
+  const isProContext = initialPrompt?.startsWith('[Contact:') || initialPrompt?.startsWith('[Sender:')
+  const [proContext, setProContext] = useState<string | null>(isProContext ? initialPrompt! : null)
   const [input, setInput] = useState('')
   const [showExamples, setShowExamples] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -447,7 +453,12 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
     e.preventDefault()
     if (!input.trim() || isLoading) return
     setIsTimedOut(false)
-    const text = input
+    // If there's Pro context, prepend it to the user's message
+    let text = input
+    if (proContext) {
+      text = `${proContext}\n\nUser request: ${input}`
+      setProContext(null) // Clear context after sending
+    }
     sendMessage({ text })
     setInput('')
     saveMessage('user', text)
@@ -750,13 +761,28 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
 
       {/* Input bar */}
       <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113] shrink-0">
+        <div className="max-w-3xl mx-auto">
+          {/* Pro context banner */}
+          {proContext && (
+            <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40">
+              <Zap className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-blue-700 dark:text-blue-400">Sent to BLITZ Pro</p>
+                <p className="text-[11px] text-blue-600/80 dark:text-blue-500/70 truncate">{proContext.replace(/^\[(Contact|Sender): .*?\]\s*/, '').slice(0, 80)}...</p>
+              </div>
+              <button onClick={() => setProContext(null)} className="p-0.5 rounded hover:bg-blue-200/50 dark:hover:bg-blue-800/30 text-blue-500 shrink-0">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Search for companies, draft outreach, or ask BLITZ anything..."
+              placeholder={proContext ? "What do you want BLITZ Pro to do with this?" : "Search for companies, draft outreach, or ask BLITZ anything..."}
               className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-base"
               disabled={isLoading}
             />
