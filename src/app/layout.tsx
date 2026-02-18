@@ -14,8 +14,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://emailligence.ai'),
   title: "Emailligence - AI Email Agent for Teams",
   description: "Not just a chatbot, but an agent. Manage your inbox, auto-draft responses, track contacts, and get more done with AI.",
+  openGraph: {
+    title: 'Emailligence',
+    description: 'AI Email Agent for Teams',
+    siteName: 'Emailligence',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Emailligence',
+    description: 'AI Email Agent for Teams',
+  },
 };
 
 export default function RootLayout({
