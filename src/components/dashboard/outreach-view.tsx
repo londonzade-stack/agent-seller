@@ -33,7 +33,10 @@ import {
   ChevronRight,
   Wrench,
   Eye,
+  Lightbulb,
+  ChevronDown,
 } from 'lucide-react'
+import { ProMockConversationDropdown } from '@/components/pro-mock-conversation'
 
 // ─── Tool display (reuse from agent-chat) ─────────────────────────
 const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
@@ -170,6 +173,7 @@ const REQUEST_TIMEOUT = 120000
 export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBilling }: OutreachViewProps) {
   const isPro = userPlan === 'pro'
   const [input, setInput] = useState('')
+  const [showExamples, setShowExamples] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -422,6 +426,24 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
           Sales Outreach
           <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-400/10 dark:text-blue-400">PRO</span>
         </Badge>
+        <div className="relative">
+          <button
+            className="inline-flex items-center cursor-pointer px-2.5 py-1.5 sm:px-3 sm:py-1.5 gap-1.5 sm:gap-2 rounded-lg text-stone-600 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 active:bg-stone-150 dark:active:bg-zinc-700 transition-all duration-150 border border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm hover:shadow"
+            onClick={() => setShowExamples(!showExamples)}
+          >
+            <Lightbulb className="h-3.5 w-3.5 text-blue-500" />
+            <span className="text-xs font-medium">Examples</span>
+            <ChevronDown className={`h-3 w-3 text-stone-400 dark:text-zinc-500 transition-transform duration-200 ${showExamples ? 'rotate-180' : ''}`} />
+          </button>
+          <ProMockConversationDropdown
+            isOpen={showExamples}
+            onClose={() => setShowExamples(false)}
+            onPromptSelect={(prompt) => {
+              setShowExamples(false)
+              handleSuggestionClick(prompt)
+            }}
+          />
+        </div>
       </header>
 
       {/* Chat area */}
@@ -433,9 +455,12 @@ export function OutreachView({ user, isEmailConnected, userPlan, onNavigateToBil
               <BlitzAvatar size="lg" />
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">Sales Outreach</h2>
-            <p className="text-stone-500 dark:text-zinc-400 mb-6 sm:mb-8 text-center max-w-md text-sm sm:text-base px-4">
+            <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
               Search the web, research companies, and draft personalized outreach — all powered by BLITZ.
             </p>
+            <button onClick={() => setShowExamples(true)} className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-6 sm:mb-8 flex items-center gap-1">
+              <Lightbulb className="h-3.5 w-3.5" />See outreach examples
+            </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-2xl w-full px-2">
               {[
