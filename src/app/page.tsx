@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { ProMockConversationDemo } from "@/components/pro-mock-conversation";
+import { MockConversationDemo } from "@/components/mock-conversation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -407,6 +408,19 @@ export default async function Home() {
               </div>
             </ScrollReveal>
           </div>
+        </div>
+      </section>
+
+      {/* BLITZ Agent Mock Demo */}
+      <section className="py-12 px-6">
+        <div className="mx-auto max-w-4xl">
+          <ScrollReveal>
+            <div className="text-center mb-8">
+              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">See It In Action</p>
+              <h3 className="text-3xl md:text-4xl font-bold">Let BLITZ handle the work</h3>
+            </div>
+            <MockConversationDemo />
+          </ScrollReveal>
         </div>
       </section>
 
