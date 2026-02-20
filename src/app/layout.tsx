@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://emailligence.ai'),
   title: "Emailligence - Email AI Intelligence",
   description: "Agents / Email Organization / Automation / Cold Outreach — Search, draft, organize, and analyze your email with 30+ AI-powered tools.",
+  verification: {
+    google: '-2RbsN3nmvZVXDXZ_ef3RothqAEN5SstU7e7XvBYhWg',
+  },
   openGraph: {
     title: 'Emailligence - Email AI Intelligence',
     description: 'Agents / Email Organization / Automation / Cold Outreach',
