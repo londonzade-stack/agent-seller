@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getDrafts } from '@/lib/gmail/service'
+import { getDrafts } from '@/lib/email/unified'
 import { sanitizeError } from '@/lib/logger'
 
 export async function GET() {

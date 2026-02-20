@@ -144,21 +144,30 @@ export function DashboardClient({ user }: DashboardClientProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Check Gmail connection status on dashboard mount
+  // Check email connection status on dashboard mount (Gmail or Outlook)
   useEffect(() => {
-    const checkGmailStatus = async () => {
+    const checkEmailStatus = async () => {
       try {
-        const res = await fetch('/api/auth/gmail/status')
-        const data = await res.json()
-        if (data.connected) {
+        // Check Gmail first
+        const gmailRes = await fetch('/api/auth/gmail/status')
+        const gmailData = await gmailRes.json()
+        if (gmailData.connected) {
           setIsEmailConnected(true)
-          setConnectedEmail(data.email || null)
+          setConnectedEmail(gmailData.email || null)
+          return
+        }
+        // If no Gmail, check Outlook
+        const outlookRes = await fetch('/api/auth/outlook/status')
+        const outlookData = await outlookRes.json()
+        if (outlookData.connected) {
+          setIsEmailConnected(true)
+          setConnectedEmail(outlookData.email || null)
         }
       } catch (err) {
-        console.error('Failed to check Gmail status:', err)
+        console.error('Failed to check email status:', err)
       }
     }
-    checkGmailStatus()
+    checkEmailStatus()
   }, [])
 
   // Handler for "Send to BLITZ" from contacts/analytics

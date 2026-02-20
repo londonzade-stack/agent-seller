@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { deleteDraft } from '@/lib/gmail/service'
+import { deleteDraft } from '@/lib/email/unified'
 import { sanitizeError } from '@/lib/logger'
 
 export async function POST(req: Request) {

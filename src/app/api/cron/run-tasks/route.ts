@@ -8,7 +8,7 @@ import {
   findUnsubscribableEmails,
   bulkUnsubscribe,
   applyLabels,
-} from '@/lib/gmail/service'
+} from '@/lib/email/unified'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 minutes for cron jobs

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { scanInboxForEmails } from '@/lib/gmail/service'
+import { scanInboxForEmails } from '@/lib/email/unified'
 import { sanitizeError } from '@/lib/logger'
 import { NextRequest } from 'next/server'
 

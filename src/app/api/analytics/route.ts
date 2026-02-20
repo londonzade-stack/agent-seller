@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { scanInboxForEmails, getInboxStats } from '@/lib/gmail/service'
+import { scanInboxForEmails, getInboxStats } from '@/lib/email/unified'
 import { sanitizeError } from '@/lib/logger'
 
 // Force dynamic — never cache analytics

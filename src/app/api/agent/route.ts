@@ -42,7 +42,8 @@ import {
   unsubscribeFromEmail,
   bulkUnsubscribe,
   bulkTrashByQuery,
-} from '@/lib/gmail/service'
+  getConnectedProvider,
+} from '@/lib/email/unified'
 import {
   searchWeb,
   findCompanies,
@@ -51,7 +52,7 @@ import {
 
 export const maxDuration = 120
 
-const SYSTEM_PROMPT = `You are Emailligence — an AI email agent that ACTS first and talks second. You manage the user's Gmail. You have 30+ tools. USE THEM.
+const SYSTEM_PROMPT = `You are Emailligence — an AI email agent that ACTS first and talks second. You manage the user's email (Gmail or Outlook). You have 30+ tools. USE THEM.
 
 ## CORE RULE: ACT, DON'T ASK (except destructive actions)
 
@@ -262,7 +263,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ query, maxResults }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const emails = await scanInboxForEmails(userId, { maxResults: Math.min(maxResults || 20, 500), query })
@@ -297,7 +298,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailId }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const email = await getEmailById(userId, emailId)
@@ -316,7 +317,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ threadId }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const thread = await getEmailThread(userId, threadId)
@@ -345,7 +346,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
           return { success: false, error: 'BLOCKED: You must get user approval before sending. Show the email details to the user and wait for them to click Approve, then call sendEmail again with confirmed=true.' }
         }
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await sendEmail(userId, { to, subject, body, cc, bcc, threadId: replyToThreadId })
@@ -399,7 +400,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ maxResults }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const drafts = await getDrafts(userId, maxResults || 20)
@@ -423,7 +424,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ draftId, to, subject, body, cc, bcc }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await updateDraft(userId, draftId, { to, subject, body, cc, bcc })
@@ -446,7 +447,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
           return { success: false, error: 'BLOCKED: You must get user approval before sending a draft. Show the draft details and wait for approval, then call sendDraft again with confirmed=true.' }
         }
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await sendDraft(userId, draftId)
@@ -465,7 +466,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ draftId }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           await deleteDraft(userId, draftId)
@@ -483,7 +484,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       inputSchema: z.object({}),
       execute: async () => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const labels = await getLabels(userId)
@@ -504,7 +505,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ name, backgroundColor, textColor }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const label = await createLabel(userId, name, { backgroundColor, textColor })
@@ -534,7 +535,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds, labelIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await applyLabels(userId, emailIds, labelIds)
@@ -555,7 +556,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds, labelIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await removeLabels(userId, emailIds, labelIds)
@@ -579,7 +580,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
           return { success: false, error: 'BLOCKED: You must get user approval before archiving. Show what you plan to archive and wait for approval, then call archiveEmails again with confirmed=true.' }
         }
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await archiveEmails(userId, emailIds)
@@ -602,7 +603,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
           return { success: false, error: 'BLOCKED: You must get user approval before trashing. Show what you plan to trash and wait for approval, then call trashEmails again with confirmed=true.' }
         }
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await trashEmails(userId, emailIds)
@@ -625,7 +626,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
           return { success: false, error: 'BLOCKED: You must get user approval before bulk trashing. Show the approval card first.' }
         }
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await bulkTrashByQuery(userId, query)
@@ -644,7 +645,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await untrashEmails(userId, emailIds)
@@ -664,7 +665,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await markAsRead(userId, emailIds)
@@ -683,7 +684,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await markAsUnread(userId, emailIds)
@@ -702,7 +703,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await starEmails(userId, emailIds)
@@ -721,7 +722,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await unstarEmails(userId, emailIds)
@@ -740,7 +741,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await markAsImportant(userId, emailIds)
@@ -759,7 +760,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await markAsNotImportant(userId, emailIds)
@@ -779,7 +780,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await reportSpam(userId, emailIds)
@@ -798,7 +799,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ emailIds }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await markNotSpam(userId, emailIds)
@@ -818,7 +819,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ email }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const contact = await getContactFromEmail(userId, email)
@@ -837,7 +838,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ email }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const history = await getSenderHistory(userId, email)
@@ -856,7 +857,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ timeframe }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const now = new Date()
@@ -918,7 +919,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ query, maxResults }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const emails = await findUnsubscribableEmails(userId, { maxResults: maxResults || 50, query: query || undefined })
@@ -953,7 +954,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
           return { success: false, error: 'BLOCKED: You must get user approval before unsubscribing. Show the approval card first.' }
         }
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await unsubscribeFromEmail(userId, emailId)
@@ -976,7 +977,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
           return { success: false, error: 'BLOCKED: You must get user approval before bulk unsubscribing. Show the approval card first.' }
         }
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           const result = await bulkUnsubscribe(userId, emailIds)
@@ -1004,7 +1005,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ timeframe, maxResults, unreadOnly }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         try {
           let afterDate: Date | undefined
@@ -1172,7 +1173,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
       }),
       execute: async ({ title, description, taskType, taskConfig, frequency, dayOfWeek, dayOfMonth, timeOfDay }) => {
         if (!isEmailConnected || !userId) {
-          return { success: false, message: 'Please connect your Gmail first.', requiresConnection: true }
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
         }
         if (frequency === 'hourly' && !isPro) {
           return { success: false, requiresProPlan: true, message: 'Hourly automations require a Pro plan. Upgrade to Pro ($40/mo) to unlock hourly automations, web search, and sales outreach tools.' }
@@ -1300,16 +1301,20 @@ export async function POST(req: Request) {
     const { messages }: { messages: UIMessage[] } = await req.json()
 
     let isEmailConnected = false
+    let connectedProviderName = ''
     if (userId) {
-      const connection = await getUserEmailConnection(userId)
-      isEmailConnected = !!connection
+      const provider = await getConnectedProvider(userId)
+      isEmailConnected = !!provider
+      connectedProviderName = provider?.provider || ''
     }
 
     const tools = createTools(userId, isEmailConnected, userPlan)
 
     let systemPrompt = SYSTEM_PROMPT
     if (!isEmailConnected) {
-      systemPrompt += '\n\n⚠️ NOTE: Gmail is not connected yet. Encourage the user to connect their Gmail to unlock all these powerful features!'
+      systemPrompt += '\n\n⚠️ NOTE: No email is connected yet. Encourage the user to connect their Gmail or Outlook to unlock all these powerful features!'
+    } else if (connectedProviderName === 'outlook') {
+      systemPrompt += '\n\n📧 NOTE: The user has Outlook connected. All email tools work with their Outlook/Microsoft account. Use Outlook-appropriate terminology (folders instead of labels, flagged instead of starred, etc.).'
     }
     if (userPlan === 'pro') {
       systemPrompt += PRO_SYSTEM_PROMPT

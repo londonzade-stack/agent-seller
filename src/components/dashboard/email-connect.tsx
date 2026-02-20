@@ -15,6 +15,8 @@ import {
   Link2,
 } from 'lucide-react'
 
+type EmailProvider = 'gmail' | 'outlook'
+
 interface EmailConnectProps {
   isConnected: boolean
   connectedEmail?: string | null
@@ -23,23 +25,38 @@ interface EmailConnectProps {
 
 export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }: EmailConnectProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingProvider, setLoadingProvider] = useState<EmailProvider | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [checkingStatus, setCheckingStatus] = useState(true)
+  const [connectedProvider, setConnectedProvider] = useState<EmailProvider | null>(null)
 
-  // Check Gmail connection status on mount and after OAuth redirect
+  // Check email connection status on mount and after OAuth redirect
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const res = await fetch('/api/auth/gmail/status')
-        const data = await res.json()
+        // Check Gmail first
+        const gmailRes = await fetch('/api/auth/gmail/status')
+        const gmailData = await gmailRes.json()
 
-        if (data.connected) {
-          onConnectionChange(true, data.email)
+        if (gmailData.connected) {
+          setConnectedProvider('gmail')
+          onConnectionChange(true, gmailData.email)
+          setCheckingStatus(false)
+          return
+        }
+
+        // Check Outlook
+        const outlookRes = await fetch('/api/auth/outlook/status')
+        const outlookData = await outlookRes.json()
+
+        if (outlookData.connected) {
+          setConnectedProvider('outlook')
+          onConnectionChange(true, outlookData.email)
         } else {
           onConnectionChange(false)
         }
       } catch (err) {
-        console.error('Failed to check Gmail status:', err)
+        console.error('Failed to check email status:', err)
       } finally {
         setCheckingStatus(false)
       }
@@ -49,43 +66,46 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
 
     // Check URL for OAuth callback result
     const params = new URLSearchParams(window.location.search)
-    if (params.get('gmail_connected') === 'true') {
+    if (params.get('gmail_connected') === 'true' || params.get('outlook_connected') === 'true') {
       // Clear the URL param
       window.history.replaceState({}, '', '/dashboard')
       checkConnection()
     }
 
     const errorParam = params.get('error')
-    if (errorParam?.startsWith('gmail_')) {
+    if (errorParam?.startsWith('gmail_') || errorParam?.startsWith('outlook_')) {
       setError(getErrorMessage(errorParam))
       window.history.replaceState({}, '', '/dashboard')
     }
   }, [onConnectionChange])
 
   const getErrorMessage = (errorCode: string): string => {
-    switch (errorCode) {
-      case 'gmail_auth_denied':
-        return 'Gmail authorization was denied. Please try again.'
-      case 'gmail_auth_invalid':
+    const provider = errorCode.startsWith('outlook_') ? 'Outlook' : 'Gmail'
+    const baseCode = errorCode.replace(/^(gmail_|outlook_)/, '')
+
+    switch (baseCode) {
+      case 'auth_denied':
+        return `${provider} authorization was denied. Please try again.`
+      case 'auth_invalid':
         return 'Invalid authorization response. Please try again.'
-      case 'gmail_auth_expired':
+      case 'auth_expired':
         return 'Authorization expired. Please try again.'
-      case 'gmail_auth_mismatch':
+      case 'auth_mismatch':
         return 'Session mismatch. Please log in and try again.'
-      case 'gmail_auth_failed':
-        return 'Failed to connect Gmail. Please try again.'
+      case 'auth_failed':
+        return `Failed to connect ${provider}. Please try again.`
       default:
         return 'An error occurred. Please try again.'
     }
   }
 
-  const handleConnect = async () => {
+  const handleConnect = async (provider: EmailProvider) => {
     setIsLoading(true)
+    setLoadingProvider(provider)
     setError(null)
 
     try {
-      // Get OAuth URL from our API
-      const res = await fetch('/api/auth/gmail')
+      const res = await fetch(`/api/auth/${provider}`)
       const data = await res.json()
 
       if (data.error) {
@@ -93,35 +113,40 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
       }
 
       if (data.authUrl) {
-        // Redirect to Google OAuth
         window.location.href = data.authUrl
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to initiate Gmail connection')
+      setError(err instanceof Error ? err.message : `Failed to initiate ${provider} connection`)
       setIsLoading(false)
+      setLoadingProvider(null)
     }
   }
 
   const handleDisconnect = async () => {
+    if (!connectedProvider) return
+
     setIsLoading(true)
     setError(null)
 
     try {
-      const res = await fetch('/api/auth/gmail/status', {
+      const res = await fetch(`/api/auth/${connectedProvider}/status`, {
         method: 'DELETE',
       })
 
       if (!res.ok) {
-        throw new Error('Failed to disconnect Gmail')
+        throw new Error(`Failed to disconnect ${connectedProvider === 'outlook' ? 'Outlook' : 'Gmail'}`)
       }
 
+      setConnectedProvider(null)
       onConnectionChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to disconnect Gmail')
+      setError(err instanceof Error ? err.message : 'Failed to disconnect email')
     } finally {
       setIsLoading(false)
     }
   }
+
+  const providerLabel = connectedProvider === 'outlook' ? 'Outlook' : 'Gmail'
 
   if (checkingStatus) {
     return (
@@ -162,9 +187,9 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
                 <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-base sm:text-lg mb-1">Gmail Connected</h3>
+                <h3 className="font-semibold text-base sm:text-lg mb-1">{providerLabel} Connected</h3>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-                  Your Gmail is connected. The AI agent can now scan for leads and help draft responses.
+                  Your {providerLabel} is connected. The AI agent can now scan for leads and help draft responses.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-4">
                   <Mail className="h-4 w-4" />
@@ -182,7 +207,7 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
                       Disconnecting...
                     </>
                   ) : (
-                    'Disconnect Gmail'
+                    `Disconnect ${providerLabel}`
                   )}
                 </Button>
               </div>
@@ -195,28 +220,49 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
                   <Mail className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-500 dark:text-zinc-400" />
                 </div>
-                <h3 className="font-semibold text-base sm:text-lg mb-2">Connect Your Gmail</h3>
+                <h3 className="font-semibold text-base sm:text-lg mb-2">Connect Your Email</h3>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6 max-w-md mx-auto">
-                  Securely connect your Gmail account using Google OAuth. We&apos;ll be able to read your emails to identify leads and help draft responses.
+                  Securely connect your email account. We&apos;ll be able to read your emails to identify leads and help draft responses.
                 </p>
-                <Button
-                  onClick={handleConnect}
-                  disabled={isLoading}
-                  size="lg"
-                  className="px-8 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Connecting...
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Connect Gmail
-                    </>
-                  )}
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button
+                    onClick={() => handleConnect('gmail')}
+                    disabled={isLoading}
+                    size="lg"
+                    className="px-8 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 w-full sm:w-auto"
+                  >
+                    {isLoading && loadingProvider === 'gmail' ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Connect Gmail
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => handleConnect('outlook')}
+                    disabled={isLoading}
+                    size="lg"
+                    variant="outline"
+                    className="px-8 w-full sm:w-auto"
+                  >
+                    {isLoading && loadingProvider === 'outlook' ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Connect Outlook
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </Card>
 
@@ -227,7 +273,7 @@ export function EmailConnect({ isConnected, connectedEmail, onConnectionChange }
                 </div>
                 <h3 className="font-medium text-sm mb-1">Secure Connection</h3>
                 <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
-                  We use Google OAuth 2.0 for secure access. Your password is never stored.
+                  We use OAuth 2.0 for secure access. Your password is never stored.
                 </p>
               </Card>
 
