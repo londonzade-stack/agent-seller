@@ -12,6 +12,7 @@ import { BillingView } from './billing-view'
 import { AutomationsView } from './automations-view'
 import { OutreachView } from './outreach-view'
 import { CommandPalette } from './command-palette'
+import { FeedbackButton } from './feedback-button'
 import { Brain, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -304,6 +305,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
         onOpenChat={(sid) => { setChatSessionId(sid); setChatKey(k => k + 1); setActiveView('agent') }}
         billingGated={billingLoaded && !hasValidBilling}
       />
+      <FeedbackButton />
     </div>
   )
 }

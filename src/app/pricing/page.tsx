@@ -11,12 +11,6 @@ import {
   Brain,
   Shield,
   Zap,
-  FileText,
-  Building,
-  Headphones,
-  Settings,
-  UserCog,
-  BadgePercent,
   Globe,
   Search,
   Sparkles,
@@ -48,17 +42,6 @@ export default async function PricingPage() {
     { text: "Contact discovery tools" },
     { text: "AI-powered cold outreach drafts" },
     { text: "Priority support" },
-  ];
-
-  const businessFeatures = [
-    { icon: BadgePercent, text: "Volume discounts on per-user pricing" },
-    { icon: Headphones, text: "Dedicated account manager" },
-    { icon: Settings, text: "Custom integrations & API access" },
-    { icon: UserCog, text: "Team management & admin controls" },
-    { icon: Shield, text: "SSO & advanced security" },
-    { icon: Brain, text: "Custom AI model training" },
-    { icon: FileText, text: "Onboarding & training sessions" },
-    { icon: Zap, text: "SLA-backed uptime guarantee" },
   ];
 
   return (
@@ -112,8 +95,8 @@ export default async function PricingPage() {
             </div>
           </ScrollReveal>
 
-          {/* Pricing Cards — 3 columns */}
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Pricing Cards — 2 columns */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Basic Plan */}
             <ScrollReveal delay={0}>
               <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 h-full flex flex-col">
@@ -194,43 +177,6 @@ export default async function PricingPage() {
               </Card>
             </ScrollReveal>
 
-            {/* Business Plan */}
-            <ScrollReveal delay={200}>
-              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 h-full flex flex-col">
-                <div className="text-center mb-8">
-                  <Badge variant="secondary" className="mb-4 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-900 dark:hover:bg-white">
-                    <Building className="mr-2 h-3 w-3" />
-                    Business
-                  </Badge>
-                  <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-5xl font-bold">Custom</span>
-                  </div>
-                  <p className="text-zinc-500 text-sm">tailored to your team</p>
-                </div>
-
-                <p className="text-zinc-500 text-sm text-center mb-6">
-                  Everything in Pro plus dedicated support and custom integrations.
-                </p>
-
-                <div className="space-y-3 mb-8 flex-1">
-                  {businessFeatures.map((feature, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <feature.icon className="h-4 w-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                      <span className="text-sm">{feature.text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <a href="mailto:sales@emailligence.ai">
-                  <Button variant="outline" className="w-full border-zinc-300 dark:border-white/20 hover:bg-zinc-100 dark:hover:bg-white/10" size="lg">
-                    Contact Sales <Mail className="ml-2 h-4 w-4" />
-                  </Button>
-                </a>
-                <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
-                  We&apos;ll get back to you within one business day.
-                </p>
-              </Card>
-            </ScrollReveal>
           </div>
 
           <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-6">
@@ -329,10 +275,6 @@ export default async function PricingPage() {
               {
                 q: "Is my data secure?",
                 a: "Absolutely. We use enterprise-grade encryption and never store your email content permanently. Your data is processed securely and you maintain full control."
-              },
-              {
-                q: "How does Business pricing work?",
-                a: "Business plans offer discounted per-user rates based on team size, along with dedicated support, custom integrations, and advanced admin controls. Contact our sales team and we'll put together a plan tailored to your organization."
               },
             ].map((faq, i) => (
               <ScrollReveal key={i} delay={i * 80}>

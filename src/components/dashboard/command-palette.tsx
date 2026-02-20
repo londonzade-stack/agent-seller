@@ -10,6 +10,8 @@ import {
   FileText,
   Users,
   BarChart3,
+  Globe,
+  Repeat2,
   Mail,
   CreditCard,
   Lock,
@@ -54,9 +56,11 @@ interface CommandPaletteProps {
 // ─── Static page items ──────────────────────────────────────────────
 const PAGE_ITEMS: { id: DashboardView; label: string; icon: typeof Zap }[] = [
   { id: 'agent', label: 'BLITZ', icon: Zap },
+  { id: 'outreach', label: 'Outreach', icon: Globe },
   { id: 'drafts', label: 'Drafts', icon: FileText },
   { id: 'contacts', label: 'Contacts', icon: Users },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'automations', label: 'Automations', icon: Repeat2 },
   { id: 'email', label: 'Email Connection', icon: Mail },
   { id: 'billing', label: 'Billing', icon: CreditCard },
 ]

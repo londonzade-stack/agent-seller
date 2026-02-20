@@ -23,7 +23,7 @@ import {
   Search,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { MockConversationDemo } from "@/components/mock-conversation";
+import { ProMockConversationDemo } from "@/components/pro-mock-conversation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -214,15 +214,15 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Mock Conversation Demo */}
+      {/* Pro Outreach Mock Demo */}
       <section className="py-12 px-6">
         <div className="mx-auto max-w-4xl">
           <ScrollReveal>
             <div className="text-center mb-8">
-              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">See It In Action</p>
-              <h3 className="text-3xl md:text-4xl font-bold">Let BLITZ handle the work</h3>
+              <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">See Pro Outreach In Action</p>
+              <h3 className="text-3xl md:text-4xl font-bold">Watch BLITZ Pro research companies, find contacts, and draft personalized outreach</h3>
             </div>
-            <MockConversationDemo />
+            <ProMockConversationDemo />
           </ScrollReveal>
         </div>
       </section>
