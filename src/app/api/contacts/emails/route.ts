@@ -17,6 +17,12 @@ export async function GET(request: NextRequest) {
       return new Response(JSON.stringify({ error: 'Missing sender parameter' }), { status: 400 })
     }
 
+    // Validate sender looks like an email address to prevent query injection
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(sender)) {
+      return new Response(JSON.stringify({ error: 'Invalid sender email format' }), { status: 400 })
+    }
+
     const rawEmails = await scanInboxForEmails(user.id, {
       maxResults: 10,
       query: `from:${sender}`,

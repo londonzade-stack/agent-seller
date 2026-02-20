@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { calculateNextRun } from '@/lib/recurring-tasks'
+import { sanitizeError } from '@/lib/logger'
 
 // GET /api/recurring-tasks — List all recurring tasks for the current user
 export async function GET() {
@@ -14,7 +15,10 @@ export async function GET() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    sanitizeError('Recurring tasks fetch error', error)
+    return NextResponse.json({ error: 'Failed to fetch recurring tasks' }, { status: 500 })
+  }
 
   // Fetch last execution log for each task
   const taskIds = (data || []).map(t => t.id)
@@ -76,6 +80,9 @@ export async function POST(req: Request) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    sanitizeError('Recurring task create error', error)
+    return NextResponse.json({ error: 'Failed to create recurring task' }, { status: 500 })
+  }
   return NextResponse.json({ task: data })
 }

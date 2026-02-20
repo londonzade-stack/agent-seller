@@ -29,11 +29,6 @@ function verifyCronAuth(req: Request): boolean {
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
 
-  // In development, allow requests without auth
-  if (process.env.NODE_ENV === 'development' && !cronSecret) {
-    return true
-  }
-
   if (!cronSecret) return false
   return authHeader === `Bearer ${cronSecret}`
 }

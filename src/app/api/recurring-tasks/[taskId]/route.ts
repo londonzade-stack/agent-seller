@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { calculateNextRun } from '@/lib/recurring-tasks'
+import { sanitizeError } from '@/lib/logger'
 
 // GET /api/recurring-tasks/[taskId] — Get a single task with recent logs
 export async function GET(
@@ -86,7 +87,10 @@ export async function PATCH(
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    sanitizeError('Recurring task operation error', error)
+    return NextResponse.json({ error: 'Operation failed' }, { status: 500 })
+  }
   return NextResponse.json({ task: data })
 }
 
@@ -106,6 +110,9 @@ export async function DELETE(
     .eq('id', taskId)
     .eq('user_id', user.id)
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    sanitizeError('Recurring task operation error', error)
+    return NextResponse.json({ error: 'Operation failed' }, { status: 500 })
+  }
   return NextResponse.json({ success: true })
 }

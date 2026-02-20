@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { exchangeCodeForTokens, getGmailClient } from '@/lib/gmail/client'
 import { sanitizeError } from '@/lib/logger'
+import { encrypt } from '@/lib/encryption'
+import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -35,6 +37,17 @@ export async function GET(request: NextRequest) {
         new URL(`/dashboard?error=gmail_auth_expired`, request.url)
       )
     }
+
+    // Verify nonce matches the server-side cookie (prevents replay attacks)
+    const cookieStore = await cookies()
+    const storedNonce = cookieStore.get('gmail_oauth_nonce')?.value
+    if (!storedNonce || storedNonce !== stateData.nonce) {
+      return NextResponse.redirect(
+        new URL(`/dashboard?error=gmail_auth_invalid`, request.url)
+      )
+    }
+    // Clear the nonce cookie — single use
+    cookieStore.delete('gmail_oauth_nonce')
 
     const supabase = await createClient()
 
@@ -75,14 +88,18 @@ export async function GET(request: NextRequest) {
       .eq('provider', 'gmail')
       .single()
 
+    // Encrypt tokens before storing
+    const encryptedAccessToken = encrypt(tokens.access_token)
+    const encryptedRefreshToken = tokens.refresh_token ? encrypt(tokens.refresh_token) : null
+
     if (existing) {
       // Update existing connection
       const { error: updateError } = await supabase
         .from('user_email_connections')
         .update({
           email: gmailEmail,
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token || null,
+          access_token: encryptedAccessToken,
+          refresh_token: encryptedRefreshToken,
           token_expiry: tokenExpiry,
           updated_at: new Date().toISOString(),
         })
@@ -99,8 +116,8 @@ export async function GET(request: NextRequest) {
           user_id: user.id,
           provider: 'gmail',
           email: gmailEmail,
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token || null,
+          access_token: encryptedAccessToken,
+          refresh_token: encryptedRefreshToken,
           token_expiry: tokenExpiry,
         })
 

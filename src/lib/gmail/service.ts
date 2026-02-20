@@ -2,6 +2,7 @@ import { gmail_v1 } from 'googleapis'
 import { getGmailClient, refreshAccessToken } from './client'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseAdmin, SupabaseClient } from '@supabase/supabase-js'
+import { decryptToken, encrypt } from '@/lib/encryption'
 
 interface EmailConnection {
   id: string
@@ -55,20 +56,27 @@ export async function getAuthenticatedGmailClient(userId: string, adminClient?: 
     throw new Error('No Gmail connection found for user')
   }
 
+  // Decrypt stored tokens
+  const accessToken = decryptToken(connection.access_token)
+  const refreshToken = connection.refresh_token ? decryptToken(connection.refresh_token) : undefined
+
   // Check if token is expired and refresh if needed
   const tokenExpiry = new Date(connection.token_expiry)
   const now = new Date()
 
-  if (tokenExpiry <= now && connection.refresh_token) {
+  if (tokenExpiry <= now && refreshToken) {
     // Refresh the token
-    const newCredentials = await refreshAccessToken(connection.refresh_token)
+    const newCredentials = await refreshAccessToken(refreshToken)
+
+    // Encrypt new access token before storing
+    const encryptedNewAccessToken = encrypt(newCredentials.access_token!)
 
     // Update the token in database — use admin client if available, otherwise cookie-based
     const supabase = adminClient || getAdminClient()
     await supabase
       .from('user_email_connections')
       .update({
-        access_token: newCredentials.access_token,
+        access_token: encryptedNewAccessToken,
         token_expiry: newCredentials.expiry_date
           ? new Date(newCredentials.expiry_date).toISOString()
           : new Date(Date.now() + 3600 * 1000).toISOString(),
@@ -77,11 +85,11 @@ export async function getAuthenticatedGmailClient(userId: string, adminClient?: 
 
     return getGmailClient(
       newCredentials.access_token!,
-      connection.refresh_token
+      refreshToken
     )
   }
 
-  return getGmailClient(connection.access_token, connection.refresh_token)
+  return getGmailClient(accessToken, refreshToken)
 }
 
 // Parse email headers to get common fields
@@ -723,7 +731,11 @@ export async function untrashEmails(userId: string, emailIds: string[]) {
   return { success: true, restoredCount: totalRestored }
 }
 
-export async function permanentlyDeleteEmails(userId: string, emailIds: string[]) {
+export async function permanentlyDeleteEmails(userId: string, emailIds: string[], confirmed: boolean = false) {
+  if (!confirmed) {
+    throw new Error('permanentlyDeleteEmails requires explicit confirmation (confirmed: true)')
+  }
+
   const gmail = await getAuthenticatedGmailClient(userId)
 
   await Promise.all(
