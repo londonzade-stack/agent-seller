@@ -202,6 +202,13 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
     }
   }
 
+  // User has an active subscription (trialing with Stripe customer, or active)
+  const isSubscribed = billing && billing.hasStripeCustomer && (billing.status === 'active' || billing.status === 'trialing')
+  // User has access code (no Stripe, but active)
+  const isAccessCode = billing && billing.plan === 'access_code' && billing.status === 'active'
+  // User needs to subscribe (no subscription, canceled, paused, or past_due)
+  const needsSubscription = billing && !isSubscribed && !isAccessCode
+
   return (
     <div className="flex-1 flex flex-col h-full">
       <header className="relative z-10 border-b border-white/30 dark:border-white/[0.06] px-3 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-[#faf8f5] dark:bg-[#111113] shadow-[0_1px_3px_rgba(0,0,0,0.04),inset_0_1px_0_0_rgba(255,255,255,0.6)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.04)]">
@@ -250,180 +257,241 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
               </div>
             )}
 
-            {/* Status Card */}
-            <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
-              <div className="flex items-start justify-between mb-4 gap-2">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-10 h-10 rounded-lg ${getStatusBg(billing.status)} flex items-center justify-center shrink-0`}>
-                    {billing.status === 'active' ? (
-                      <CheckCircle2 className={`h-5 w-5 ${getStatusColor(billing.status)}`} />
-                    ) : billing.status === 'trialing' ? (
-                      <Clock className={`h-5 w-5 ${getStatusColor(billing.status)}`} />
-                    ) : (
-                      <CreditCard className={`h-5 w-5 ${getStatusColor(billing.status)}`} />
+            {/* ─── SUBSCRIBED VIEW (active or trialing with Stripe) ──── */}
+            {isSubscribed && (
+              <>
+                {/* Status Card */}
+                <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                  <div className="flex items-start justify-between mb-4 gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-10 h-10 rounded-lg ${getStatusBg(billing.status)} flex items-center justify-center shrink-0`}>
+                        {billing.status === 'active' ? (
+                          <CheckCircle2 className={`h-5 w-5 ${getStatusColor(billing.status)}`} />
+                        ) : (
+                          <Clock className={`h-5 w-5 ${getStatusColor(billing.status)}`} />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
+                        <p className="text-base sm:text-lg font-semibold truncate">
+                          Emailligence {billing.plan === 'pro' ? 'Pro' : 'Basic'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap ${getStatusBg(billing.status)} ${getStatusColor(billing.status)}`}>
+                      {getStatusLabel(billing.status)}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-zinc-200 dark:border-white/10 pt-4 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-zinc-500 dark:text-zinc-400">Price</span>
+                      <span className="font-medium">{billing.plan === 'pro' ? '$40' : '$20'} / month</span>
+                    </div>
+
+                    {billing.status === 'trialing' && billing.trialEnd && (
+                      <>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-zinc-500 dark:text-zinc-400">Free trial ends</span>
+                          <span className="font-medium">
+                            {new Date(billing.trialEnd).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-zinc-500 dark:text-zinc-400">First charge</span>
+                          <span className="font-medium">
+                            {new Date(billing.trialEnd).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      </>
                     )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
-                    <p className="text-base sm:text-lg font-semibold truncate">
-                      Emailligence {billing.plan === 'pro' ? 'Pro' : billing.plan === 'access_code' ? 'Pro' : 'Basic'}
-                    </p>
-                  </div>
-                </div>
-                <span className={`text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap ${getStatusBg(billing.status)} ${getStatusColor(billing.status)}`}>
-                  {getStatusLabel(billing.status)}
-                </span>
-              </div>
 
-              <div className="border-t border-zinc-200 dark:border-white/10 pt-4 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-zinc-500 dark:text-zinc-400">Price</span>
-                  <span className="font-medium">
-                    {billing.plan === 'access_code' ? 'Free (Access Code)' : billing.plan === 'pro' ? '$40 / month' : '$20 / month'}
-                  </span>
-                </div>
-
-                {billing.status === 'trialing' && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-zinc-500 dark:text-zinc-400">Trial ends</span>
-                    <span className="font-medium">
-                      {billing.trialEnd
-                        ? new Date(billing.trialEnd).toLocaleDateString('en-US', {
+                    {billing.status === 'active' && billing.currentPeriodEnd && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-zinc-500 dark:text-zinc-400">Next billing date</span>
+                        <span className="font-medium">
+                          {new Date(billing.currentPeriodEnd).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric',
-                          })
-                        : 'N/A'}
-                    </span>
+                          })}
+                        </span>
+                      </div>
+                    )}
                   </div>
+                </Card>
+
+                {/* Trial info banner */}
+                {billing.status === 'trialing' && (
+                  <Card className="p-4 sm:p-6 border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/10">
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-blue-900 dark:text-blue-100">
+                          {(() => {
+                            const days = getTrialDaysLeft()
+                            if (days === null) return 'Trial period active'
+                            if (days === 0) return 'Your trial ends today'
+                            return `${days} day${days === 1 ? '' : 's'} left in your free trial`
+                          })()}
+                        </p>
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                          Your card on file will be charged automatically when the trial ends. You can cancel anytime from Manage Billing.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
                 )}
 
-                {billing.status === 'active' && billing.currentPeriodEnd && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-zinc-500 dark:text-zinc-400">Next billing date</span>
-                    <span className="font-medium">
-                      {new Date(billing.currentPeriodEnd).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
+                {/* Manage Billing + Upgrade */}
+                <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                  <h3 className="font-medium mb-4">Manage Subscription</h3>
+                  <div className="space-y-3">
+                    {billing.plan === 'basic' && (
+                      <Button
+                        onClick={() => handleCheckout('pro')}
+                        disabled={actionLoading}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+                      >
+                        {actionLoading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <ArrowRight className="h-4 w-4 mr-2" />
+                        )}
+                        Upgrade to Pro — $40/month
+                      </Button>
+                    )}
+
+                    <Button
+                      onClick={handlePortal}
+                      disabled={actionLoading}
+                      variant="outline"
+                      className="w-full border-zinc-200 dark:border-white/10"
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                      )}
+                      Manage Billing
+                    </Button>
+                    <p className="text-xs text-zinc-400 dark:text-zinc-600 text-center">
+                      Update payment method, view invoices, or cancel subscription
+                    </p>
+                  </div>
+                </Card>
+              </>
+            )}
+
+            {/* ─── ACCESS CODE VIEW ──── */}
+            {isAccessCode && (
+              <>
+                <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                  <div className="flex items-start justify-between mb-4 gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
+                        <p className="text-base sm:text-lg font-semibold truncate">
+                          Emailligence Pro
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap bg-emerald-500/10 text-emerald-500">
+                      Active
                     </span>
                   </div>
+                  <div className="border-t border-zinc-200 dark:border-white/10 pt-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-zinc-500 dark:text-zinc-400">Price</span>
+                      <span className="font-medium">Free (Access Code)</span>
+                    </div>
+                  </div>
+                </Card>
+              </>
+            )}
+
+            {/* ─── NEEDS SUBSCRIPTION VIEW (none, canceled, paused, past_due) ──── */}
+            {needsSubscription && (
+              <>
+                {/* Past Due Banner */}
+                {billing.status === 'past_due' && (
+                  <Card className="p-4 sm:p-6 border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-amber-900 dark:text-amber-100">Payment failed</p>
+                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                          Please update your payment method to continue using Emailligence.
+                        </p>
+                        {billing.hasStripeCustomer && (
+                          <Button
+                            onClick={handlePortal}
+                            disabled={actionLoading}
+                            className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                            size="sm"
+                          >
+                            {actionLoading ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                            )}
+                            Update Payment Method
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
                 )}
-              </div>
-            </Card>
 
-            {/* Trial Banner */}
-            {billing.status === 'trialing' && (
-              <Card className="p-4 sm:p-6 border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/10">
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium text-blue-900 dark:text-blue-100">
-                      {(() => {
-                        const days = getTrialDaysLeft()
-                        if (days === null) return 'Trial period active'
-                        if (days === 0) return 'Your trial has expired'
-                        return `${days} day${days === 1 ? '' : 's'} left in your trial`
-                      })()}
-                    </p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                      {getTrialDaysLeft() === 0
-                        ? 'Subscribe now to continue using Emailligence.'
-                        : 'Subscribe before your trial ends to keep uninterrupted access.'}
-                    </p>
-                    <Button
-                      onClick={() => handleCheckout()}
-                      disabled={actionLoading}
-                      className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
-                      size="sm"
-                    >
-                      {actionLoading ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <CreditCard className="h-4 w-4 mr-2" />
-                      )}
-                      Subscribe Now
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )}
+                {/* Canceled Banner */}
+                {(billing.status === 'canceled' || billing.status === 'paused') && (
+                  <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-500/10">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-zinc-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                          {billing.status === 'canceled' ? 'Subscription canceled' : 'Account paused'}
+                        </p>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                          Subscribe again to regain access to all features.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
 
-            {/* No Subscription Banner */}
-            {billing.status === 'none' && (
-              <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-500/10">
-                <div className="flex items-start gap-3">
-                  <CreditCard className="h-5 w-5 text-zinc-500 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                      Get started with Emailligence Pro
-                    </p>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                      Subscribe to unlock full access to your AI-powered sales assistant.
-                    </p>
-                    <Button
-                      onClick={() => handleCheckout()}
-                      disabled={actionLoading}
-                      className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
-                      size="sm"
-                    >
-                      {actionLoading ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <CreditCard className="h-4 w-4 mr-2" />
-                      )}
-                      Subscribe Now
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )}
+                {/* No Subscription Banner */}
+                {billing.status === 'none' && (
+                  <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-500/10">
+                    <div className="flex items-start gap-3">
+                      <CreditCard className="h-5 w-5 text-zinc-500 shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                          Get started with Emailligence
+                        </p>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                          Start your 14-day free trial. Your card won&apos;t be charged until the trial ends.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
 
-            {/* Past Due / Canceled Banner */}
-            {(billing.status === 'past_due' || billing.status === 'canceled' || billing.status === 'paused') && (
-              <Card className="p-4 sm:p-6 border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium text-amber-900 dark:text-amber-100">
-                      {billing.status === 'past_due'
-                        ? 'Payment failed'
-                        : billing.status === 'canceled'
-                          ? 'Subscription canceled'
-                          : 'Account paused'}
-                    </p>
-                    <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                      {billing.status === 'past_due'
-                        ? 'Please update your payment method to continue using Emailligence.'
-                        : 'Subscribe again to regain access to all features.'}
-                    </p>
-                    <Button
-                      onClick={() => handleCheckout()}
-                      disabled={actionLoading}
-                      className="mt-3 bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
-                      size="sm"
-                    >
-                      {actionLoading ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <CreditCard className="h-4 w-4 mr-2" />
-                      )}
-                      Subscribe Now
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Plan Selection / Actions */}
-            <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
-              <h3 className="font-medium mb-4">
-                {(billing.status === 'active' || billing.status === 'past_due') ? 'Manage Subscription' : 'Choose a Plan'}
-              </h3>
-              <div className="space-y-3">
-                {(billing.status === 'trialing' || billing.status === 'canceled' || billing.status === 'paused' || billing.status === 'none') && (
-                  <>
+                {/* Plan Selection */}
+                <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                  <h3 className="font-medium mb-4">Choose a Plan</h3>
+                  <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       <button
                         onClick={() => setSelectedPlan('basic')}
@@ -461,88 +529,58 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                       ) : (
                         <CreditCard className="h-4 w-4 mr-2" />
                       )}
-                      Subscribe — {selectedPlan === 'pro' ? '$40' : '$20'}/month
+                      Start Free Trial — {selectedPlan === 'pro' ? '$40' : '$20'}/month after 14 days
                     </Button>
-                  </>
-                )}
-
-                {billing.plan === 'basic' && (billing.status === 'active') && (
-                  <Button
-                    onClick={() => handleCheckout('pro')}
-                    disabled={actionLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
-                  >
-                    {actionLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                    )}
-                    Upgrade to Pro — $40/month
-                  </Button>
-                )}
-
-                {(billing.status === 'active' || billing.status === 'past_due') && billing.hasStripeCustomer && (
-                  <Button
-                    onClick={handlePortal}
-                    disabled={actionLoading}
-                    variant="outline"
-                    className="w-full border-zinc-200 dark:border-white/10"
-                  >
-                    {actionLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                    )}
-                    Manage Billing
-                  </Button>
-                )}
-              </div>
-            </Card>
-
-            {/* Access Code */}
-            {(billing.status === 'none' || billing.status === 'trialing' || billing.status === 'canceled' || billing.status === 'paused') && (
-              <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
-                    <Ticket className="h-5 w-5 text-violet-500" />
+                    <p className="text-xs text-zinc-400 dark:text-zinc-600 text-center">
+                      14-day free trial. Cancel anytime.
+                    </p>
                   </div>
-                  <div>
-                    <p className="font-medium">Have an access code?</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Enter your code to unlock free access</p>
+                </Card>
+
+                {/* Access Code */}
+                <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
+                      <Ticket className="h-5 w-5 text-violet-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Have an access code?</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Enter your code to unlock free access</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-2 flex-col sm:flex-row">
-                  <input
-                    type="text"
-                    value={accessCode}
-                    onChange={e => setAccessCode(e.target.value.toUpperCase())}
-                    onKeyDown={e => e.key === 'Enter' && handleRedeem()}
-                    placeholder="Enter code"
-                    className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 text-base outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 dark:focus:border-violet-400 transition-all font-mono tracking-wider uppercase placeholder:normal-case placeholder:tracking-normal placeholder:font-sans"
-                    disabled={redeemLoading}
-                  />
-                  <Button
-                    onClick={handleRedeem}
-                    disabled={redeemLoading || !accessCode.trim()}
-                    size="sm"
-                    className="bg-violet-600 hover:bg-violet-700 text-white dark:bg-violet-500 dark:hover:bg-violet-600 px-4"
-                  >
-                    {redeemLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      'Redeem'
-                    )}
-                  </Button>
-                </div>
-                {redeemMessage && (
-                  <p className={`text-xs mt-2 ${redeemMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>
-                    {redeemMessage.text}
-                  </p>
-                )}
-              </Card>
+                  <div className="flex gap-2 flex-col sm:flex-row">
+                    <input
+                      type="text"
+                      value={accessCode}
+                      onChange={e => setAccessCode(e.target.value.toUpperCase())}
+                      onKeyDown={e => e.key === 'Enter' && handleRedeem()}
+                      placeholder="Enter code"
+                      className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 text-base outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 dark:focus:border-violet-400 transition-all font-mono tracking-wider uppercase placeholder:normal-case placeholder:tracking-normal placeholder:font-sans"
+                      disabled={redeemLoading}
+                    />
+                    <Button
+                      onClick={handleRedeem}
+                      disabled={redeemLoading || !accessCode.trim()}
+                      size="sm"
+                      className="bg-violet-600 hover:bg-violet-700 text-white dark:bg-violet-500 dark:hover:bg-violet-600 px-4"
+                    >
+                      {redeemLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        'Redeem'
+                      )}
+                    </Button>
+                  </div>
+                  {redeemMessage && (
+                    <p className={`text-xs mt-2 ${redeemMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>
+                      {redeemMessage.text}
+                    </p>
+                  )}
+                </Card>
+              </>
             )}
 
-            {/* Business Plan CTA */}
+            {/* Business Plan CTA — always visible */}
             <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-gradient-to-br from-zinc-50 to-stone-50 dark:from-zinc-900/50 dark:to-zinc-800/30">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-lg bg-stone-100 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
@@ -556,7 +594,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                     Get custom pricing, team seats, and dedicated support for your organization.
                   </p>
                   <a
-                    href="mailto:hello@emailligence.com?subject=Business Plan Inquiry"
+                    href="mailto:londo@emailligence.ai?subject=Business Plan Inquiry"
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-zinc-200 hover:text-stone-900 dark:hover:text-white mt-3 transition-colors"
                   >
                     Reach out for a free demo
@@ -566,7 +604,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
               </div>
             </Card>
 
-            {/* Sign out link — always visible, helpful when billing-gated on mobile */}
+            {/* Sign out link */}
             <div className="text-center pt-2">
               <button
                 onClick={handleSignOut}
