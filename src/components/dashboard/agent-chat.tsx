@@ -40,6 +40,7 @@ import {
   Eye,
   EyeOff,
   Zap,
+  Circle,
 } from 'lucide-react'
 
 interface CustomWelcome {
@@ -412,6 +413,133 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Grouped Tool Calls — compact single-box with checklist ──────────
+function ToolCallGroup({ parts }: { parts: Record<string, unknown>[] }) {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+
+  // Parse all tool info upfront
+  const tools = parts.map((part) => {
+    const partType = part.type as string
+    const toolName = partType === 'dynamic-tool'
+      ? (part.toolName as string) || 'unknown'
+      : partType.startsWith('tool-') ? partType.slice(5) : (part.toolName as string) || 'unknown'
+    const state = part.state as string
+    const meta = getToolMeta(toolName)
+    const input = part.input as Record<string, unknown> | undefined
+    const output = part.output as Record<string, unknown> | undefined
+    const errorText = part.errorText as string | undefined
+    const isRunning = state === 'input-streaming' || state === 'input-available' || state === 'call' || state === 'partial-call'
+    const isDone = state === 'output-available' || state === 'result'
+    const isError = state === 'output-error'
+    const inputSummary = input ? summarizeToolInput(toolName, input) : null
+    return { toolName, state, meta, input, output, errorText, isRunning, isDone, isError, inputSummary }
+  })
+
+  const completedCount = tools.filter(t => t.isDone).length
+  const errorCount = tools.filter(t => t.isError).length
+  const runningTool = tools.find(t => t.isRunning)
+  const allDone = tools.every(t => t.isDone || t.isError)
+
+  return (
+    <div className={`my-2 rounded-lg border overflow-hidden transition-colors max-w-full ${
+      runningTool
+        ? 'border-amber-300 dark:border-amber-700/40 bg-amber-50/60 dark:bg-amber-950/20'
+        : errorCount > 0
+          ? 'border-red-300 dark:border-red-500/30 bg-red-50/30 dark:bg-red-900/10'
+          : 'border-amber-200/60 dark:border-amber-800/30 bg-amber-50/40 dark:bg-amber-950/15'
+    }`}>
+      {/* Header */}
+      <div className="flex items-center gap-2 px-3 py-2 text-xs">
+        {runningTool ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
+        ) : allDone ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+        ) : (
+          <Wrench className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+        )}
+        <span className="font-medium text-amber-900 dark:text-amber-200">
+          {runningTool
+            ? runningTool.meta.label + '...'
+            : allDone
+              ? `${completedCount} tool${completedCount !== 1 ? 's' : ''} completed${errorCount > 0 ? `, ${errorCount} failed` : ''}`
+              : `Running tools...`
+          }
+        </span>
+        {runningTool && (
+          <span className="text-[10px] text-amber-600 dark:text-amber-400 animate-pulse">
+            {completedCount}/{tools.length}
+          </span>
+        )}
+      </div>
+
+      {/* Compact checklist */}
+      <div className="border-t border-amber-200/40 dark:border-amber-800/20 px-3 py-1.5 space-y-0.5">
+        {tools.map((tool, i) => {
+          const Icon = tool.meta.icon
+          const isExpanded = expandedIndex === i
+          return (
+            <div key={i}>
+              <button
+                onClick={() => setExpandedIndex(isExpanded ? null : i)}
+                className="w-full flex items-center gap-2 py-1 text-xs hover:bg-amber-50/40 dark:hover:bg-amber-950/20 rounded transition-colors"
+              >
+                {tool.isRunning && <Loader2 className="h-3 w-3 animate-spin text-amber-500 dark:text-amber-400 shrink-0" />}
+                {tool.isDone && <CheckCircle2 className="h-3 w-3 text-amber-500 dark:text-amber-400 shrink-0" />}
+                {tool.isError && <XCircle className="h-3 w-3 text-red-500 shrink-0" />}
+                {!tool.isRunning && !tool.isDone && !tool.isError && <Circle className="h-3 w-3 text-amber-300 dark:text-amber-700 shrink-0" />}
+                <Icon className="h-3 w-3 text-amber-700/40 dark:text-amber-500/40 shrink-0" />
+                <span className={`truncate ${
+                  tool.isDone
+                    ? 'text-amber-700/60 dark:text-amber-400/50'
+                    : tool.isRunning
+                      ? 'text-amber-900 dark:text-amber-200 font-medium'
+                      : tool.isError
+                        ? 'text-red-500/80 dark:text-red-400/70'
+                        : 'text-amber-700/40 dark:text-amber-500/30'
+                }`}>
+                  {tool.meta.label}
+                </span>
+                {tool.inputSummary && (
+                  <span className="text-amber-600/30 dark:text-amber-500/25 truncate max-w-[100px] sm:max-w-[180px]">— {tool.inputSummary}</span>
+                )}
+                <ChevronRight className={`h-2.5 w-2.5 ml-auto text-amber-400/50 dark:text-amber-600/50 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+              </button>
+
+              {isExpanded && (
+                <div className="ml-5 mb-1 px-2 py-1.5 rounded bg-amber-50/30 dark:bg-amber-950/10 border border-amber-200/30 dark:border-amber-800/15 space-y-1.5">
+                  {tool.input && Object.keys(tool.input).length > 0 && (
+                    <div>
+                      <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Input</div>
+                      <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
+                        {humanizeToolInput(tool.toolName, tool.input).map((line, j) => (
+                          <div key={j} className="break-words">{line}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {tool.isDone && tool.output && (
+                    <div>
+                      <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Result</div>
+                      <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
+                        {humanizeToolOutput(tool.toolName, tool.output).map((line, j) => (
+                          <div key={j} className="break-words">{line}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {tool.isError && tool.errorText && (
+                    <div className="text-[11px] text-red-500">{tool.errorText}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -1426,36 +1554,77 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                       ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
                       : 'bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none text-stone-700 dark:text-zinc-300'
                   }`}>
-                    {message.parts.map((part, index) => {
-                      if (part.type === 'text') {
-                        if (message.role === 'user') {
-                          return <span key={index}>{part.text}</span>
+                    {(() => {
+                      // Group consecutive tool call parts together
+                      const groups: Array<{ type: 'text'; part: typeof message.parts[0]; index: number } | { type: 'tools'; parts: Record<string, unknown>[]; startIndex: number } | { type: 'other'; index: number }> = []
+                      let currentToolGroup: Record<string, unknown>[] | null = null
+                      let toolGroupStart = 0
+
+                      for (let index = 0; index < message.parts.length; index++) {
+                        const part = message.parts[index]
+                        const isTool = part.type === 'dynamic-tool' || part.type.startsWith('tool-')
+
+                        if (isTool) {
+                          if (!currentToolGroup) {
+                            currentToolGroup = []
+                            toolGroupStart = index
+                          }
+                          currentToolGroup.push(part as unknown as Record<string, unknown>)
+                        } else {
+                          // Flush any accumulated tool group
+                          if (currentToolGroup) {
+                            groups.push({ type: 'tools', parts: currentToolGroup, startIndex: toolGroupStart })
+                            currentToolGroup = null
+                          }
+                          if (part.type === 'text') {
+                            groups.push({ type: 'text', part, index })
+                          } else if (part.type === 'step-start') {
+                            groups.push({ type: 'other', index })
+                          } else {
+                            groups.push({ type: 'other', index })
+                          }
                         }
-                        // Check for approval block
-                        const approvalParsed = parseApprovalBlock(part.text)
-                        if (approvalParsed) {
-                          const isLastAssistant = message.id === [...messages].reverse().find(m => m.role === 'assistant')?.id
-                          return (
-                            <React.Fragment key={index}>
-                              {approvalParsed.before && <MarkdownContent content={approvalParsed.before} />}
-                              <ApprovalCard
-                                approval={approvalParsed.approval}
-                                onApprove={() => handleApproval(message.id, 'approved')}
-                                onDeny={() => handleApproval(message.id, 'denied')}
-                                responded={approvalResponses[message.id] || (isLastAssistant ? null : 'approved')}
-                              />
-                              {approvalParsed.after && <MarkdownContent content={approvalParsed.after} />}
-                            </React.Fragment>
-                          )
+                      }
+                      // Flush trailing tool group
+                      if (currentToolGroup) {
+                        groups.push({ type: 'tools', parts: currentToolGroup, startIndex: toolGroupStart })
+                      }
+
+                      return groups.map((group) => {
+                        if (group.type === 'text') {
+                          const part = group.part as { type: string; text: string }
+                          if (message.role === 'user') {
+                            return <span key={group.index}>{part.text}</span>
+                          }
+                          const approvalParsed = parseApprovalBlock(part.text)
+                          if (approvalParsed) {
+                            const isLastAssistant = message.id === [...messages].reverse().find(m => m.role === 'assistant')?.id
+                            return (
+                              <React.Fragment key={group.index}>
+                                {approvalParsed.before && <MarkdownContent content={approvalParsed.before} />}
+                                <ApprovalCard
+                                  approval={approvalParsed.approval}
+                                  onApprove={() => handleApproval(message.id, 'approved')}
+                                  onDeny={() => handleApproval(message.id, 'denied')}
+                                  responded={approvalResponses[message.id] || (isLastAssistant ? null : 'approved')}
+                                />
+                                {approvalParsed.after && <MarkdownContent content={approvalParsed.after} />}
+                              </React.Fragment>
+                            )
+                          }
+                          return <MarkdownContent key={group.index} content={part.text} />
                         }
-                        return <MarkdownContent key={index} content={part.text} />
-                      }
-                      if (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) {
-                        return <ToolCallBlock key={index} part={part as unknown as Record<string, unknown>} />
-                      }
-                      if (part.type === 'step-start') return null
-                      return null
-                    })}
+                        if (group.type === 'tools') {
+                          // If only 1 tool call, render the classic single block
+                          if (group.parts.length === 1) {
+                            return <ToolCallBlock key={`tool-${group.startIndex}`} part={group.parts[0]} />
+                          }
+                          // Multiple tool calls → grouped compact view
+                          return <ToolCallGroup key={`toolgroup-${group.startIndex}`} parts={group.parts} />
+                        }
+                        return null
+                      })
+                    })()}
                   </div>
                   {message.role === 'user' && (
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 flex items-center justify-center shrink-0">

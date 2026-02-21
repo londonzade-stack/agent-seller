@@ -266,7 +266,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                   <div className="min-w-0">
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
                     <p className="text-base sm:text-lg font-semibold truncate">
-                      Emailligence {billing.plan === 'pro' ? 'Pro' : 'Basic'}
+                      Emailligence {billing.plan === 'pro' ? 'Pro' : billing.plan === 'access_code' ? 'Pro' : 'Basic'}
                     </p>
                   </div>
                 </div>
@@ -278,7 +278,9 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
               <div className="border-t border-zinc-200 dark:border-white/10 pt-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-zinc-500 dark:text-zinc-400">Price</span>
-                  <span className="font-medium">{billing.plan === 'pro' ? '$40' : '$20'} / month</span>
+                  <span className="font-medium">
+                    {billing.plan === 'access_code' ? 'Free (Access Code)' : billing.plan === 'pro' ? '$40 / month' : '$20 / month'}
+                  </span>
                 </div>
 
                 {billing.status === 'trialing' && (

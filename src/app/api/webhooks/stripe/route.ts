@@ -47,13 +47,25 @@ export async function POST(req: Request) {
             : session.subscription?.id
 
         if (customerId && subscriptionId) {
+          // Check if the subscription is trialing or active
+          // (checkout with trial_period_days starts as 'trialing', not 'active')
+          let checkoutStatus: string = 'active'
+          try {
+            const stripeSub = await getStripe().subscriptions.retrieve(subscriptionId)
+            if (stripeSub.status === 'trialing') {
+              checkoutStatus = 'trialing'
+            }
+          } catch {
+            // If we can't fetch the subscription, default to 'active'
+          }
+
           // Ensure the subscription row is linked even if subscription.created
           // webhook arrives before the checkout route finishes upserting
           const { error: checkoutError } = await supabase
             .from('subscriptions')
             .update({
               stripe_subscription_id: subscriptionId,
-              status: 'active',
+              status: checkoutStatus,
             })
             .eq('stripe_customer_id', customerId)
           if (checkoutError) {

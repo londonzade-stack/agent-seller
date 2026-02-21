@@ -251,7 +251,7 @@ When a user wants to reach out to a company:
 
 // Create all the powerful tools
 function createTools(userId: string | null, isEmailConnected: boolean, plan: string = 'basic') {
-  const isPro = plan === 'pro'
+  const isPro = plan === 'pro' || plan === 'access_code'
 
   return {
     // ============ SEARCH & READ ============
@@ -1260,7 +1260,7 @@ export async function POST(req: Request) {
       notes: string | null
     } | null = null
 
-    if (userPlan === 'pro') {
+    if (userPlan === 'pro' || userPlan === 'access_code') {
       const { data: profileData } = await supabase
         .from('company_profiles')
         .select('company_name, description, user_role, target_customer, industry, notes')
