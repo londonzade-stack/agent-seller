@@ -24,7 +24,7 @@ import {
   Plus,
   Trash2,
   ChevronDown,
-  PanelLeft,
+  PanelLeftOpen,
   Repeat2,
   Globe,
   Newspaper,
@@ -229,7 +229,7 @@ export function DashboardSidebar({
             className="h-8 w-8 flex items-center justify-center rounded-lg text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
             title="Menu"
           >
-            <PanelLeft className="h-4 w-4" />
+            <PanelLeftOpen className="h-4 w-4" />
           </button>
           <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">
             {activeView === 'outreach' ? 'Outreach' : 'BLITZ'}
