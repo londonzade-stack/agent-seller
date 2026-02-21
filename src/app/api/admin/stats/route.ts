@@ -3,6 +3,25 @@ import { sanitizeError } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
 
+// Build sparkline data: count per day for last N days
+function buildDailySparkline(items: { created_at: string }[], days: number): { date: string; count: number }[] {
+  const counts: Record<string, number> = {}
+  const now = new Date()
+  // Initialize all days to 0
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now)
+    d.setDate(d.getDate() - i)
+    const key = d.toISOString().split('T')[0]
+    counts[key] = 0
+  }
+  // Count items per day
+  for (const item of items) {
+    const key = new Date(item.created_at).toISOString().split('T')[0]
+    if (key in counts) counts[key]++
+  }
+  return Object.entries(counts).map(([date, count]) => ({ date, count }))
+}
+
 export async function GET() {
   try {
     const { isAdmin } = await verifyAdmin()
@@ -11,6 +30,7 @@ export async function GET() {
     }
 
     const adminClient = getAdminClient()
+    const fiftyDaysAgo = new Date(Date.now() - 56 * 24 * 60 * 60 * 1000).toISOString()
 
     // Get total users
     const { data: { users } } = await adminClient.auth.admin.listUsers({ perPage: 500 })
@@ -31,29 +51,34 @@ export async function GET() {
       else subBreakdown.none++
     }
 
-    // Get total sessions and messages
-    const { count: totalSessions } = await adminClient
-      .from('chat_sessions')
-      .select('id', { count: 'exact', head: true })
-
-    const { count: totalMessages } = await adminClient
-      .from('chat_messages')
-      .select('id', { count: 'exact', head: true })
-
-    // Active users in last 7 days (users with messages in last 7 days)
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    const { data: recentSessions } = await adminClient
-      .from('chat_sessions')
-      .select('user_id')
-      .gte('updated_at', sevenDaysAgo)
+    // Parallel queries for counts + sparkline data
+    const [
+      { count: totalSessions },
+      { count: totalMessages },
+      { data: recentSessions },
+      { count: emailConnectionsCount },
+      { data: recentMessages },
+      { data: recentSessionsAll },
+      { data: recentConnections },
+    ] = await Promise.all([
+      adminClient.from('chat_sessions').select('id', { count: 'exact', head: true }),
+      adminClient.from('chat_messages').select('id', { count: 'exact', head: true }),
+      adminClient.from('chat_sessions').select('user_id, updated_at').gte('updated_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+      adminClient.from('user_email_connections').select('id', { count: 'exact', head: true }),
+      // Sparkline queries
+      adminClient.from('chat_messages').select('created_at').gte('created_at', fiftyDaysAgo),
+      adminClient.from('chat_sessions').select('created_at').gte('created_at', fiftyDaysAgo),
+      adminClient.from('user_email_connections').select('created_at').gte('created_at', fiftyDaysAgo),
+    ])
 
     const activeUserIds = new Set((recentSessions || []).map(s => s.user_id))
     const activeUsersThisWeek = activeUserIds.size
 
-    // Email connections count
-    const { count: emailConnectionsCount } = await adminClient
-      .from('user_email_connections')
-      .select('id', { count: 'exact', head: true })
+    // Build sparkline for signups from auth users
+    const signupSparkline = buildDailySparkline(
+      users.map(u => ({ created_at: u.created_at })),
+      56
+    )
 
     return Response.json({
       totalUsers,
@@ -62,6 +87,12 @@ export async function GET() {
       totalMessages: totalMessages || 0,
       emailConnections: emailConnectionsCount || 0,
       subscriptions: subBreakdown,
+      sparklines: {
+        signups: signupSparkline,
+        messages: buildDailySparkline(recentMessages || [], 56),
+        sessions: buildDailySparkline(recentSessionsAll || [], 56),
+        connections: buildDailySparkline(recentConnections || [], 56),
+      },
     })
   } catch (error) {
     sanitizeError('Admin stats API error', error)
