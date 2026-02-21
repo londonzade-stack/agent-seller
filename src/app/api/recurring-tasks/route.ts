@@ -47,11 +47,22 @@ export async function GET() {
   return NextResponse.json({ tasks })
 }
 
-// POST /api/recurring-tasks — Create a new recurring task
+// POST /api/recurring-tasks — Create a new recurring task (Pro plan only)
 export async function POST(req: Request) {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Pro plan gate
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('plan')
+    .eq('user_id', user.id)
+    .single()
+  const plan = subscription?.plan || 'basic'
+  if (plan !== 'pro' && plan !== 'access_code') {
+    return NextResponse.json({ error: 'Recurring automations require a Pro plan.' }, { status: 403 })
+  }
 
   const body = await req.json()
   const { title, description, taskType, taskConfig, frequency, dayOfWeek, dayOfMonth, timeOfDay } = body

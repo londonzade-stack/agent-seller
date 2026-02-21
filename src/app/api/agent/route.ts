@@ -414,6 +414,9 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
         confirmed: z.boolean().describe('MUST be true — set this only AFTER the user has approved scheduling via the approval card. If false, the email will NOT be scheduled.'),
       }),
       execute: async ({ to, subject, body, cc, bcc, scheduledAt, threadId, confirmed }) => {
+        if (!isPro) {
+          return { success: false, requiresProPlan: true, message: 'Scheduled emails are a Pro plan feature. Upgrade to Pro ($40/mo) to unlock scheduled sends, automations, web search, and sales outreach tools.' }
+        }
         if (!confirmed) {
           return { success: false, error: 'BLOCKED: You must get user approval before scheduling. Show the email details and scheduled time to the user and wait for them to click Approve, then call scheduleEmail again with confirmed=true.' }
         }
@@ -1244,11 +1247,11 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
         timeOfDay: z.string().optional().default('09:00').describe('Time to run in HH:MM format (24-hour, UTC). For hourly tasks, this is the starting hour.'),
       }),
       execute: async ({ title, description, taskType, taskConfig, frequency, dayOfWeek, dayOfMonth, timeOfDay }) => {
+        if (!isPro) {
+          return { success: false, requiresProPlan: true, message: 'Recurring automations are a Pro plan feature. Upgrade to Pro ($40/mo) to unlock automations, scheduled sends, web search, and sales outreach tools.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
-        }
-        if (frequency === 'hourly' && !isPro) {
-          return { success: false, requiresProPlan: true, message: 'Hourly automations require a Pro plan. Upgrade to Pro ($40/mo) to unlock hourly automations, web search, and sales outreach tools.' }
         }
         try {
           const time = timeOfDay || '09:00'
