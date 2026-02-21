@@ -13,6 +13,8 @@ import {
   Mail,
   RefreshCw,
   AlertCircle,
+  Check,
+  X,
 } from 'lucide-react'
 
 interface Draft {
@@ -33,6 +35,11 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTo, setEditTo] = useState('')
+  const [editSubject, setEditSubject] = useState('')
+  const [editBody, setEditBody] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const fetchDrafts = async () => {
     if (!isEmailConnected) return
@@ -42,7 +49,6 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
       const res = await fetch('/api/drafts')
       if (!res.ok) throw new Error('Failed to fetch drafts')
       const data = await res.json()
-      // Map backend field names to frontend interface
       const mapped = (data.drafts || []).map((d: Record<string, string>) => ({
         id: d.draftId || d.id,
         to: d.to || '',
@@ -70,7 +76,6 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
         body: JSON.stringify({ draftId }),
       })
       if (!res.ok) throw new Error('Failed to send')
-      // Trigger slide-out animation, then remove after transition
       setDeletingIds(prev => new Set(prev).add(draftId))
       setTimeout(() => {
         setDrafts(prev => prev.filter(d => d.id !== draftId))
@@ -93,7 +98,6 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
         body: JSON.stringify({ draftId }),
       })
       if (!res.ok) throw new Error('Failed to delete')
-      // Trigger slide-out animation, then remove after transition
       setDeletingIds(prev => new Set(prev).add(draftId))
       setTimeout(() => {
         setDrafts(prev => prev.filter(d => d.id !== draftId))
@@ -105,6 +109,42 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
       }, 450)
     } catch {
       setError('Failed to delete draft.')
+    }
+  }
+
+  const startEditing = (draft: Draft) => {
+    setEditingId(draft.id)
+    setEditTo(draft.to)
+    setEditSubject(draft.subject)
+    setEditBody(draft.body)
+  }
+
+  const cancelEditing = () => {
+    setEditingId(null)
+    setEditTo('')
+    setEditSubject('')
+    setEditBody('')
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingId) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/drafts/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draftId: editingId, to: editTo, subject: editSubject, body: editBody }),
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      // Update local state
+      setDrafts(prev => prev.map(d =>
+        d.id === editingId ? { ...d, to: editTo, subject: editSubject, body: editBody } : d
+      ))
+      setEditingId(null)
+    } catch {
+      setError('Failed to save changes.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -150,7 +190,7 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
           <div className="flex flex-col items-center justify-center h-full">
             <AlertCircle className="h-8 w-8 text-red-500 mb-4" />
             <p className="text-zinc-500 dark:text-zinc-400 mb-4">{error}</p>
-            <Button variant="outline" onClick={fetchDrafts} className="border-zinc-200 dark:border-white/10">Try Again</Button>
+            <Button variant="outline" onClick={() => { setError(null); fetchDrafts() }} className="border-zinc-200 dark:border-white/10">Try Again</Button>
           </div>
         ) : drafts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full">
@@ -164,58 +204,116 @@ export function DraftsView({ isEmailConnected, onConnectEmail }: DraftsViewProps
           </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4">
-            {drafts.map((draft) => (
-              <Card
-                key={draft.id}
-                className={`p-0 overflow-hidden border-zinc-200 dark:border-white/10 bg-white dark:bg-black ${
-                  deletingIds.has(draft.id)
-                    ? 'opacity-0 -translate-x-20 scale-[0.98] max-h-0 !my-0 !py-0'
-                    : 'opacity-100 translate-x-0 scale-100'
-                }`}
-                style={deletingIds.has(draft.id) ? { marginTop: 0, marginBottom: 0, maxHeight: 0, padding: 0, transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' } : { maxHeight: '500px', transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' }}
-              >
-                <div className="border-b border-zinc-200 dark:border-white/10 p-3 sm:p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <FileText className="h-4 w-4 text-zinc-400 shrink-0" />
-                    <span className="text-sm font-medium truncate">
-                      {draft.subject || '(No subject)'}
-                    </span>
-                  </div>
-                  <Badge className="bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0 text-xs">
-                    Pending
-                  </Badge>
-                </div>
-                <div className="p-3 sm:p-4">
-                  <div className="mb-3">
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">To: </span>
-                    <span className="text-sm">{draft.to || 'No recipient'}</span>
-                  </div>
-                  <div className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-3 mb-4">
-                    {draft.body || 'No content'}
-                  </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                    <Button size="sm" onClick={() => handleSendDraft(draft.id)} className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs sm:text-sm">
-                      <Send className="h-3 w-3 mr-1" />
-                      Send
-                    </Button>
-                    <Button size="sm" variant="outline" disabled className="border-zinc-200 dark:border-white/10 text-xs sm:text-sm">
-                      <Pencil className="h-3 w-3 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ml-auto text-xs sm:text-sm"
-                      onClick={() => handleDeleteDraft(draft.id)}
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      <span className="hidden sm:inline">Discard</span>
-                      <span className="sm:hidden">Del</span>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
+            {drafts.map((draft) => {
+              const isEditing = editingId === draft.id
+              return (
+                <Card
+                  key={draft.id}
+                  className={`p-0 overflow-hidden border-zinc-200 dark:border-white/10 bg-white dark:bg-black ${
+                    deletingIds.has(draft.id)
+                      ? 'opacity-0 -translate-x-20 scale-[0.98] max-h-0 !my-0 !py-0'
+                      : 'opacity-100 translate-x-0 scale-100'
+                  }`}
+                  style={deletingIds.has(draft.id) ? { marginTop: 0, marginBottom: 0, maxHeight: 0, padding: 0, transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' } : { maxHeight: '800px', transition: 'all 450ms cubic-bezier(0.4, 0, 0.2, 1)' }}
+                >
+                  {isEditing ? (
+                    /* ─── Edit Mode ─── */
+                    <div className="p-3 sm:p-4 space-y-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Editing Draft</span>
+                        <Badge className="bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0 text-xs">
+                          Editing
+                        </Badge>
+                      </div>
+                      <div>
+                        <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">To</label>
+                        <input
+                          type="email"
+                          value={editTo}
+                          onChange={(e) => setEditTo(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+                          placeholder="recipient@email.com"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Subject</label>
+                        <input
+                          type="text"
+                          value={editSubject}
+                          onChange={(e) => setEditSubject(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
+                          placeholder="Email subject"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-1 block">Body</label>
+                        <textarea
+                          value={editBody}
+                          onChange={(e) => setEditBody(e.target.value)}
+                          rows={8}
+                          className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 resize-y min-h-[120px]"
+                          placeholder="Email body"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <Button size="sm" onClick={handleSaveEdit} disabled={saving} className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs sm:text-sm">
+                          {saving ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Check className="h-3 w-3 mr-1" />}
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={cancelEditing} disabled={saving} className="border-zinc-200 dark:border-white/10 text-xs sm:text-sm">
+                          <X className="h-3 w-3 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* ─── View Mode ─── */
+                    <>
+                      <div className="border-b border-zinc-200 dark:border-white/10 p-3 sm:p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                          <FileText className="h-4 w-4 text-zinc-400 shrink-0" />
+                          <span className="text-sm font-medium truncate">
+                            {draft.subject || '(No subject)'}
+                          </span>
+                        </div>
+                        <Badge className="bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0 text-xs">
+                          Pending
+                        </Badge>
+                      </div>
+                      <div className="p-3 sm:p-4">
+                        <div className="mb-3">
+                          <span className="text-xs text-zinc-500 dark:text-zinc-400">To: </span>
+                          <span className="text-sm">{draft.to || 'No recipient'}</span>
+                        </div>
+                        <div className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-3 mb-4">
+                          {draft.body || 'No content'}
+                        </div>
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                          <Button size="sm" onClick={() => handleSendDraft(draft.id)} className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 text-xs sm:text-sm">
+                            <Send className="h-3 w-3 mr-1" />
+                            Send
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => startEditing(draft)} className="border-zinc-200 dark:border-white/10 text-xs sm:text-sm">
+                            <Pencil className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ml-auto text-xs sm:text-sm"
+                            onClick={() => handleDeleteDraft(draft.id)}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            <span className="hidden sm:inline">Discard</span>
+                            <span className="sm:hidden">Del</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>

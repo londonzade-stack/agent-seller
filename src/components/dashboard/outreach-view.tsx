@@ -36,6 +36,12 @@ import {
   Lightbulb,
   ChevronDown,
   X,
+  Circle,
+  Trash2,
+  Archive,
+  Shield,
+  Tag,
+  Star,
 } from 'lucide-react'
 import { ProMockConversationDropdown } from '@/components/pro-mock-conversation'
 import { CompanyProfileCard } from './company-profile-card'
@@ -164,6 +170,263 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Grouped Tool Calls — ultra-compact: 1 active line, collapsed when done ──
+function ToolCallGroup({ parts }: { parts: Record<string, unknown>[] }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+
+  const tools = parts.map((part) => {
+    const partType = part.type as string
+    const toolName = partType === 'dynamic-tool'
+      ? (part.toolName as string) || 'unknown'
+      : partType.startsWith('tool-') ? partType.slice(5) : (part.toolName as string) || 'unknown'
+    const state = part.state as string
+    const meta = getToolMeta(toolName)
+    const input = part.input as Record<string, unknown> | undefined
+    const output = part.output as unknown
+    const isRunning = state === 'input-streaming' || state === 'input-available' || state === 'call' || state === 'partial-call'
+    const isDone = state === 'output-available' || state === 'result'
+    const isError = state === 'output-error'
+    const errorText = isError ? ((part.output as Record<string, unknown>)?.error as string) || 'Tool call failed' : null
+    const inputSummary = input?.query ? `"${String(input.query).slice(0, 40)}"` : null
+    return { toolName, state, meta, input, output, isRunning, isDone, isError, errorText, inputSummary }
+  })
+
+  const completedCount = tools.filter(t => t.isDone).length
+  const errorCount = tools.filter(t => t.isError).length
+  const runningTool = tools.find(t => t.isRunning)
+  const allDone = tools.every(t => t.isDone || t.isError)
+
+  return (
+    <div className={`my-1.5 rounded-lg border overflow-hidden transition-colors max-w-full ${
+      runningTool
+        ? 'border-blue-300/60 dark:border-blue-700/30 bg-blue-50/40 dark:bg-blue-950/15'
+        : errorCount > 0
+          ? 'border-red-200/60 dark:border-red-500/20 bg-red-50/20 dark:bg-red-900/10'
+          : 'border-blue-200/40 dark:border-blue-800/20 bg-blue-50/30 dark:bg-blue-950/10'
+    }`}>
+      <button
+        onClick={() => allDone ? setIsExpanded(!isExpanded) : undefined}
+        className={`w-full flex items-center gap-2 px-3 py-2 text-xs ${allDone ? 'cursor-pointer hover:bg-blue-50/40 dark:hover:bg-blue-950/20' : 'cursor-default'}`}
+      >
+        {runningTool ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600 dark:text-blue-400 shrink-0" />
+        ) : allDone && errorCount === 0 ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+        ) : allDone && errorCount > 0 ? (
+          <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
+        ) : (
+          <Wrench className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+        )}
+        <span className="font-medium text-blue-900 dark:text-blue-200 truncate">
+          {allDone
+            ? `${completedCount} tool${completedCount !== 1 ? 's' : ''} completed${errorCount > 0 ? ` · ${errorCount} failed` : ''}`
+            : runningTool
+              ? runningTool.meta.label + (runningTool.inputSummary ? ` — ${runningTool.inputSummary}` : '')
+              : 'Running tools…'
+          }
+        </span>
+        {runningTool && (
+          <span className="ml-auto text-[10px] tabular-nums text-blue-600/70 dark:text-blue-400/60 shrink-0">
+            {completedCount + 1}/{tools.length}
+          </span>
+        )}
+        {allDone && (
+          <ChevronRight className={`h-3 w-3 ml-auto text-blue-400/60 dark:text-blue-600/50 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+        )}
+      </button>
+
+      {isExpanded && allDone && (
+        <div className="border-t border-blue-200/30 dark:border-blue-800/15 px-3 py-1.5 space-y-0.5">
+          {tools.map((tool, i) => {
+            const Icon = tool.meta.icon
+            const isDetailExpanded = expandedIndex === i
+            return (
+              <div key={i}>
+                <button
+                  onClick={() => setExpandedIndex(isDetailExpanded ? null : i)}
+                  className="w-full flex items-center gap-2 py-1 text-xs hover:bg-blue-50/40 dark:hover:bg-blue-950/20 rounded transition-colors"
+                >
+                  {tool.isDone && <CheckCircle2 className="h-3 w-3 text-blue-500 dark:text-blue-400 shrink-0" />}
+                  {tool.isError && <XCircle className="h-3 w-3 text-red-500 shrink-0" />}
+                  <Icon className="h-3 w-3 text-blue-700/40 dark:text-blue-500/40 shrink-0" />
+                  <span className="truncate text-blue-700/70 dark:text-blue-400/60">{tool.meta.label}</span>
+                  {tool.inputSummary && (
+                    <span className="text-blue-600/30 dark:text-blue-500/25 truncate max-w-[100px] sm:max-w-[180px]">— {tool.inputSummary}</span>
+                  )}
+                  <ChevronRight className={`h-2.5 w-2.5 ml-auto text-blue-400/50 dark:text-blue-600/50 transition-transform shrink-0 ${isDetailExpanded ? 'rotate-90' : ''}`} />
+                </button>
+                {isDetailExpanded && (
+                  <div className="ml-5 mb-1 px-2 py-1.5 rounded bg-blue-50/30 dark:bg-blue-950/10 border border-blue-200/30 dark:border-blue-800/15 space-y-1.5">
+                    {tool.input && Object.keys(tool.input).length > 0 && (
+                      <div>
+                        <div className="text-[9px] font-medium text-blue-700/50 dark:text-blue-500/40 uppercase tracking-wider mb-0.5">Input</div>
+                        <div className="text-[11px] text-blue-800/60 dark:text-blue-300/50 space-y-0.5 break-words">
+                          {summarizeInput(tool.toolName, tool.input).map((line, j) => (
+                            <div key={j} className="break-words">{line}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {tool.isDone && tool.output != null && (
+                      <div>
+                        <div className="text-[9px] font-medium text-blue-700/50 dark:text-blue-500/40 uppercase tracking-wider mb-0.5">Result</div>
+                        <div className="text-[11px] text-blue-800/60 dark:text-blue-300/50 space-y-0.5 break-words">
+                          {summarizeOutput(tool.toolName, tool.output).map((line, j) => (
+                            <div key={j} className="break-words">{line}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {tool.isError && tool.errorText && (
+                      <div className="text-[11px] text-red-500">{tool.errorText}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Approval Card — renders [APPROVAL_REQUIRED] blocks ──────────
+interface ApprovalData {
+  action: string
+  description: string
+  details: string | null
+}
+
+const DESTRUCTIVE_PATTERNS = [
+  /should I (?:move|trash|delete|remove|archive|send|forward|reply|unsubscribe)/i,
+  /want me to (?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
+  /shall I (?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
+  /would you like (?:me to |to )(?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
+  /ready to (?:send|trash|delete|archive|move|unsubscribe)/i,
+  /confirm.*(?:trash|delete|archive|send|move|unsubscribe)/i,
+  /proceed with (?:trashing|deleting|archiving|sending|moving|unsubscribing)/i,
+  /would you like me to unsubscribe/i,
+  /unsubscribe from (?:any|all|these|them|the following)/i,
+]
+
+function detectActionType(text: string): string {
+  const lower = text.toLowerCase()
+  if (lower.includes('trash') || lower.includes('delete') || lower.includes('remove')) return 'Trash emails'
+  if (lower.includes('archive')) return 'Archive emails'
+  if (lower.includes('send') || lower.includes('forward') || lower.includes('reply')) return 'Send email'
+  if (lower.includes('unsubscribe')) return 'Unsubscribe'
+  if (lower.includes('draft')) return 'Create draft'
+  if (lower.includes('spam')) return 'Report spam'
+  return 'Action'
+}
+
+function extractDetails(text: string): string | null {
+  const parts: string[] = []
+  const countMatch = text.match(/(\d+)\s*emails?/i)
+  if (countMatch) parts.push(`${countMatch[1]} emails`)
+  const fromMatch = text.match(/from\s+([A-Za-z0-9._@\s]+?)(?:\.|,|\?|$)/i)
+  if (fromMatch) parts.push(`from ${fromMatch[1].trim()}`)
+  return parts.length > 0 ? parts.join(', ') : null
+}
+
+function parseApprovalBlock(text: string): { before: string; approval: ApprovalData; after: string } | null {
+  const startTag = '[APPROVAL_REQUIRED]'
+  const endTag = '[/APPROVAL_REQUIRED]'
+  const startIdx = text.indexOf(startTag)
+  const endIdx = text.indexOf(endTag)
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    const before = text.slice(0, startIdx).trim()
+    const after = text.slice(endIdx + endTag.length).trim()
+    const block = text.slice(startIdx + startTag.length, endIdx).trim()
+    let action = '', description = '', details: string | null = null
+    for (const line of block.split('\n')) {
+      const trimmed = line.trim()
+      if (trimmed.startsWith('action:')) action = trimmed.slice(7).trim()
+      else if (trimmed.startsWith('description:')) description = trimmed.slice(12).trim()
+      else if (trimmed.startsWith('details:')) details = trimmed.slice(8).trim()
+    }
+    if (action || description) return { before, approval: { action, description, details }, after }
+  }
+  for (const pattern of DESTRUCTIVE_PATTERNS) {
+    if (pattern.test(text)) {
+      const sentences = text.split(/(?<=[.!])\s+/)
+      const questionSentences: string[] = [], contextSentences: string[] = []
+      for (const s of sentences) {
+        if (DESTRUCTIVE_PATTERNS.some(p => p.test(s)) || s.includes('?')) questionSentences.push(s)
+        else contextSentences.push(s)
+      }
+      const description = questionSentences.join(' ').replace(/\?$/, '').trim() || text.split('?')[0].trim()
+      return { before: contextSentences.join(' ').trim(), approval: { action: detectActionType(text), description, details: extractDetails(text) }, after: '' }
+    }
+  }
+  return null
+}
+
+function ApprovalCard({ approval, onApprove, onDeny, responded }: {
+  approval: ApprovalData; onApprove: () => void; onDeny: () => void; responded: 'approved' | 'denied' | null
+}) {
+  const getActionIcon = (action: string) => {
+    const lower = action.toLowerCase()
+    if (lower.includes('trash') || lower.includes('delete')) return Trash2
+    if (lower.includes('archive')) return Archive
+    if (lower.includes('send')) return Send
+    if (lower.includes('draft')) return Mail
+    if (lower.includes('unsubscribe')) return Mail
+    if (lower.includes('spam')) return Shield
+    if (lower.includes('label')) return Tag
+    if (lower.includes('star')) return Star
+    return AlertCircle
+  }
+  const ActionIcon = getActionIcon(approval.action)
+  const detailItems = approval.details?.split(',').map(d => d.trim()).filter(Boolean) || []
+
+  return (
+    <div className="my-3 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-stone-100 dark:border-zinc-800">
+        <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+          <ActionIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        </div>
+        <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">Approval Required</span>
+      </div>
+      <div className="px-4 py-3 space-y-3">
+        <p className="text-sm text-stone-600 dark:text-zinc-300">{approval.description}</p>
+        {detailItems.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-stone-400 dark:text-zinc-500 mb-1.5">Details</p>
+            <div className="flex flex-wrap gap-1.5">
+              {detailItems.map((item, i) => (
+                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md bg-stone-100 dark:bg-zinc-800 text-xs text-stone-600 dark:text-zinc-400 border border-stone-200/60 dark:border-zinc-700/60">{item}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="px-4 py-3 border-t border-stone-100 dark:border-zinc-800">
+        {responded ? (
+          <div className={`flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium ${
+            responded === 'approved'
+              ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
+              : 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800/40'
+          }`}>
+            {responded === 'approved' ? <><CheckCircle2 className="h-4 w-4" /> Approved</> : <><XCircle className="h-4 w-4" /> Denied</>}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={onDeny} className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800/40 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer">
+              <X className="h-4 w-4" /> Deny
+            </button>
+            <button onClick={onApprove} className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors cursor-pointer">
+              <CheckCircle2 className="h-4 w-4" /> Approve
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -493,6 +756,16 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
     }
   }
 
+  // Track approval responses per message ID
+  const [approvalResponses, setApprovalResponses] = useState<Record<string, 'approved' | 'denied'>>({})
+  const handleApproval = (messageId: string, response: 'approved' | 'denied') => {
+    if (isLoading) return
+    setApprovalResponses(prev => ({ ...prev, [messageId]: response }))
+    const text = response === 'approved' ? 'Yes, approved. Proceed.' : 'No, denied. Do not proceed.'
+    sendMessage({ text })
+    saveMessage('user', text)
+  }
+
   const lastMessage = messages[messages.length - 1]
   const lastMsgHasRunningTool = lastMessage?.role === 'assistant' && lastMessage.parts.some(p => {
     if (p.type === 'dynamic-tool' || p.type.startsWith('tool-')) {
@@ -685,19 +958,66 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
                     ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
                     : 'bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none text-stone-700 dark:text-zinc-300'
                 }`}>
-                  {message.parts.map((part, index) => {
-                    if (part.type === 'text') {
-                      if (message.role === 'user') {
-                        return <span key={index}>{part.text}</span>
+                  {(() => {
+                    // Group consecutive tool parts together
+                    const groups: { type: 'text' | 'tools' | 'other'; part?: unknown; parts?: Record<string, unknown>[]; index: number; startIndex?: number }[] = []
+                    let currentToolGroup: Record<string, unknown>[] = []
+                    let toolGroupStart = 0
+
+                    message.parts.forEach((part, index) => {
+                      const isTool = part.type === 'dynamic-tool' || part.type.startsWith('tool-')
+                      if (isTool) {
+                        if (currentToolGroup.length === 0) toolGroupStart = index
+                        currentToolGroup.push(part as unknown as Record<string, unknown>)
+                      } else {
+                        if (currentToolGroup.length > 0) {
+                          groups.push({ type: 'tools', parts: currentToolGroup, index: toolGroupStart, startIndex: toolGroupStart })
+                          currentToolGroup = []
+                        }
+                        if (part.type === 'text') {
+                          groups.push({ type: 'text', part, index })
+                        } else if (part.type !== 'step-start') {
+                          groups.push({ type: 'other', part, index })
+                        }
                       }
-                      return <MarkdownContent key={index} content={part.text} />
+                    })
+                    if (currentToolGroup.length > 0) {
+                      groups.push({ type: 'tools', parts: currentToolGroup, index: toolGroupStart, startIndex: toolGroupStart })
                     }
-                    if (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) {
-                      return <ToolCallBlock key={index} part={part as unknown as Record<string, unknown>} />
-                    }
-                    if (part.type === 'step-start') return null
-                    return null
-                  })}
+
+                    return groups.map((group) => {
+                      if (group.type === 'text') {
+                        const part = group.part as { type: string; text: string }
+                        if (message.role === 'user') {
+                          return <span key={group.index}>{part.text}</span>
+                        }
+                        const approvalParsed = parseApprovalBlock(part.text)
+                        if (approvalParsed) {
+                          const isLastAssistant = message.id === [...messages].reverse().find(m => m.role === 'assistant')?.id
+                          return (
+                            <React.Fragment key={group.index}>
+                              {approvalParsed.before && <MarkdownContent content={approvalParsed.before} />}
+                              <ApprovalCard
+                                approval={approvalParsed.approval}
+                                onApprove={() => handleApproval(message.id, 'approved')}
+                                onDeny={() => handleApproval(message.id, 'denied')}
+                                responded={approvalResponses[message.id] || (isLastAssistant ? null : 'approved')}
+                              />
+                              {approvalParsed.after && <MarkdownContent content={approvalParsed.after} />}
+                            </React.Fragment>
+                          )
+                        }
+                        return <MarkdownContent key={group.index} content={part.text} />
+                      }
+                      if (group.type === 'tools') {
+                        if (group.parts!.length === 1) {
+                          return <ToolCallBlock key={`tool-${group.startIndex}`} part={group.parts![0]} />
+                        }
+                        return <ToolCallGroup key={`toolgroup-${group.startIndex}`} parts={group.parts!} />
+                      }
+                      return null
+                    })
+                  })()}
                 </div>
                 {message.role === 'user' && (
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 flex items-center justify-center shrink-0">
