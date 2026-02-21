@@ -603,22 +603,25 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
     return null
   }, [sessionId, onSessionCreated])
 
-  const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string, metadata?: Record<string, any>) => {
     if (!content.trim()) return
     const sid = await ensureSession()
     if (!sid) return
     try {
+      const body: Record<string, unknown> = { role, content }
+      if (metadata) body.metadata = metadata
       await fetch(`/api/chats/${sid}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, content }),
+        body: JSON.stringify(body),
       })
     } catch (err) {
       console.error('Failed to save message:', err)
     }
   }, [ensureSession])
 
-  // Save assistant messages when streaming completes
+  // Save assistant messages when streaming completes (including tool call metadata)
   const prevStatusRef = useRef(status)
   useEffect(() => {
     if (prevStatusRef.current === 'streaming' && status === 'ready') {
@@ -628,7 +631,29 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
           .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
           .map(p => p.text)
           .join('\n')
-        if (textContent) saveMessage('assistant', textContent)
+        if (textContent) {
+          // Extract tool call metadata for persistence
+          const toolCalls = lastAssistant.parts
+            .filter(p => p.type !== 'text' && p.type !== 'step-start')
+            .filter(p => {
+              const state = (p as Record<string, unknown>).state as string | undefined
+              return state === 'result' || state === 'output-available' || state === 'output-error'
+            })
+            .map(p => {
+              const part = p as Record<string, unknown>
+              const toolName = (part.toolName as string) || (typeof part.type === 'string' ? part.type.replace('tool-', '') : 'unknown')
+              const input = (part.input || {}) as Record<string, unknown>
+              const output = (part.output || {}) as Record<string, unknown>
+              return {
+                tool: toolName,
+                input: summarizeInput(toolName, input)[0] || TOOL_META[toolName]?.label || toolName,
+                output: summarizeOutput(toolName, output)[0] || 'Done',
+                error: part.state === 'output-error' ? (String(part.errorText || 'Error')) : undefined,
+              }
+            })
+          const metadata = toolCalls.length > 0 ? { toolCalls } : undefined
+          saveMessage('assistant', textContent, metadata)
+        }
       }
     }
     prevStatusRef.current = status

@@ -20,6 +20,7 @@ import {
   Info,
   MessageCircle,
   Star,
+  Wrench,
 } from 'lucide-react'
 import {
   LineChart,
@@ -83,6 +84,13 @@ interface UserQuery {
   sessionTitle: string
 }
 
+interface ToolCallMeta {
+  tool: string
+  input: string
+  output: string
+  error?: string
+}
+
 interface ChatSession {
   id: string
   title: string
@@ -90,7 +98,7 @@ interface ChatSession {
   createdAt: string
   updatedAt: string
   messageCount: number
-  messages: { id: string; role: string; content: string; createdAt: string }[]
+  messages: { id: string; role: string; content: string; metadata?: { toolCalls?: ToolCallMeta[] } | null; createdAt: string }[]
 }
 
 interface FeedbackItem {
@@ -162,6 +170,37 @@ function ChatTypeBadge({ chatType }: { chatType: string }) {
     }`}>
       {chatType === 'outreach' ? 'Outreach' : 'BLITZ'}
     </Badge>
+  )
+}
+
+// ─── Tool Calls Summary (collapsible, shown in admin chat viewer) ──
+function ToolCallsSummary({ toolCalls }: { toolCalls: ToolCallMeta[] }) {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div className="mt-2 pt-2 border-t border-zinc-200/50 dark:border-zinc-700/30">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+      >
+        <Wrench className="h-3 w-3" />
+        <span>{toolCalls.length} tool call{toolCalls.length !== 1 ? 's' : ''}</span>
+        <ChevronDown className={`h-3 w-3 transition-transform ${expanded ? '' : '-rotate-90'}`} />
+      </button>
+      {expanded && (
+        <div className="mt-1.5 space-y-1">
+          {toolCalls.map((tc, i) => (
+            <div key={i} className="rounded-md bg-zinc-100/80 dark:bg-zinc-800/50 px-2.5 py-1.5 text-[11px]">
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-zinc-600 dark:text-zinc-300">{tc.tool}</span>
+                {tc.error && <Badge className="bg-red-100 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-[9px] px-1 py-0">Error</Badge>}
+              </div>
+              <p className="text-zinc-400 dark:text-zinc-500 truncate">{tc.input}</p>
+              <p className="text-zinc-500 dark:text-zinc-400 truncate">{tc.error || tc.output}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -646,7 +685,7 @@ export function AdminView() {
                 <div className="px-4 sm:px-6 py-2 border-b border-zinc-100 dark:border-zinc-800/40 bg-blue-50/50 dark:bg-blue-900/10">
                   <div className="flex items-center gap-1.5">
                     <Info className="h-3 w-3 text-blue-400" />
-                    <span className="text-[11px] text-blue-500 dark:text-blue-400">Tool call details are not stored in chat history</span>
+                    <span className="text-[11px] text-blue-500 dark:text-blue-400">Tool call metadata is stored for new messages only — older messages may not show tool details</span>
                   </div>
                 </div>
 
@@ -672,7 +711,12 @@ export function AdminView() {
                           </span>
                         </div>
                         {msg.role === 'assistant' ? (
-                          <MarkdownContent content={msg.content} />
+                          <>
+                            <MarkdownContent content={msg.content} />
+                            {msg.metadata?.toolCalls && msg.metadata.toolCalls.length > 0 && (
+                              <ToolCallsSummary toolCalls={msg.metadata.toolCalls} />
+                            )}
+                          </>
                         ) : (
                           <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
                         )}

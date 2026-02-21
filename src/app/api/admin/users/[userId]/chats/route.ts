@@ -25,12 +25,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 
     // Get all messages for all sessions
     const sessionIds = (sessions || []).map(s => s.id)
-    let messages: { id: string; session_id: string; role: string; content: string; created_at: string }[] = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let messages: { id: string; session_id: string; role: string; content: string; metadata: any; created_at: string }[] = []
 
     if (sessionIds.length > 0) {
       const { data: msgs, error: msgsError } = await adminClient
         .from('chat_messages')
-        .select('id, session_id, role, content, created_at')
+        .select('id, session_id, role, content, metadata, created_at')
         .in('session_id', sessionIds)
         .order('created_at', { ascending: true })
 
@@ -57,6 +58,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
         id: m.id,
         role: m.role,
         content: m.content,
+        metadata: m.metadata || null,
         createdAt: m.created_at,
       })),
     }))

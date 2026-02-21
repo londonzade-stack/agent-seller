@@ -21,17 +21,20 @@ export async function POST(
   if (!session) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
-  const { role, content } = body
+  const { role, content, metadata } = body
 
   if (!role || !content) {
     return NextResponse.json({ error: 'role and content are required' }, { status: 400 })
   }
 
-  // Save the message
+  // Save the message (metadata is optional — stores tool call summaries for assistant messages)
+  const insertData: Record<string, unknown> = { session_id: sessionId, role, content }
+  if (metadata) insertData.metadata = metadata
+
   const { data: message, error: msgError } = await supabase
     .from('chat_messages')
-    .insert({ session_id: sessionId, role, content })
-    .select('id, role, content, created_at')
+    .insert(insertData)
+    .select('id, role, content, metadata, created_at')
     .single()
 
   if (msgError) return NextResponse.json({ error: msgError.message }, { status: 500 })

@@ -1127,15 +1127,18 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
   }, [sessionId, onSessionCreated])
 
   // Save message helper — creates session on first call if needed
-  const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const saveMessage = useCallback(async (role: 'user' | 'assistant', content: string, metadata?: Record<string, any>) => {
     if (!content.trim()) return
     const sid = await ensureSession()
     if (!sid) return
     try {
+      const body: Record<string, unknown> = { role, content }
+      if (metadata) body.metadata = metadata
       await fetch(`/api/chats/${sid}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, content }),
+        body: JSON.stringify(body),
       })
     } catch (err) {
       console.error('Failed to save message:', err)
@@ -1152,7 +1155,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     }
   }, [initialPrompt, initialMessages.length, sendMessage, saveMessage, isBlitzContext])
 
-  // Save assistant message when streaming completes
+  // Save assistant message when streaming completes (including tool call metadata)
   useEffect(() => {
     if (prevStatusRef.current === 'streaming' && status === 'ready') {
       const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
@@ -1162,7 +1165,28 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
           .map(p => p.text)
           .join('\n')
         if (textContent) {
-          saveMessage('assistant', textContent)
+          // Extract tool call metadata for persistence
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const toolCalls = lastAssistant.parts
+            .filter(p => p.type !== 'text' && p.type !== 'step-start')
+            .filter(p => {
+              const state = (p as Record<string, unknown>).state as string | undefined
+              return state === 'result' || state === 'output-available' || state === 'output-error'
+            })
+            .map(p => {
+              const part = p as Record<string, unknown>
+              const toolName = (part.toolName as string) || (typeof part.type === 'string' ? part.type.replace('tool-', '') : 'unknown')
+              const input = (part.input || {}) as Record<string, unknown>
+              const output = (part.output || {}) as Record<string, unknown>
+              return {
+                tool: toolName,
+                input: summarizeToolInput(toolName, input) || TOOL_META[toolName]?.label || toolName,
+                output: humanizeToolOutput(toolName, output)[0] || 'Done',
+                error: part.state === 'output-error' ? (String(part.errorText || 'Error')) : undefined,
+              }
+            })
+          const metadata = toolCalls.length > 0 ? { toolCalls } : undefined
+          saveMessage('assistant', textContent, metadata)
         }
       }
     }
