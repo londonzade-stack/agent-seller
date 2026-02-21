@@ -417,8 +417,9 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   )
 }
 
-// ─── Grouped Tool Calls — compact single-box with checklist ──────────
+// ─── Grouped Tool Calls — ultra-compact: 1 active line, collapsed when done ──
 function ToolCallGroup({ parts }: { parts: Record<string, unknown>[] }) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
 
   // Parse all tool info upfront
@@ -444,102 +445,109 @@ function ToolCallGroup({ parts }: { parts: Record<string, unknown>[] }) {
   const runningTool = tools.find(t => t.isRunning)
   const allDone = tools.every(t => t.isDone || t.isError)
 
+  // While running: show header + just the current tool
+  // When done: show collapsed "X tools completed" — click to expand full list
   return (
-    <div className={`my-2 rounded-lg border overflow-hidden transition-colors max-w-full ${
+    <div className={`my-1.5 rounded-lg border overflow-hidden transition-colors max-w-full ${
       runningTool
-        ? 'border-amber-300 dark:border-amber-700/40 bg-amber-50/60 dark:bg-amber-950/20'
+        ? 'border-amber-300/60 dark:border-amber-700/30 bg-amber-50/40 dark:bg-amber-950/15'
         : errorCount > 0
-          ? 'border-red-300 dark:border-red-500/30 bg-red-50/30 dark:bg-red-900/10'
-          : 'border-amber-200/60 dark:border-amber-800/30 bg-amber-50/40 dark:bg-amber-950/15'
+          ? 'border-red-200/60 dark:border-red-500/20 bg-red-50/20 dark:bg-red-900/10'
+          : 'border-amber-200/40 dark:border-amber-800/20 bg-amber-50/30 dark:bg-amber-950/10'
     }`}>
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 text-xs">
+      {/* Single-line header — always visible */}
+      <button
+        onClick={() => allDone ? setIsExpanded(!isExpanded) : undefined}
+        className={`w-full flex items-center gap-2 px-3 py-2 text-xs ${allDone ? 'cursor-pointer hover:bg-amber-50/40 dark:hover:bg-amber-950/20' : 'cursor-default'}`}
+      >
         {runningTool ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
-        ) : allDone ? (
+        ) : allDone && errorCount === 0 ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+        ) : allDone && errorCount > 0 ? (
+          <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
         ) : (
           <Wrench className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
         )}
-        <span className="font-medium text-amber-900 dark:text-amber-200">
-          {runningTool
-            ? runningTool.meta.label + '...'
-            : allDone
-              ? `${completedCount} tool${completedCount !== 1 ? 's' : ''} completed${errorCount > 0 ? `, ${errorCount} failed` : ''}`
-              : `Running tools...`
+
+        <span className="font-medium text-amber-900 dark:text-amber-200 truncate">
+          {allDone
+            ? `${completedCount} tool${completedCount !== 1 ? 's' : ''} completed${errorCount > 0 ? ` · ${errorCount} failed` : ''}`
+            : runningTool
+              ? runningTool.meta.label + (runningTool.inputSummary ? ` — ${runningTool.inputSummary}` : '')
+              : 'Running tools…'
           }
         </span>
+
+        {/* Progress counter while running */}
         {runningTool && (
-          <span className="text-[10px] text-amber-600 dark:text-amber-400 animate-pulse">
-            {completedCount}/{tools.length}
+          <span className="ml-auto text-[10px] tabular-nums text-amber-600/70 dark:text-amber-400/60 shrink-0">
+            {completedCount + 1}/{tools.length}
           </span>
         )}
-      </div>
 
-      {/* Compact checklist */}
-      <div className="border-t border-amber-200/40 dark:border-amber-800/20 px-3 py-1.5 space-y-0.5">
-        {tools.map((tool, i) => {
-          const Icon = tool.meta.icon
-          const isExpanded = expandedIndex === i
-          return (
-            <div key={i}>
-              <button
-                onClick={() => setExpandedIndex(isExpanded ? null : i)}
-                className="w-full flex items-center gap-2 py-1 text-xs hover:bg-amber-50/40 dark:hover:bg-amber-950/20 rounded transition-colors"
-              >
-                {tool.isRunning && <Loader2 className="h-3 w-3 animate-spin text-amber-500 dark:text-amber-400 shrink-0" />}
-                {tool.isDone && <CheckCircle2 className="h-3 w-3 text-amber-500 dark:text-amber-400 shrink-0" />}
-                {tool.isError && <XCircle className="h-3 w-3 text-red-500 shrink-0" />}
-                {!tool.isRunning && !tool.isDone && !tool.isError && <Circle className="h-3 w-3 text-amber-300 dark:text-amber-700 shrink-0" />}
-                <Icon className="h-3 w-3 text-amber-700/40 dark:text-amber-500/40 shrink-0" />
-                <span className={`truncate ${
-                  tool.isDone
-                    ? 'text-amber-700/60 dark:text-amber-400/50'
-                    : tool.isRunning
-                      ? 'text-amber-900 dark:text-amber-200 font-medium'
-                      : tool.isError
-                        ? 'text-red-500/80 dark:text-red-400/70'
-                        : 'text-amber-700/40 dark:text-amber-500/30'
-                }`}>
-                  {tool.meta.label}
-                </span>
-                {tool.inputSummary && (
-                  <span className="text-amber-600/30 dark:text-amber-500/25 truncate max-w-[100px] sm:max-w-[180px]">— {tool.inputSummary}</span>
+        {/* Expand chevron when done */}
+        {allDone && (
+          <ChevronRight className={`h-3 w-3 ml-auto text-amber-400/60 dark:text-amber-600/50 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+        )}
+      </button>
+
+      {/* Expanded detail list — only shown when user clicks after completion */}
+      {isExpanded && allDone && (
+        <div className="border-t border-amber-200/30 dark:border-amber-800/15 px-3 py-1.5 space-y-0.5">
+          {tools.map((tool, i) => {
+            const Icon = tool.meta.icon
+            const isDetailExpanded = expandedIndex === i
+            return (
+              <div key={i}>
+                <button
+                  onClick={() => setExpandedIndex(isDetailExpanded ? null : i)}
+                  className="w-full flex items-center gap-2 py-1 text-xs hover:bg-amber-50/40 dark:hover:bg-amber-950/20 rounded transition-colors"
+                >
+                  {tool.isDone && <CheckCircle2 className="h-3 w-3 text-amber-500 dark:text-amber-400 shrink-0" />}
+                  {tool.isError && <XCircle className="h-3 w-3 text-red-500 shrink-0" />}
+                  <Icon className="h-3 w-3 text-amber-700/40 dark:text-amber-500/40 shrink-0" />
+                  <span className="truncate text-amber-700/70 dark:text-amber-400/60">
+                    {tool.meta.label}
+                  </span>
+                  {tool.inputSummary && (
+                    <span className="text-amber-600/30 dark:text-amber-500/25 truncate max-w-[100px] sm:max-w-[180px]">— {tool.inputSummary}</span>
+                  )}
+                  <ChevronRight className={`h-2.5 w-2.5 ml-auto text-amber-400/50 dark:text-amber-600/50 transition-transform shrink-0 ${isDetailExpanded ? 'rotate-90' : ''}`} />
+                </button>
+
+                {isDetailExpanded && (
+                  <div className="ml-5 mb-1 px-2 py-1.5 rounded bg-amber-50/30 dark:bg-amber-950/10 border border-amber-200/30 dark:border-amber-800/15 space-y-1.5">
+                    {tool.input && Object.keys(tool.input).length > 0 && (
+                      <div>
+                        <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Input</div>
+                        <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
+                          {humanizeToolInput(tool.toolName, tool.input).map((line, j) => (
+                            <div key={j} className="break-words">{line}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {tool.isDone && tool.output && (
+                      <div>
+                        <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Result</div>
+                        <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
+                          {humanizeToolOutput(tool.toolName, tool.output).map((line, j) => (
+                            <div key={j} className="break-words">{line}</div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {tool.isError && tool.errorText && (
+                      <div className="text-[11px] text-red-500">{tool.errorText}</div>
+                    )}
+                  </div>
                 )}
-                <ChevronRight className={`h-2.5 w-2.5 ml-auto text-amber-400/50 dark:text-amber-600/50 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
-              </button>
-
-              {isExpanded && (
-                <div className="ml-5 mb-1 px-2 py-1.5 rounded bg-amber-50/30 dark:bg-amber-950/10 border border-amber-200/30 dark:border-amber-800/15 space-y-1.5">
-                  {tool.input && Object.keys(tool.input).length > 0 && (
-                    <div>
-                      <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Input</div>
-                      <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
-                        {humanizeToolInput(tool.toolName, tool.input).map((line, j) => (
-                          <div key={j} className="break-words">{line}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {tool.isDone && tool.output && (
-                    <div>
-                      <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Result</div>
-                      <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
-                        {humanizeToolOutput(tool.toolName, tool.output).map((line, j) => (
-                          <div key={j} className="break-words">{line}</div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {tool.isError && tool.errorText && (
-                    <div className="text-[11px] text-red-500">{tool.errorText}</div>
-                  )}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
