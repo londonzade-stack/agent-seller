@@ -217,9 +217,10 @@ export function AdminView() {
 
   useEffect(() => { fetchAll() }, [])
 
-  // Fetch feedback (lazy — only when tab is clicked)
-  const fetchFeedback = async () => {
-    if (feedbackLoaded) return
+  // Fetch feedback (lazy — only when tab is clicked, force=true to bypass cache)
+  const fetchFeedback = async (force = false) => {
+    if (feedbackLoaded && !force) return
+    setFeedbackLoaded(false)
     try {
       const res = await fetch('/api/admin/feedback')
       if (!res.ok) throw new Error('Failed')
@@ -707,7 +708,7 @@ export function AdminView() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => { setFeedbackLoaded(false); fetchFeedback() }}
+                    onClick={() => fetchFeedback(true)}
                     className="h-7 text-xs border-zinc-200 dark:border-zinc-700"
                   >
                     <RefreshCw className="h-3 w-3 mr-1" />

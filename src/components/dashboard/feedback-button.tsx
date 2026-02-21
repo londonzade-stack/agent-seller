@@ -10,6 +10,7 @@ export function FeedbackButton() {
   const [hoveredStar, setHoveredStar] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const modalRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -39,12 +40,14 @@ export function FeedbackButton() {
     setRating(null)
     setHoveredStar(null)
     setSuccess(false)
+    setErrorMsg(null)
   }
 
   const handleSubmit = async () => {
     if (!message.trim() || submitting) return
 
     setSubmitting(true)
+    setErrorMsg(null)
     try {
       const res = await fetch('/api/feedback', {
         method: 'POST',
@@ -61,9 +64,11 @@ export function FeedbackButton() {
         setTimeout(() => {
           handleClose()
         }, 2200)
+      } else {
+        setErrorMsg('Failed to send. Please try again.')
       }
     } catch {
-      // Silently fail — user can retry
+      setErrorMsg('Network error. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -138,6 +143,13 @@ export function FeedbackButton() {
                   </button>
                 ))}
               </div>
+
+              {/* Error message */}
+              {errorMsg && (
+                <div className="px-4 pb-2">
+                  <p className="text-xs text-red-500 dark:text-red-400">{errorMsg}</p>
+                </div>
+              )}
 
               {/* Submit */}
               <div className="px-4 pb-4">
