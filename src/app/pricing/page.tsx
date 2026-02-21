@@ -127,7 +127,7 @@ export default async function PricingPage() {
                   </Button>
                 </Link>
                 <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
-                  14-day free trial. No credit card required.
+                  14-day free trial.
                 </p>
               </Card>
             </ScrollReveal>
@@ -172,7 +172,7 @@ export default async function PricingPage() {
                   </Button>
                 </Link>
                 <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
-                  14-day free trial. No credit card required.
+                  14-day free trial.
                 </p>
               </Card>
             </ScrollReveal>

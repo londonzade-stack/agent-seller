@@ -503,7 +503,7 @@ export default async function Home() {
               )}
             </div>
             {!isLoggedIn && (
-              <p className="text-zinc-400 dark:text-zinc-600 text-sm mt-6">No credit card required. 14-day free trial.</p>
+              <p className="text-zinc-400 dark:text-zinc-600 text-sm mt-6">14-day free trial.</p>
             )}
           </div>
         </ScrollReveal>
