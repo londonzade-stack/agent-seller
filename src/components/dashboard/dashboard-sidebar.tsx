@@ -21,7 +21,6 @@ import {
   X,
   Lock,
   MessageSquare,
-  ArrowLeft,
   Plus,
   Trash2,
   ChevronDown,
@@ -125,9 +124,12 @@ export function DashboardSidebar({
   }
 
   const handleNavClick = (view: DashboardView) => {
-    // Keep nav panel visible when clicking nav items (new chat starts fresh)
-    // Only show chats panel when user explicitly opens an existing chat
-    setForceNav(true)
+    // When clicking BLITZ or Outreach, go straight to chat view with chats sidebar
+    if (view === 'agent' || view === 'outreach') {
+      setForceNav(false)
+    } else {
+      setForceNav(true)
+    }
     onViewChange(view)
     onMobileClose?.()
   }
@@ -219,15 +221,20 @@ export function DashboardSidebar({
   // ─── Chats Panel (shown when on agent view) ────────────────────────
   const chatsPanel = (
     <>
-      {/* Header with back arrow */}
+      {/* Header with nav toggle */}
       <div className="p-4 border-b border-stone-200 dark:border-zinc-800 flex items-center justify-between">
-        <button
-          onClick={() => setForceNav(true)}
-          className="flex items-center gap-1.5 text-sm font-medium text-stone-600 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setForceNav(true)}
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+            title="Menu"
+          >
+            <Settings className="h-4 w-4" />
+          </button>
+          <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">
+            {activeView === 'outreach' ? 'Outreach' : 'BLITZ'}
+          </span>
+        </div>
         <div className="flex items-center gap-1">
           <ThemeToggle />
           {onMobileClose && (
@@ -366,15 +373,6 @@ export function DashboardSidebar({
             )}
           </div>
         </div>
-        {(activeView === 'agent' || activeView === 'outreach') && (
-          <button
-            onClick={() => setForceNav(false)}
-            className="flex items-center gap-1.5 text-sm font-medium text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors mt-3"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to chats
-          </button>
-        )}
       </div>
 
       <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
