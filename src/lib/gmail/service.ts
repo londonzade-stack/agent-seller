@@ -423,9 +423,10 @@ export async function sendEmail(
     bcc?: string
     replyToMessageId?: string
     threadId?: string
-  }
+  },
+  adminClient?: SupabaseClient
 ) {
-  const gmail = await getAuthenticatedGmailClient(userId)
+  const gmail = await getAuthenticatedGmailClient(userId, adminClient)
 
   // Get user's email for the "From" field
   const profile = await gmail.users.getProfile({ userId: 'me' })

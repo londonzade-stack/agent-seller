@@ -40,6 +40,7 @@ import {
   EyeOff,
   Zap,
   Circle,
+  Clock,
 } from 'lucide-react'
 
 interface CustomWelcome {
@@ -104,6 +105,7 @@ const TOOL_META: Record<string, { label: string; icon: typeof Search }> = {
   findUnsubscribableEmails: { label: 'Scanning for unsubscribe options', icon: Mail },
   unsubscribeFromEmail: { label: 'Unsubscribing', icon: Mail },
   bulkUnsubscribe: { label: 'Bulk unsubscribing', icon: Mail },
+  scheduleEmail: { label: 'Scheduling email', icon: Clock },
   createRecurringTask: { label: 'Creating automation', icon: RotateCcw },
   webSearch: { label: 'Searching the web', icon: Search },
   findCompanies: { label: 'Finding companies', icon: Users },
@@ -713,6 +715,11 @@ function humanizeToolInput(toolName: string, input: Record<string, unknown>): st
       if (input.to) lines.push(`To: ${input.to}`)
       if (input.subject) lines.push(`Subject: ${String(input.subject).slice(0, 60)}`)
       break
+    case 'scheduleEmail':
+      if (input.to) lines.push(`To: ${input.to}`)
+      if (input.subject) lines.push(`Subject: ${String(input.subject).slice(0, 60)}`)
+      if (input.scheduledAt) lines.push(`Scheduled for: ${new Date(String(input.scheduledAt)).toLocaleString()}`)
+      break
     case 'sendDraft':
       lines.push('Sending an existing draft email')
       break
@@ -836,6 +843,9 @@ function humanizeToolOutput(toolName: string, output: Record<string, unknown>): 
       break
     case 'draftEmail':
       lines.push(output.message ? String(output.message) : 'Draft created')
+      break
+    case 'scheduleEmail':
+      lines.push(output.message ? String(output.message) : 'Email scheduled')
       break
     case 'sendDraft':
       lines.push('Draft sent successfully')

@@ -190,18 +190,19 @@ export async function getEmailThread(userId: string, threadId: string) {
   return gmailGetThread(userId, threadId)
 }
 
-// sendEmail
+// sendEmail (adminClient optional — pass from cron/server contexts without cookies)
 export async function sendEmail(
   userId: string,
-  options: { to: string; subject: string; body: string; cc?: string; bcc?: string; threadId?: string }
+  options: { to: string; subject: string; body: string; cc?: string; bcc?: string; threadId?: string },
+  adminClient?: SupabaseClient
 ) {
-  const provider = await getConnectedProvider(userId)
+  const provider = await getConnectedProvider(userId, adminClient)
   if (!provider) throw new Error('No email connection found for user')
 
   if (provider.provider === 'outlook') {
-    return sendOutlookEmail(userId, options)
+    return sendOutlookEmail(userId, options, adminClient)
   }
-  return gmailSend(userId, options)
+  return gmailSend(userId, options, adminClient)
 }
 
 // createDraft

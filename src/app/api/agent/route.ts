@@ -100,10 +100,11 @@ NEVER search with maxResults: 100 and then loop. Always search with 500 for bulk
 These actions affect the user's real email and CANNOT be undone easily. You MUST ask for explicit confirmation using the APPROVAL CARD format before executing:
 
 1. **Sending email** (sendEmail, sendDraft)
-2. **Archiving email** (archiveEmails)
-3. **Trashing/deleting email** (trashEmails)
-4. **Drafting email** (draftEmail) — show what you'll draft
-5. **Unsubscribing** (unsubscribeFromEmail, bulkUnsubscribe)
+2. **Scheduling email** (scheduleEmail) — show email details + scheduled time
+3. **Archiving email** (archiveEmails)
+4. **Trashing/deleting email** (trashEmails)
+5. **Drafting email** (draftEmail) — show what you'll draft
+6. **Unsubscribing** (unsubscribeFromEmail, bulkUnsubscribe)
 
 ### HOW TO ASK FOR APPROVAL
 
@@ -162,7 +163,7 @@ details: 7 senders, Legacybox, Belk, Chegg, and more
 5. *calls bulkUnsubscribe with confirmed=true* — "Unsubscribed from 7 senders."
 
 BAD: Immediately calling unsubscribeFromEmail/bulkUnsubscribe without the approval card.
-BAD: Immediately calling archiveEmails/trashEmails/sendEmail without the approval card.
+BAD: Immediately calling archiveEmails/trashEmails/sendEmail/scheduleEmail without the approval card.
 BAD: Asking in plain text "Should I do this?" — always use the [APPROVAL_REQUIRED] format so the UI can render buttons.
 
 Everything else — reading, searching, starring, labeling, analyzing, marking read/unread — do WITHOUT asking.
@@ -212,8 +213,15 @@ Common useful operators:
 - When drafting replies, read the original thread first so you write something contextually relevant.
 - Match the tone of the original email in your drafts (formal → formal, casual → casual).
 
+## SCHEDULED EMAILS
+When the user wants to send an email at a specific time, use the scheduleEmail tool.
+- "Send this email tomorrow at 9am" → scheduleEmail with scheduledAt set to tomorrow 9:00 AM UTC
+- "Schedule this for Monday morning" → scheduleEmail with scheduledAt set to next Monday 9:00 AM UTC
+- Always confirm the scheduled time with the user and show the email details in the approval card.
+- The email will be sent automatically by our system at the scheduled time.
+
 ## RECURRING TASKS / AUTOMATIONS
-When the user wants something automated, scheduled, or recurring, use the createRecurringTask tool.
+When the user wants something automated, scheduled, or recurring (not a one-time scheduled send), use the createRecurringTask tool.
 - "Archive old promos every week" → taskType: 'archive_by_query', frequency: 'weekly', taskConfig: { query: 'category:promotions older_than:30d' }
 - "Give me inbox stats every morning" → taskType: 'inbox_stats', frequency: 'daily', taskConfig: { timeframe: 'week' }
 - "Trash LinkedIn emails every month" → taskType: 'trash_by_query', frequency: 'monthly', taskConfig: { query: 'from:linkedin older_than:60d' }
@@ -389,6 +397,70 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
         } catch (error) {
           sanitizeError('Draft error', error)
           return { success: false, error: 'Failed to save draft.', draft: { to, subject, body } }
+        }
+      },
+    }),
+
+    scheduleEmail: tool({
+      description: 'Schedule an email to be sent at a specific future time. IMPORTANT: You MUST show the user the email details and scheduled time, and get their approval FIRST using the [APPROVAL_REQUIRED] block, then call this tool with confirmed=true only after the user approves. If confirmed is false or missing, the tool will refuse to schedule.',
+      inputSchema: z.object({
+        to: z.string().describe('Recipient email address(es), comma-separated for multiple'),
+        subject: z.string().describe('Email subject'),
+        body: z.string().describe('Email body text'),
+        cc: z.string().optional().describe('CC recipients'),
+        bcc: z.string().optional().describe('BCC recipients'),
+        scheduledAt: z.string().describe('ISO 8601 datetime string for when to send the email (must be in the future). Example: "2025-03-15T09:00:00Z"'),
+        threadId: z.string().optional().describe('Thread ID if replying to an existing thread'),
+        confirmed: z.boolean().describe('MUST be true — set this only AFTER the user has approved scheduling via the approval card. If false, the email will NOT be scheduled.'),
+      }),
+      execute: async ({ to, subject, body, cc, bcc, scheduledAt, threadId, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before scheduling. Show the email details and scheduled time to the user and wait for them to click Approve, then call scheduleEmail again with confirmed=true.' }
+        }
+        if (!isEmailConnected || !userId) {
+          return { success: false, message: 'Please connect your email first (Gmail or Outlook).', requiresConnection: true }
+        }
+        try {
+          const sendAt = new Date(scheduledAt)
+          if (isNaN(sendAt.getTime())) {
+            return { success: false, error: 'Invalid date format. Please use ISO 8601 format (e.g., "2025-03-15T09:00:00Z").' }
+          }
+          if (sendAt <= new Date()) {
+            return { success: false, error: 'Scheduled time must be in the future. Please choose a future date and time.' }
+          }
+
+          const supabase = await createClient()
+          const { data, error } = await supabase
+            .from('scheduled_emails')
+            .insert({
+              user_id: userId,
+              recipient_to: to,
+              recipient_cc: cc || null,
+              recipient_bcc: bcc || null,
+              subject,
+              body,
+              thread_id: threadId || null,
+              scheduled_at: sendAt.toISOString(),
+            })
+            .select()
+            .single()
+
+          if (error) throw error
+
+          return {
+            success: true,
+            message: `Email scheduled successfully! It will be sent at ${sendAt.toLocaleString('en-US', { timeZone: 'UTC' })} UTC.`,
+            scheduledEmail: {
+              id: data.id,
+              to,
+              subject,
+              scheduledAt: data.scheduled_at,
+              status: data.status,
+            },
+          }
+        } catch (error) {
+          sanitizeError('Schedule email error', error)
+          return { success: false, error: 'Failed to schedule email.' }
         }
       },
     }),

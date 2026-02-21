@@ -24,7 +24,7 @@ import {
   Plus,
   Trash2,
   ChevronDown,
-  Settings,
+  PanelLeft,
   Repeat2,
   Globe,
   Newspaper,
@@ -113,7 +113,7 @@ export function DashboardSidebar({
   const [loadingChats, setLoadingChats] = useState(false)
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
-  // Manual override: user clicked "Back" or "Settings" to force nav panel while on agent view
+  // Manual override: user clicked sidebar toggle to force nav panel while on agent view
   // Default to nav panel (true) unless user has an active chat open
   const [forceNav, setForceNav] = useState(!activeChatId && !activeOutreachChatId)
 
@@ -229,7 +229,7 @@ export function DashboardSidebar({
             className="h-8 w-8 flex items-center justify-center rounded-lg text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
             title="Menu"
           >
-            <Settings className="h-4 w-4" />
+            <PanelLeft className="h-4 w-4" />
           </button>
           <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">
             {activeView === 'outreach' ? 'Outreach' : 'BLITZ'}
@@ -353,7 +353,7 @@ export function DashboardSidebar({
     </>
   )
 
-  // ─── Nav Panel (shown when NOT on agent view, or user clicked Settings) ──
+  // ─── Nav Panel (shown when NOT on agent view, or user clicked sidebar toggle) ──
   const navPanel = (
     <>
       <div className="p-4 border-b border-stone-200 dark:border-zinc-800">

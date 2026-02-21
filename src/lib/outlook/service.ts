@@ -345,9 +345,10 @@ export async function sendOutlookEmail(
     bcc?: string
     replyToMessageId?: string
     threadId?: string
-  }
+  },
+  adminClient?: SupabaseClient
 ) {
-  const token = await getOutlookAccessToken(userId)
+  const token = await getOutlookAccessToken(userId, adminClient)
 
   const toRecipients = options.to.split(',').map(e => ({
     emailAddress: { address: e.trim() },

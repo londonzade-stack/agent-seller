@@ -21,8 +21,25 @@ import {
   Shield,
   Lock,
   ArrowRight,
+  Send,
+  CalendarClock,
 } from 'lucide-react'
 import { formatSchedule, TASK_TYPE_LABELS } from '@/lib/recurring-tasks'
+
+interface ScheduledEmail {
+  id: string
+  recipient_to: string
+  recipient_cc: string | null
+  recipient_bcc: string | null
+  subject: string
+  body: string
+  thread_id: string | null
+  scheduled_at: string
+  status: string
+  error_message: string | null
+  sent_at: string | null
+  created_at: string
+}
 
 interface RecurringTask {
   id: string
@@ -153,19 +170,29 @@ const EXAMPLE_AUTOMATIONS = [
 
 export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateToAgent, userPlan, onNavigateToBilling }: AutomationsViewProps) {
   const [tasks, setTasks] = useState<RecurringTask[]>([])
+  const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmail[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [cancelingEmailId, setCancelingEmailId] = useState<string | null>(null)
+  const [confirmCancelEmailId, setConfirmCancelEmailId] = useState<string | null>(null)
 
   const fetchTasks = useCallback(async () => {
     try {
       setError(null)
-      const res = await fetch('/api/recurring-tasks')
-      if (!res.ok) throw new Error('Failed to load tasks')
-      const data = await res.json()
-      setTasks(data.tasks || [])
+      const [tasksRes, emailsRes] = await Promise.all([
+        fetch('/api/recurring-tasks'),
+        fetch('/api/scheduled-emails'),
+      ])
+      if (!tasksRes.ok) throw new Error('Failed to load tasks')
+      const tasksData = await tasksRes.json()
+      setTasks(tasksData.tasks || [])
+      if (emailsRes.ok) {
+        const emailsData = await emailsRes.json()
+        setScheduledEmails(emailsData.emails || [])
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load tasks')
     } finally {
@@ -192,6 +219,21 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
       // Silently fail
     } finally {
       setTogglingId(null)
+    }
+  }
+
+  const handleCancelEmail = async (emailId: string) => {
+    setCancelingEmailId(emailId)
+    try {
+      const res = await fetch(`/api/scheduled-emails/${emailId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setScheduledEmails(prev => prev.filter(e => e.id !== emailId))
+      }
+    } catch {
+      // Silently fail
+    } finally {
+      setCancelingEmailId(null)
+      setConfirmCancelEmailId(null)
     }
   }
 
@@ -285,6 +327,129 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* Scheduled Emails Section */}
+        {scheduledEmails.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <CalendarClock className="h-4 w-4 text-blue-500" />
+              <h2 className="text-sm font-semibold text-stone-700 dark:text-zinc-300 uppercase tracking-wider">
+                Scheduled Emails
+              </h2>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400">
+                {scheduledEmails.length}
+              </Badge>
+            </div>
+            <div className="space-y-2">
+              {scheduledEmails.map(email => (
+                <Card
+                  key={email.id}
+                  className={`p-3 sm:p-4 transition-colors border-stone-200 dark:border-zinc-800 ${
+                    email.status === 'scheduled'
+                      ? 'bg-white dark:bg-zinc-900'
+                      : email.status === 'sent'
+                        ? 'bg-green-50/50 dark:bg-green-950/10 opacity-70'
+                        : email.status === 'failed'
+                          ? 'bg-red-50/50 dark:bg-red-950/10'
+                          : 'bg-stone-50 dark:bg-zinc-900/50 opacity-60'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Send className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                        <p className="text-sm font-medium text-stone-900 dark:text-white truncate">
+                          {email.subject}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 shrink-0 ${
+                            email.status === 'scheduled'
+                              ? 'border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400'
+                              : email.status === 'sending'
+                                ? 'border-amber-300 dark:border-amber-800 text-amber-600 dark:text-amber-400'
+                                : email.status === 'sent'
+                                  ? 'border-green-300 dark:border-green-800 text-green-600 dark:text-green-400'
+                                  : email.status === 'failed'
+                                    ? 'border-red-300 dark:border-red-800 text-red-600 dark:text-red-400'
+                                    : 'border-stone-300 dark:border-zinc-700 text-stone-400 dark:text-zinc-500'
+                          }`}
+                        >
+                          {email.status === 'scheduled' ? 'Queued' : email.status.charAt(0).toUpperCase() + email.status.slice(1)}
+                        </Badge>
+                      </div>
+
+                      <p className="text-xs text-stone-500 dark:text-zinc-500 truncate">
+                        To: {email.recipient_to}
+                        {email.recipient_cc && ` · CC: ${email.recipient_cc}`}
+                      </p>
+
+                      <div className="flex items-center gap-2 mt-1.5 text-xs text-stone-400 dark:text-zinc-500">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        <span>
+                          {email.status === 'sent' && email.sent_at
+                            ? `Sent ${formatTimeAgo(email.sent_at)}`
+                            : email.status === 'scheduled'
+                              ? `Sends ${formatNextRun(email.scheduled_at)} · ${new Date(email.scheduled_at).toLocaleString()}`
+                              : email.status === 'failed'
+                                ? `Failed${email.error_message ? `: ${email.error_message}` : ''}`
+                                : `Scheduled for ${new Date(email.scheduled_at).toLocaleString()}`
+                          }
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Cancel button — only for scheduled emails */}
+                    {email.status === 'scheduled' && (
+                      <div className="shrink-0">
+                        {confirmCancelEmailId === email.id ? (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-7 px-1.5 sm:px-2 text-xs"
+                              disabled={cancelingEmailId === email.id}
+                              onClick={() => handleCancelEmail(email.id)}
+                            >
+                              {cancelingEmailId === email.id ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Cancel'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => setConfirmCancelEmailId(null)}
+                            >
+                              Keep
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-stone-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
+                            onClick={() => setConfirmCancelEmailId(email.id)}
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recurring Automations Section Header */}
+        {scheduledEmails.length > 0 && (
+          <div className="flex items-center gap-2 mb-3">
+            <Repeat2 className="h-4 w-4 text-amber-500" />
+            <h2 className="text-sm font-semibold text-stone-700 dark:text-zinc-300 uppercase tracking-wider">
+              Recurring Automations
+            </h2>
+          </div>
+        )}
 
         {tasks.length === 0 ? (
           /* Empty state with example ideas */
