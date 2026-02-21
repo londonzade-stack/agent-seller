@@ -955,7 +955,7 @@ export async function getDrafts(userId: string, maxResults: number = 20) {
         messageId: fullDraft.data.message?.id,
         to: headers.to,
         subject: headers.subject,
-        body: body.slice(0, 500),
+        body,
         snippet: fullDraft.data.message?.snippet,
       }
     })

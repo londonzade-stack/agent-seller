@@ -448,7 +448,7 @@ export async function getOutlookDrafts(userId: string, maxResults: number = 20) 
     messageId: msg.id,
     to: msg.toRecipients ? formatRecipients(msg.toRecipients) : '',
     subject: msg.subject || '(No subject)',
-    body: msg.body?.contentType === 'html' ? stripHtml(msg.body.content).slice(0, 500) : (msg.body?.content || '').slice(0, 500),
+    body: msg.body?.contentType === 'html' ? stripHtml(msg.body.content) : (msg.body?.content || ''),
     snippet: msg.bodyPreview || '',
   }))
 }
