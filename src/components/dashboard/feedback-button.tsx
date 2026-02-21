@@ -75,7 +75,7 @@ export function FeedbackButton() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-40" ref={modalRef}>
+    <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40" ref={modalRef}>
       {/* Modal */}
       {isOpen && (
         <div className="absolute bottom-14 right-0 w-80 rounded-xl border border-zinc-200/60 dark:border-white/[0.1] bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
