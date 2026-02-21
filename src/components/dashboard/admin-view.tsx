@@ -19,6 +19,7 @@ import {
   BarChart3,
   Info,
   MessageCircle,
+  Star,
 } from 'lucide-react'
 import {
   LineChart,
@@ -92,6 +93,16 @@ interface ChatSession {
   messages: { id: string; role: string; content: string; createdAt: string }[]
 }
 
+interface FeedbackItem {
+  id: string
+  user_id: string
+  message: string
+  rating: number | null
+  page: string | null
+  created_at: string
+  userEmail: string
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -163,10 +174,14 @@ export function AdminView() {
   const [error, setError] = useState<string | null>(null)
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'overview' | 'chats'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'chats' | 'feedback'>('overview')
 
   // Overview: Users table search
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Feedback tab state
+  const [feedback, setFeedback] = useState<FeedbackItem[]>([])
+  const [feedbackLoaded, setFeedbackLoaded] = useState(false)
 
   // Chats tab state
   const [chatUsers, setChatUsers] = useState<{ userId: string; email: string; sessions: ChatSession[] }[]>([])
@@ -201,6 +216,21 @@ export function AdminView() {
   }
 
   useEffect(() => { fetchAll() }, [])
+
+  // Fetch feedback (lazy — only when tab is clicked)
+  const fetchFeedback = async () => {
+    if (feedbackLoaded) return
+    try {
+      const res = await fetch('/api/admin/feedback')
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      setFeedback(data.feedback || [])
+    } catch {
+      setFeedback([])
+    } finally {
+      setFeedbackLoaded(true)
+    }
+  }
 
   // Scroll to bottom when selected session changes
   useEffect(() => {
@@ -309,10 +339,14 @@ export function AdminView() {
           {([
             { id: 'overview' as const, label: 'Overview', icon: BarChart3 },
             { id: 'chats' as const, label: 'Chats', icon: MessageCircle },
+            { id: 'feedback' as const, label: 'Feedback', icon: Star },
           ]).map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id)
+                if (tab.id === 'feedback') fetchFeedback()
+              }}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
@@ -321,6 +355,11 @@ export function AdminView() {
             >
               <tab.icon className="h-3.5 w-3.5" />
               {tab.label}
+              {tab.id === 'feedback' && feedbackLoaded && feedback.length > 0 && (
+                <Badge className="bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] px-1.5 py-0 ml-1">
+                  {feedback.length}
+                </Badge>
+              )}
             </button>
           ))}
         </div>
@@ -495,7 +534,7 @@ export function AdminView() {
             </Card>
           </div>
         </div>
-      ) : (
+      ) : activeTab === 'chats' ? (
         /* ═══════════════════════════════════════════════════════════
            CHATS TAB — Two-panel layout
            ═══════════════════════════════════════════════════════════ */
@@ -654,7 +693,95 @@ export function AdminView() {
             )}
           </div>
         </div>
-      )}
+      ) : activeTab === 'feedback' ? (
+        /* ═══════════════════════════════════════════════════════════
+           FEEDBACK TAB
+           ═══════════════════════════════════════════════════════════ */
+        <div className="flex-1 overflow-auto p-4 sm:p-6">
+          <div className="max-w-5xl mx-auto">
+            <Card className="p-0 bg-white dark:bg-black border-zinc-200 dark:border-white/10 overflow-hidden">
+              <div className="p-4 border-b border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
+                <h3 className="font-medium text-sm">User Feedback</h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-zinc-400">{feedback.length} entries</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setFeedbackLoaded(false); fetchFeedback() }}
+                    className="h-7 text-xs border-zinc-200 dark:border-zinc-700"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Refresh
+                  </Button>
+                </div>
+              </div>
+
+              {!feedbackLoaded ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+                </div>
+              ) : feedback.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Star className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-3" />
+                  <p className="text-sm text-zinc-400">No feedback submitted yet</p>
+                </div>
+              ) : (
+                <div className="overflow-auto max-h-[calc(100vh-280px)]">
+                  <table className="w-full text-xs">
+                    <thead className="bg-zinc-50 dark:bg-zinc-900/50 sticky top-0">
+                      <tr>
+                        <th className="text-left px-4 py-2.5 font-medium text-zinc-500 dark:text-zinc-400">User</th>
+                        <th className="text-left px-3 py-2.5 font-medium text-zinc-500 dark:text-zinc-400">Feedback</th>
+                        <th className="text-center px-3 py-2.5 font-medium text-zinc-500 dark:text-zinc-400">Rating</th>
+                        <th className="text-left px-3 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 hidden md:table-cell">Page</th>
+                        <th className="text-right px-4 py-2.5 font-medium text-zinc-500 dark:text-zinc-400">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {feedback.map((f) => (
+                        <tr key={f.id} className="border-b border-zinc-100 dark:border-zinc-800/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
+                          <td className="px-4 py-3 align-top">
+                            <span className="font-medium text-xs truncate block max-w-[160px]">{f.userEmail}</span>
+                          </td>
+                          <td className="px-3 py-3 align-top max-w-[400px]">
+                            <p className="text-xs whitespace-pre-wrap break-words leading-relaxed">{f.message}</p>
+                          </td>
+                          <td className="px-3 py-3 align-top text-center">
+                            {f.rating ? (
+                              <div className="flex items-center justify-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-3 w-3 ${
+                                      star <= f.rating!
+                                        ? 'text-amber-400 fill-amber-400'
+                                        : 'text-zinc-300 dark:text-zinc-600'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-zinc-300 dark:text-zinc-600">—</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 align-top hidden md:table-cell">
+                            <span className="text-[11px] text-zinc-400 truncate block max-w-[120px]">
+                              {f.page ? f.page.replace('/dashboard', '').replace('?view=', '') || 'dashboard' : '—'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 align-top text-right whitespace-nowrap">
+                            <span className="text-[11px] text-zinc-400">{timeAgo(f.created_at)}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
