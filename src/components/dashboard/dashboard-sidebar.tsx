@@ -29,9 +29,11 @@ import {
   Repeat2,
   Globe,
   Newspaper,
+  Shield,
 } from 'lucide-react'
+import { isAdminEmail } from '@/lib/admin-shared'
 
-export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'automations' | 'updates' | 'outreach' | 'billing'
+export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'automations' | 'updates' | 'outreach' | 'billing' | 'admin'
 
 interface ChatSession {
   id: string
@@ -198,7 +200,7 @@ export function DashboardSidebar({
   // Show chats panel when on agent or outreach view (unless user forced nav open)
   const showChatsPanel = (activeView === 'agent' || activeView === 'outreach') && !forceNav
 
-  const navItems: { id: DashboardView; label: string; icon: typeof Zap; proBadge?: boolean }[] = [
+  const baseNavItems: { id: DashboardView; label: string; icon: typeof Zap; proBadge?: boolean }[] = [
     { id: 'agent', label: 'BLITZ', icon: Zap },
     { id: 'outreach', label: 'Outreach', icon: Globe, proBadge: true },
     { id: 'drafts', label: 'Drafts', icon: FileText },
@@ -209,6 +211,10 @@ export function DashboardSidebar({
     { id: 'email', label: 'Email Connection', icon: Mail },
     { id: 'billing', label: 'Billing', icon: CreditCard },
   ]
+
+  const navItems = isAdminEmail(user.email)
+    ? [...baseNavItems, { id: 'admin' as DashboardView, label: 'Admin', icon: Shield }]
+    : baseNavItems
 
   // ─── Chats Panel (shown when on agent view) ────────────────────────
   const chatsPanel = (

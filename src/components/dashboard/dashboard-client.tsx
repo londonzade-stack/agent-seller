@@ -12,6 +12,7 @@ import { BillingView } from './billing-view'
 import { AutomationsView } from './automations-view'
 import { OutreachView } from './outreach-view'
 import { UpdatesView } from './updates-view'
+import { AdminView } from './admin-view'
 import { CommandPalette } from './command-palette'
 import { FeedbackButton } from './feedback-button'
 import { Brain, Menu } from 'lucide-react'
@@ -49,7 +50,7 @@ function getInitialViewFromUrl(): DashboardView {
   const chatId = params.get('chat')
   if (chatId) return 'agent'
   const urlView = params.get('view') as DashboardView | null
-  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'automations', 'updates', 'outreach', 'email-connect', 'billing'].includes(urlView)) {
+  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'automations', 'updates', 'outreach', 'email-connect', 'billing', 'admin'].includes(urlView)) {
     return urlView
   }
   return 'agent'
@@ -278,6 +279,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
               onSendToBlitz={handleSendToBlitz}
               onSendToProChat={handleSendToProChat}
               userPlan={userPlan}
+              onNavigateToBilling={() => setActiveView('billing')}
             />
           )}
           {activeView === 'automations' && (
@@ -307,6 +309,9 @@ export function DashboardClient({ user }: DashboardClientProps) {
           )}
           {activeView === 'billing' && (
             <BillingView onStatusChange={(status) => { setBillingStatus(status) }} onPlanChange={(plan) => setUserPlan(plan)} />
+          )}
+          {activeView === 'admin' && (
+            <AdminView />
           )}
         </main>
       </div>

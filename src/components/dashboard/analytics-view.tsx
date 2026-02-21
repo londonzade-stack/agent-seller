@@ -21,6 +21,7 @@ import {
   Zap,
   Lock,
 } from 'lucide-react'
+import { ProAnalyticsSection } from './pro-analytics-section'
 import {
   BarChart,
   Bar,
@@ -64,11 +65,12 @@ interface AnalyticsViewProps {
   onSendToBlitz?: (context: string) => void
   onSendToProChat?: (context: string) => void
   userPlan?: string
+  onNavigateToBilling: () => void
 }
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#f43f5e', '#14b8a6']
 
-export function AnalyticsView({ isEmailConnected, onConnectEmail, onSendToBlitz, onSendToProChat, userPlan }: AnalyticsViewProps) {
+export function AnalyticsView({ isEmailConnected, onConnectEmail, onSendToBlitz, onSendToProChat, userPlan, onNavigateToBilling }: AnalyticsViewProps) {
   const [stats, setStats] = useState<InboxStats | null>(null)
   const [timeframe, setTimeframe] = useState<'today' | 'week' | 'month'>('week')
   const [loading, setLoading] = useState(false)
@@ -583,6 +585,13 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail, onSendToBlitz,
                 </div>
               </Card>
             )}
+
+            {/* Pro Analytics Section */}
+            <ProAnalyticsSection
+              userPlan={userPlan}
+              onNavigateToBilling={onNavigateToBilling}
+              isEmailConnected={isEmailConnected}
+            />
           </div>
         )}
       </div>
