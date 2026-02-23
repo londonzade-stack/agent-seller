@@ -23,6 +23,7 @@ import {
 interface BillingStatus {
   status: string
   plan: string | null
+  billingInterval: 'month' | 'year'
   trialEnd: string | null
   currentPeriodEnd: string | null
   hasStripeCustomer: boolean
@@ -70,7 +71,15 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
     fetchBillingStatus()
   }, [])
 
+  // Sync isAnnual with existing billing interval when status loads
+  useEffect(() => {
+    if (billing?.billingInterval === 'year') {
+      setIsAnnual(true)
+    }
+  }, [billing?.billingInterval])
+
   const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro'>('basic')
+  const [isAnnual, setIsAnnual] = useState(false)
 
   const handleCheckout = async (plan?: 'basic' | 'pro') => {
     const checkoutPlan = plan || selectedPlan
@@ -80,7 +89,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: checkoutPlan }),
+        body: JSON.stringify({ plan: checkoutPlan, interval: isAnnual ? 'year' : 'month' }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -286,7 +295,11 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                   <div className="border-t border-zinc-200 dark:border-white/10 pt-4 space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-zinc-500 dark:text-zinc-400">Price</span>
-                      <span className="font-medium">{billing.plan === 'pro' ? '$40' : '$20'} / month</span>
+                      <span className="font-medium">
+                        {billing.billingInterval === 'year'
+                          ? `${billing.plan === 'pro' ? '$400' : '$200'} / year ($${billing.plan === 'pro' ? '33.33' : '16.67'}/mo)`
+                          : `${billing.plan === 'pro' ? '$40' : '$20'} / month`}
+                      </span>
                     </div>
 
                     {billing.status === 'trialing' && billing.trialEnd && (
@@ -366,7 +379,7 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                         ) : (
                           <ArrowRight className="h-4 w-4 mr-2" />
                         )}
-                        Upgrade to Pro — $40/month
+                        Upgrade to Pro — {isAnnual ? '$400/year' : '$40/month'}
                       </Button>
                     )}
 
@@ -492,6 +505,27 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                 <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                   <h3 className="font-medium mb-4">Choose a Plan</h3>
                   <div className="space-y-3">
+                    {/* Monthly / Annual Toggle */}
+                    <div className="flex items-center justify-center gap-3 pb-2">
+                      <span className={`text-xs font-medium transition-colors ${!isAnnual ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}`}>
+                        Monthly
+                      </span>
+                      <button
+                        onClick={() => setIsAnnual(!isAnnual)}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${isAnnual ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isAnnual ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </button>
+                      <span className={`text-xs font-medium transition-colors ${isAnnual ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-500'}`}>
+                        Annual
+                      </span>
+                      {isAnnual && (
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
+                          Save 17%
+                        </span>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       <button
                         onClick={() => setSelectedPlan('basic')}
@@ -502,7 +536,15 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                         }`}
                       >
                         <p className="font-semibold text-sm">Basic</p>
-                        <p className="text-lg font-bold mt-1">$20<span className="text-xs font-normal text-zinc-500">/mo</span></p>
+                        <p className="text-lg font-bold mt-1">
+                          {isAnnual ? (
+                            <><span className="text-sm text-zinc-400 line-through mr-1">$20</span>$16.67</>
+                          ) : (
+                            '$20'
+                          )}
+                          <span className="text-xs font-normal text-zinc-500">/mo</span>
+                        </p>
+                        {isAnnual && <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">$200/year</p>}
                         <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">Email management & analytics</p>
                       </button>
                       <button
@@ -515,7 +557,15 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                       >
                         <span className="absolute -top-2 right-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500 text-white">PRO</span>
                         <p className="font-semibold text-sm">Pro</p>
-                        <p className="text-lg font-bold mt-1">$40<span className="text-xs font-normal text-zinc-500">/mo</span></p>
+                        <p className="text-lg font-bold mt-1">
+                          {isAnnual ? (
+                            <><span className="text-sm text-zinc-400 line-through mr-1">$40</span>$33.33</>
+                          ) : (
+                            '$40'
+                          )}
+                          <span className="text-xs font-normal text-zinc-500">/mo</span>
+                        </p>
+                        {isAnnual && <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">$400/year</p>}
                         <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 mt-1">+ Automations, outreach, research</p>
                       </button>
                     </div>
@@ -529,7 +579,9 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                       ) : (
                         <CreditCard className="h-4 w-4 mr-2" />
                       )}
-                      Start Free Trial — {selectedPlan === 'pro' ? '$40' : '$20'}/month after 14 days
+                      Start Free Trial — {isAnnual
+                        ? `${selectedPlan === 'pro' ? '$400' : '$200'}/year after 14 days`
+                        : `${selectedPlan === 'pro' ? '$40' : '$20'}/month after 14 days`}
                     </Button>
                     <p className="text-xs text-zinc-400 dark:text-zinc-600 text-center">
                       14-day free trial. Cancel anytime.

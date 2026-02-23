@@ -111,10 +111,10 @@ export async function POST(req: Request) {
       cancel_url: `${appUrl}/dashboard?billing=canceled`,
     })
 
-    // Store the plan in subscriptions table immediately
+    // Store the plan and billing interval in subscriptions table immediately
     await admin
       .from('subscriptions')
-      .update({ plan })
+      .update({ plan, billing_interval: interval })
       .eq('user_id', user.id)
 
     return Response.json({ url: session.url })

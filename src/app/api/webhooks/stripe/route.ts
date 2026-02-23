@@ -83,9 +83,10 @@ export async function POST(req: Request) {
             ? subscription.customer
             : subscription.customer.id
 
-        // Extract plan from subscription metadata (set during checkout)
+        // Extract plan and interval from subscription metadata (set during checkout)
         const createdMeta = subscription.metadata as Record<string, string> | undefined
         const createdPlan = createdMeta?.plan || 'basic'
+        const createdInterval = createdMeta?.interval || 'month'
 
         // Extract period dates — cast through unknown for Stripe API version compatibility
         const subAny = subscription as unknown as Record<string, unknown>
@@ -107,6 +108,7 @@ export async function POST(req: Request) {
             stripe_subscription_id: subscription.id,
             status: subscription.status === 'trialing' ? 'trialing' : 'active',
             plan: createdPlan,
+            billing_interval: createdInterval,
             current_period_start: periodStart,
             current_period_end: periodEnd,
             trial_start: trialStart,
@@ -132,9 +134,10 @@ export async function POST(req: Request) {
           status = 'past_due'
         }
 
-        // Extract plan from subscription metadata
+        // Extract plan and interval from subscription metadata
         const updatedMeta = subscription.metadata as Record<string, string> | undefined
         const updatedPlan = updatedMeta?.plan || undefined // only update if present
+        const updatedInterval = updatedMeta?.interval || undefined
 
         const updSubAny = subscription as unknown as Record<string, unknown>
         const updItemAny = subscription.items.data[0] as unknown as Record<string, unknown> | undefined
@@ -158,6 +161,7 @@ export async function POST(req: Request) {
           trial_end: updTrialEnd,
         }
         if (updatedPlan) updateData.plan = updatedPlan
+        if (updatedInterval) updateData.billing_interval = updatedInterval
 
         const { error: updateError } = await supabase
           .from('subscriptions')

@@ -12,17 +12,18 @@ export async function GET() {
 
     const { data: subscription } = await supabase
       .from('subscriptions')
-      .select('status, plan, trial_end, current_period_end, stripe_customer_id')
+      .select('status, plan, billing_interval, trial_end, current_period_end, stripe_customer_id')
       .eq('user_id', user.id)
       .single()
 
     if (!subscription) {
-      return Response.json({ status: 'none', plan: null, trialEnd: null, currentPeriodEnd: null, hasStripeCustomer: false })
+      return Response.json({ status: 'none', plan: null, billingInterval: 'month', trialEnd: null, currentPeriodEnd: null, hasStripeCustomer: false })
     }
 
     return Response.json({
       status: subscription.status,
       plan: subscription.plan || 'basic', // Default to basic if not set
+      billingInterval: subscription.billing_interval || 'month',
       trialEnd: subscription.trial_end,
       currentPeriodEnd: subscription.current_period_end,
       hasStripeCustomer: !!subscription.stripe_customer_id,
