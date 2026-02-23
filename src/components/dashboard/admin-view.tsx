@@ -168,7 +168,7 @@ function ChatTypeBadge({ chatType }: { chatType: string }) {
         ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
         : 'bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
     }`}>
-      {chatType === 'outreach' ? 'Outreach' : 'BLITZ'}
+      {chatType === 'outreach' ? 'Outreach' : 'Agent'}
     </Badge>
   )
 }
@@ -702,7 +702,7 @@ export function AdminView() {
                           <span className={`text-[10px] font-semibold uppercase tracking-wider ${
                             msg.role === 'user' ? 'text-white/60 dark:text-zinc-900/60' : 'text-zinc-400'
                           }`}>
-                            {msg.role === 'user' ? 'User' : 'BLITZ'}
+                            {msg.role === 'user' ? 'User' : 'Agent'}
                           </span>
                           <span className={`text-[10px] ${
                             msg.role === 'user' ? 'text-white/40 dark:text-zinc-900/40' : 'text-zinc-400/60'

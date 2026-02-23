@@ -21,72 +21,72 @@ import {
   Send,
 } from 'lucide-react'
 
-type UpdateTier = 'blitz' | 'pro' | 'coming_soon'
+type UpdateTier = 'agent' | 'pro' | 'coming_soon'
 
 interface UpdateItem {
   icon: typeof Zap
   title: string
   description: string
   tier: UpdateTier
-  /** Show multiple tier badges (e.g., both BLITZ and PRO) */
+  /** Show multiple tier badges (e.g., both Agent and PRO) */
   extraTiers?: UpdateTier[]
 }
 
 const UPDATES: UpdateItem[] = [
-  // ─── BLITZ Features ──────────────────────────────────────────────
+  // ─── Agent Features ─────────────────────────────────────────────
   {
     icon: Brain,
-    title: 'BLITZ AI Email Agent',
+    title: 'AI Email Agent',
     description: 'Your intelligent email assistant that can search, read, compose, and manage your entire inbox through natural conversation.',
-    tier: 'blitz',
+    tier: 'agent',
   },
   {
     icon: Mail,
     title: 'Full Email Management',
     description: 'Send, draft, archive, trash, label, star, and organize emails. Bulk operations like mass trash and mass archive.',
-    tier: 'blitz',
+    tier: 'agent',
   },
   {
     icon: Search,
     title: 'Smart Email Search',
     description: 'Search your inbox with natural language — by sender, subject, date, read/unread status, and more.',
-    tier: 'blitz',
+    tier: 'agent',
   },
   {
     icon: Users,
     title: 'Contact Intelligence',
     description: 'Automatic contact history, sender lookups, and conversation context for every email thread.',
-    tier: 'blitz',
+    tier: 'agent',
   },
   {
     icon: BarChart3,
     title: 'Inbox Analytics',
     description: 'Detailed inbox stats — total emails, unread count, top senders, and activity breakdowns by timeframe.',
-    tier: 'blitz',
+    tier: 'agent',
   },
   {
     icon: Shield,
     title: 'Unsubscribe & Spam Tools',
     description: 'Find unsubscribable emails and bulk unsubscribe. Report spam and rescue emails from spam folder.',
-    tier: 'blitz',
+    tier: 'agent',
   },
   {
     icon: FileText,
     title: 'Draft Management',
-    description: 'Create, update, send, and delete email drafts. BLITZ can prepare drafts for your review before sending.',
-    tier: 'blitz',
+    description: 'Create, update, send, and delete email drafts. The Agent can prepare drafts for your review before sending.',
+    tier: 'agent',
   },
   {
     icon: Star,
     title: 'Smart Organization',
     description: 'Star, mark as important, create and apply labels, mark read/unread — all through simple conversation.',
-    tier: 'blitz',
+    tier: 'agent',
   },
   {
     icon: Send,
-    title: 'Send to BLITZ',
-    description: 'Send contacts and analytics data directly to BLITZ chat for collaboration — get AI-powered insights, draft emails, and take action on your data.',
-    tier: 'blitz',
+    title: 'Send to Agent',
+    description: 'Send contacts and analytics data directly to Agent chat for collaboration — get AI-powered insights, draft emails, and take action on your data.',
+    tier: 'agent',
     extraTiers: ['pro'],
   },
 
@@ -94,7 +94,7 @@ const UPDATES: UpdateItem[] = [
   {
     icon: Globe,
     title: 'Web Search Integration',
-    description: 'BLITZ can search the web to find real-time information, research topics, and enrich your email context with live data.',
+    description: 'The Agent can search the web to find real-time information, research topics, and enrich your email context with live data.',
     tier: 'pro',
   },
   {
@@ -124,7 +124,7 @@ const UPDATES: UpdateItem[] = [
   {
     icon: FileText,
     title: 'Company Profiles',
-    description: 'Save your company context — name, description, target customer, industry — and BLITZ injects it into every outreach.',
+    description: 'Save your company context — name, description, target customer, industry — and the Agent injects it into every outreach.',
     tier: 'pro',
   },
 
@@ -146,12 +146,12 @@ const TIER_STYLES: Record<UpdateTier, {
   badgeIcon: typeof Zap
   checkColor: string
 }> = {
-  blitz: {
+  agent: {
     iconBg: 'bg-amber-50 dark:bg-amber-500/10',
     iconColor: 'text-amber-500 dark:text-amber-400',
     badgeBg: 'bg-amber-500/10 dark:bg-amber-400/10',
     badgeText: 'text-amber-600 dark:text-amber-400',
-    badgeLabel: 'BLITZ',
+    badgeLabel: 'AGENT',
     badgeIcon: Zap,
     checkColor: 'text-amber-400 dark:text-amber-500',
   },

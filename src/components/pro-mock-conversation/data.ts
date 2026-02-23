@@ -434,7 +434,7 @@ export const PRO_MOCK_CONVERSATIONS: ProMockConversationData[] = [
   {
     id: 'smart-outreach',
     title: 'Smart Outreach',
-    description: 'BLITZ asks questions when it needs context',
+    description: 'The Agent asks questions when it needs context',
     promptText: 'Reach out to companies in the healthcare space and sell our product',
     messages: [
       {

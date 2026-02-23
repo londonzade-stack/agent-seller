@@ -294,12 +294,12 @@ export default async function PricingPage() {
               {
                 icon: CalendarClock,
                 title: "Scheduled Sends (Pro)",
-                description: "Schedule emails to send at the perfect time. BLITZ delivers them automatically."
+                description: "Schedule emails to send at the perfect time. Delivered automatically by your Agent."
               },
               {
                 icon: Zap,
                 title: "Automations (Pro)",
-                description: "Set up recurring tasks on daily, weekly, or monthly schedules. BLITZ runs them automatically."
+                description: "Set up recurring tasks on daily, weekly, or monthly schedules. The Agent runs them automatically."
               },
               {
                 icon: Globe,

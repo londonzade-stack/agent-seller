@@ -172,15 +172,15 @@ export function DashboardClient({ user }: DashboardClientProps) {
     checkEmailStatus()
   }, [])
 
-  // Handler for "Send to BLITZ" from contacts/analytics
-  const handleSendToBlitz = useCallback((context: string) => {
+  // Handler for "Send to Agent" from contacts/analytics
+  const handleSendToAgent = useCallback((context: string) => {
     setChatSessionId(undefined)
     setPendingPrompt(context)
     setChatKey(k => k + 1)
     setActiveView('agent')
   }, [])
 
-  // Handler for "Send to BLITZ Pro" — navigates to outreach view with context
+  // Handler for "Send to Agent Pro" — navigates to outreach view with context
   const handleSendToProChat = useCallback((context: string) => {
     setOutreachSessionId(undefined)
     setPendingOutreachPrompt(context)
@@ -267,7 +267,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <ContactsView
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
-              onSendToBlitz={handleSendToBlitz}
+              onSendToAgent={handleSendToAgent}
               onSendToProChat={handleSendToProChat}
               userPlan={userPlan}
             />
@@ -276,7 +276,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <AnalyticsView
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
-              onSendToBlitz={handleSendToBlitz}
+              onSendToAgent={handleSendToAgent}
               onSendToProChat={handleSendToProChat}
               userPlan={userPlan}
               onNavigateToBilling={() => setActiveView('billing')}
