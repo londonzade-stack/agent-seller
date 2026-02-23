@@ -1291,11 +1291,11 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     setApprovalResponses(prev => ({ ...prev, [messageId]: response }))
     let text: string
     if (response === 'approved' && approval) {
-      text = `Approved: "${approval.action}" — ${approval.description}. Execute ONLY this approved action and nothing else. Do NOT perform any additional actions, send any emails, or take any other steps beyond what was just approved.`
+      text = `Approved: "${approval.action}"`
     } else if (response === 'approved') {
-      text = 'Approved. Execute ONLY the action you just asked about and nothing else.'
+      text = 'Approved.'
     } else {
-      text = 'Denied. Do NOT proceed with this action. Do not perform any alternative actions either.'
+      text = 'Denied.'
     }
     sendMessage({ text })
     saveMessage('user', text)

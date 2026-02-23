@@ -1,14 +1,99 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
+// Fullscreen table modal
+function TableModal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  // Close on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [onClose])
+
+  // Prevent body scroll when modal open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      {/* Modal */}
+      <div
+        className="relative w-full max-w-[90vw] max-h-[85vh] bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-stone-200 dark:border-zinc-700 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/50">
+          <span className="text-xs font-medium text-stone-500 dark:text-zinc-400 uppercase tracking-wider">Table View</span>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
+            title="Close (Esc)"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M4 4l8 8M12 4l-8 8" />
+            </svg>
+          </button>
+        </div>
+        {/* Table content */}
+        <div className="overflow-auto flex-1 p-4">
+          <table className="w-full border-collapse text-sm">
+            {children}
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Interactive table wrapper with expand button
+function ExpandableTable({ children, ...props }: React.ComponentPropsWithoutRef<'table'>) {
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const toggleFullscreen = useCallback(() => setIsFullscreen(prev => !prev), [])
+
+  return (
+    <>
+      <div className="group/table relative my-3 -mx-1 rounded-lg border border-stone-200 dark:border-zinc-800">
+        {/* Expand button */}
+        <button
+          onClick={toggleFullscreen}
+          className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-white/80 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-400 hover:text-stone-700 dark:text-zinc-500 dark:hover:text-zinc-200 opacity-0 group-hover/table:opacity-100 transition-all shadow-sm hover:shadow backdrop-blur-sm"
+          title="Expand table"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8.5 1.5H12.5V5.5" />
+            <path d="M5.5 12.5H1.5V8.5" />
+            <path d="M12.5 1.5L8 6" />
+            <path d="M1.5 12.5L6 8" />
+          </svg>
+        </button>
+        {/* Scrollable table */}
+        <div className="overflow-x-auto">
+          <table className="min-w-[480px] w-full border-collapse text-sm" {...props}>{children}</table>
+        </div>
+      </div>
+
+      {/* Fullscreen modal */}
+      {isFullscreen && (
+        <TableModal onClose={toggleFullscreen}>
+          {children}
+        </TableModal>
+      )}
+    </>
+  )
+}
+
 export const markdownComponents = {
   table: ({ children, ...props }: React.ComponentPropsWithoutRef<'table'>) => (
-    <div className="my-3 -mx-1 overflow-x-auto rounded-lg border border-stone-200 dark:border-zinc-800">
-      <table className="min-w-[480px] w-full border-collapse text-sm" {...props}>{children}</table>
-    </div>
+    <ExpandableTable {...props}>{children}</ExpandableTable>
   ),
   thead: ({ children, ...props }: React.ComponentPropsWithoutRef<'thead'>) => (
     <thead className="bg-stone-50 dark:bg-zinc-800/50" {...props}>{children}</thead>

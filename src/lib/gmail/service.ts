@@ -4,6 +4,16 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createSupabaseAdmin, SupabaseClient } from '@supabase/supabase-js'
 import { decryptToken, encrypt } from '@/lib/encryption'
 
+// RFC 2047 MIME encode a header value if it contains non-ASCII characters
+// Prevents mojibake like "Ã¢Â€Â™" for curly quotes in email subjects
+function mimeEncodeHeader(value: string): string {
+  // Check if any character is non-ASCII
+  if (/^[\x20-\x7E]*$/.test(value)) return value
+  // Base64 encode using RFC 2047 format: =?charset?encoding?encoded-text?=
+  const encoded = Buffer.from(value, 'utf-8').toString('base64')
+  return `=?UTF-8?B?${encoded}?=`
+}
+
 interface EmailConnection {
   id: string
   user_id: string
@@ -387,7 +397,7 @@ export async function createDraft(
   }
 
   emailLines.push(
-    `Subject: ${options.subject}`,
+    `Subject: ${mimeEncodeHeader(options.subject)}`,
     'Content-Type: text/plain; charset=utf-8',
     '',
     options.body
@@ -446,7 +456,7 @@ export async function sendEmail(
   }
 
   emailLines.push(
-    `Subject: ${options.subject}`,
+    `Subject: ${mimeEncodeHeader(options.subject)}`,
     'Content-Type: text/plain; charset=utf-8',
     '',
     options.body
@@ -1021,7 +1031,7 @@ export async function updateDraft(
   if (options.bcc) emailLines.push(`Bcc: ${options.bcc}`)
 
   emailLines.push(
-    `Subject: ${options.subject}`,
+    `Subject: ${mimeEncodeHeader(options.subject)}`,
     'Content-Type: text/plain; charset=utf-8',
     '',
     options.body
