@@ -38,7 +38,7 @@ export async function searchWeb(
   query: string,
   options: {
     numResults?: number
-    type?: 'neural' | 'auto' | 'keyword'
+    type?: 'instant' | 'neural' | 'auto' | 'keyword'
     includeDomains?: string[]
     excludeDomains?: string[]
     startPublishedDate?: string
@@ -49,7 +49,7 @@ export async function searchWeb(
 ): Promise<ExaSearchResponse> {
   const {
     numResults = 10,
-    type = 'auto',
+    type = 'instant',
     includeDomains,
     excludeDomains,
     startPublishedDate,
