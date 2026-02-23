@@ -16,12 +16,14 @@ const PLAN_CONFIG = {
   basic: {
     name: 'Emailligence Basic',
     description: 'Email management, automations, and analytics',
-    amount: 2000, // $20.00
+    monthly: 2000,  // $20.00/mo
+    annual: 20000,  // $200.00/yr ($16.67/mo — 17% off)
   },
   pro: {
     name: 'Emailligence Pro',
     description: 'Everything in Basic + Web Search, Sales Outreach, Company Research',
-    amount: 4000, // $40.00
+    monthly: 4000,  // $40.00/mo
+    annual: 40000,  // $400.00/yr ($33.33/mo — 17% off)
   },
 } as const
 
@@ -34,16 +36,19 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
     }
 
-    // Parse plan from request body (default to 'basic')
+    // Parse plan and billing interval from request body
     let plan: 'basic' | 'pro' = 'basic'
+    let interval: 'month' | 'year' = 'month'
     try {
       const body = await req.json()
       if (body.plan === 'pro') plan = 'pro'
+      if (body.interval === 'year') interval = 'year'
     } catch {
-      // No body or invalid JSON — default to basic
+      // No body or invalid JSON — default to basic monthly
     }
 
     const planConfig = PLAN_CONFIG[plan]
+    const amount = interval === 'year' ? planConfig.annual : planConfig.monthly
 
     // Use admin client to bypass RLS for writes
     const admin = getAdminClient()
@@ -89,18 +94,18 @@ export async function POST(req: Request) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: planConfig.name,
+              name: `${planConfig.name}${interval === 'year' ? ' (Annual)' : ''}`,
               description: planConfig.description,
             },
-            unit_amount: planConfig.amount,
-            recurring: { interval: 'month' },
+            unit_amount: amount,
+            recurring: { interval },
           },
           quantity: 1,
         },
       ],
       subscription_data: {
         trial_period_days: 14,
-        metadata: { plan }, // Store plan in Stripe subscription metadata
+        metadata: { plan, interval }, // Store plan and interval in Stripe subscription metadata
       },
       success_url: `${appUrl}/dashboard?billing=success`,
       cancel_url: `${appUrl}/dashboard?billing=canceled`,
