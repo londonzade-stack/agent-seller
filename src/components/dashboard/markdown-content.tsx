@@ -61,11 +61,11 @@ function ExpandableTable({ children, ...props }: React.ComponentPropsWithoutRef<
 
   return (
     <>
-      <div className="group/table relative my-3 -mx-1 rounded-lg border border-stone-200 dark:border-zinc-800">
-        {/* Expand button */}
+      <div className="relative my-3 -mx-1 rounded-lg border border-stone-200 dark:border-zinc-800">
+        {/* Expand button — always visible */}
         <button
           onClick={toggleFullscreen}
-          className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-white/80 dark:bg-zinc-800/80 border border-stone-200 dark:border-zinc-700 text-stone-400 hover:text-stone-700 dark:text-zinc-500 dark:hover:text-zinc-200 opacity-0 group-hover/table:opacity-100 transition-all shadow-sm hover:shadow backdrop-blur-sm"
+          className="absolute top-2 right-2 z-10 p-1.5 rounded-md bg-white/90 dark:bg-zinc-800/90 border border-stone-200 dark:border-zinc-700 text-stone-500 hover:text-stone-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors shadow-sm hover:shadow backdrop-blur-sm"
           title="Expand table"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
