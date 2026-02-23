@@ -123,7 +123,7 @@ export default async function Home() {
                     <BarChart3 className="h-3.5 w-3.5" /> Analytics
                   </div>
                   <div className="flex items-center justify-between px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
-                    <span className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Agent Pro</span>
+                    <span className="flex items-center gap-2"><Globe className="h-3.5 w-3.5" /> Outreach</span>
                     <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-blue-500/10 text-blue-500">PRO</span>
                   </div>
                   <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">

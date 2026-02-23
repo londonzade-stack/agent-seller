@@ -204,7 +204,7 @@ export function DashboardSidebar({
 
   const baseNavItems: { id: DashboardView; label: string; icon: typeof Zap; proBadge?: boolean }[] = [
     { id: 'agent', label: 'Agent', icon: Zap },
-    { id: 'outreach', label: 'Agent Pro', icon: Globe, proBadge: true },
+    { id: 'outreach', label: 'Outreach', icon: Globe, proBadge: true },
     { id: 'drafts', label: 'Drafts', icon: FileText },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -232,7 +232,7 @@ export function DashboardSidebar({
             <PanelLeftOpen className="h-4 w-4" />
           </button>
           <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">
-            {activeView === 'outreach' ? 'Agent Pro' : 'Agent'}
+            {activeView === 'outreach' ? 'Outreach' : 'Agent'}
           </span>
         </div>
         <div className="flex items-center gap-1">

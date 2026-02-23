@@ -168,7 +168,7 @@ function ChatTypeBadge({ chatType }: { chatType: string }) {
         ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
         : 'bg-amber-100 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
     }`}>
-      {chatType === 'outreach' ? 'Agent Pro' : 'Agent'}
+      {chatType === 'outreach' ? 'Outreach' : 'Agent'}
     </Badge>
   )
 }
