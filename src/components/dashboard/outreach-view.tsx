@@ -7,7 +7,6 @@ import { DefaultChatTransport, type UIMessage } from 'ai'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { BlitzAvatar } from '@/components/blitz-avatar'
 import { MarkdownContent } from './markdown-content'
 import {
@@ -528,7 +527,7 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
   const [isTimedOut, setIsTimedOut] = useState(false)
   const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
   const sessionCreatingRef = useRef(false)
@@ -698,6 +697,7 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
     }
     sendMessage({ text })
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     saveMessage('user', text)
     userScrolledAwayRef.current = false
     requestAnimationFrame(() => {
@@ -1084,16 +1084,28 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
           )}
         </div>
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
-            <Input
+          <div className="flex items-end gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
+            <textarea
               ref={inputRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value)
+                // Auto-resize
+                e.target.style.height = 'auto'
+                e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px'
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSubmit(e)
+                }
+              }}
               placeholder={proContext ? "What do you want BLITZ Pro to do with this?" : "Search for companies, draft outreach, or ask BLITZ anything..."}
-              className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-base"
+              className="flex-1 bg-transparent border-0 focus-visible:outline-none resize-none text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-base min-h-[36px] max-h-[150px] py-1.5 px-2"
+              rows={1}
               disabled={isLoading}
             />
-            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="rounded-lg bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-stone-700 dark:hover:bg-zinc-300 h-8 w-8 sm:h-9 sm:w-9 shrink-0">
+            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="rounded-lg bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-stone-700 dark:hover:bg-zinc-300 h-8 w-8 sm:h-9 sm:w-9 shrink-0 mb-0.5">
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
