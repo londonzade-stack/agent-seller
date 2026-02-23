@@ -1089,7 +1089,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
 
     // ============ QUICK ACTIONS ============
     getRecentEmails: tool({
-      description: 'Get recent emails. Use timeframe "all" when user asks for "last N emails" without a specific date range.',
+      description: 'Get recent INBOX emails (excludes sent, drafts, spam, trash). Use timeframe "all" when user asks for "last N emails" without a specific date range. Use searchEmails if user specifically asks for sent mail or drafts.',
       inputSchema: z.object({
         timeframe: z.enum(['today', 'week', 'month', 'all']).default('all').describe('How far back. Use "all" for "last N emails" requests. Defaults to "all".'),
         maxResults: z.number().optional().default(25),
@@ -1116,11 +1116,11 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
             }
           }
 
-          const query = unreadOnly ? 'is:unread' : ''
+          const query = unreadOnly ? 'in:inbox is:unread' : 'in:inbox'
           const emails = await scanInboxForEmails(userId, {
             maxResults: maxResults || 25,
             after: afterDate,
-            query: query || undefined,
+            query,
           })
 
           return {
