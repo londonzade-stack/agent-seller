@@ -41,6 +41,7 @@ import {
   Shield,
   Tag,
   Star,
+  Clock,
 } from 'lucide-react'
 import { ProMockConversationDropdown } from '@/components/pro-mock-conversation'
 import { CompanyProfileCard } from './company-profile-card'
@@ -304,10 +305,10 @@ interface ApprovalData {
 
 const DESTRUCTIVE_PATTERNS = [
   /should I (?:move|trash|delete|remove|archive|send|forward|reply|unsubscribe)/i,
-  /want me to (?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
-  /shall I (?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
-  /would you like (?:me to |to )(?:move|trash|delete|remove|archive|send|forward|reply|proceed|unsubscribe)/i,
-  /ready to (?:send|trash|delete|archive|move|unsubscribe)/i,
+  /want me to (?:move|trash|delete|remove|archive|send|forward|reply|unsubscribe)/i,
+  /shall I (?:move|trash|delete|remove|archive|send|forward|reply|unsubscribe)/i,
+  /would you like (?:me to |to )(?:move|trash|delete|remove|archive|send|forward|reply|unsubscribe)/i,
+  /ready to (?:send|trash|delete|archive|move|unsubscribe)\b/i,
   /confirm.*(?:trash|delete|archive|send|move|unsubscribe)/i,
   /proceed with (?:trashing|deleting|archiving|sending|moving|unsubscribing)/i,
   /would you like me to unsubscribe/i,
@@ -367,8 +368,8 @@ function parseApprovalBlock(text: string): { before: string; approval: ApprovalD
   return null
 }
 
-function ApprovalCard({ approval, onApprove, onDeny, responded }: {
-  approval: ApprovalData; onApprove: () => void; onDeny: () => void; responded: 'approved' | 'denied' | null
+function ApprovalCard({ approval, onApprove, onDeny, onDismiss, responded }: {
+  approval: ApprovalData; onApprove: () => void; onDeny: () => void; onDismiss?: () => void; responded: 'approved' | 'denied' | 'skipped' | null
 }) {
   const getActionIcon = (action: string) => {
     const lower = action.toLowerCase()
@@ -411,14 +412,19 @@ function ApprovalCard({ approval, onApprove, onDeny, responded }: {
           <div className={`flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium ${
             responded === 'approved'
               ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800/40'
+              : responded === 'denied'
+              ? 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800/40'
+              : 'bg-stone-50 dark:bg-zinc-800/50 text-stone-400 dark:text-zinc-500 border border-stone-200 dark:border-zinc-700/40'
           }`}>
-            {responded === 'approved' ? <><CheckCircle2 className="h-4 w-4" /> Approved</> : <><XCircle className="h-4 w-4" /> Denied</>}
+            {responded === 'approved' ? <><CheckCircle2 className="h-4 w-4" /> Approved</> : responded === 'denied' ? <><XCircle className="h-4 w-4" /> Denied</> : <><Clock className="h-4 w-4" /> Skipped</>}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <button onClick={onDeny} className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800/40 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer">
               <X className="h-4 w-4" /> Deny
+            </button>
+            <button onClick={onDismiss} className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-stone-50 dark:bg-zinc-800/50 text-stone-500 dark:text-zinc-400 border border-stone-200 dark:border-zinc-700/40 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+              <Clock className="h-4 w-4" /> Not Now
             </button>
             <button onClick={onApprove} className="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors cursor-pointer">
               <CheckCircle2 className="h-4 w-4" /> Approve
@@ -725,13 +731,18 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
   }
 
   // Track approval responses per message ID
-  const [approvalResponses, setApprovalResponses] = useState<Record<string, 'approved' | 'denied'>>({})
+  const [approvalResponses, setApprovalResponses] = useState<Record<string, 'approved' | 'denied' | 'skipped'>>({})
   const handleApproval = (messageId: string, response: 'approved' | 'denied') => {
     if (isLoading) return
     setApprovalResponses(prev => ({ ...prev, [messageId]: response }))
     const text = response === 'approved' ? 'Yes, approved. Proceed.' : 'No, denied. Do not proceed.'
     sendMessage({ text })
     saveMessage('user', text)
+  }
+  const handleDismiss = (messageId: string) => {
+    if (isLoading) return
+    setApprovalResponses(prev => ({ ...prev, [messageId]: 'skipped' }))
+    // No message sent to AI — just dismiss the card silently
   }
 
   const lastMessage = messages[messages.length - 1]
@@ -969,7 +980,8 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
                                 approval={approvalParsed.approval}
                                 onApprove={() => handleApproval(message.id, 'approved')}
                                 onDeny={() => handleApproval(message.id, 'denied')}
-                                responded={approvalResponses[message.id] || (isLastAssistant ? null : 'approved')}
+                                onDismiss={() => handleDismiss(message.id)}
+                                responded={approvalResponses[message.id] || (isLastAssistant ? null : 'skipped')}
                               />
                               {approvalParsed.after && <MarkdownContent content={approvalParsed.after} />}
                             </React.Fragment>
