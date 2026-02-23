@@ -580,28 +580,51 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
               </>
             )}
 
-            {/* Business Plan CTA — always visible */}
-            <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-gradient-to-br from-zinc-50 to-stone-50 dark:from-zinc-900/50 dark:to-zinc-800/30">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-stone-100 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
-                  <Building2 className="h-5 w-5 text-stone-600 dark:text-zinc-300" />
+            {/* Teams Plan CTA — always visible */}
+            <Card className="p-4 sm:p-6 border-violet-200/50 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/50 to-stone-50 dark:from-violet-950/20 dark:to-zinc-900/30">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center shrink-0">
+                  <Building2 className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-stone-900 dark:text-zinc-100">
-                    Looking for a business plan?
+                    Teams Plan
                   </p>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                    Get custom pricing, team seats, and dedicated support for your organization.
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    Everything in Pro with volume discounts for your team.
                   </p>
-                  <a
-                    href="mailto:londo@emailligence.ai?subject=Business Plan Inquiry"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-stone-700 dark:text-zinc-200 hover:text-stone-900 dark:hover:text-white mt-3 transition-colors"
-                  >
-                    Reach out for a free demo
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </a>
                 </div>
               </div>
+              <div className="space-y-2 mb-4 p-3 rounded-xl bg-white/60 dark:bg-black/20 border border-violet-200/30 dark:border-violet-500/10">
+                {[
+                  { seats: 5, price: 150, perSeat: 30, discount: '25% off' },
+                  { seats: 10, price: 250, perSeat: 25, discount: '37.5% off' },
+                  { seats: 20, price: 400, perSeat: 20, discount: '50% off' },
+                ].map((tier, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <span className="text-zinc-700 dark:text-zinc-300">
+                      <span className="font-semibold">{tier.seats} seats</span>
+                      <span className="text-zinc-400 dark:text-zinc-500 ml-1.5">(${tier.perSeat}/seat)</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-zinc-900 dark:text-white">${tier.price}/mo</span>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500 text-white shrink-0">
+                        {tier.discount}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <a
+                href="mailto:londo@emailligence.ai?subject=Teams Plan Inquiry"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-700 dark:text-violet-300 hover:text-violet-900 dark:hover:text-violet-100 transition-colors"
+              >
+                Contact Sales for a free demo
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+              <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-2">
+                Custom plans available for 20+ seats
+              </p>
             </Card>
 
             {/* Sign out link */}

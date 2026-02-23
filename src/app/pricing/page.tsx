@@ -15,6 +15,9 @@ import {
   Search,
   Sparkles,
   LayoutDashboard,
+  Building2,
+  Clock,
+  CalendarClock,
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -35,13 +38,29 @@ export default async function PricingPage() {
 
   const proFeatures = [
     { text: "Everything in Basic" },
+    { text: "Scheduled email sends", isNew: true },
+    { text: "Recurring automations", isNew: true },
     { text: "Web search & research via Exa.ai", isNew: true },
-    { text: "Daily/weekly/monthly automations", isNew: true },
     { text: "Sales outreach dashboard" },
     { text: "Company research & intel" },
     { text: "Contact discovery tools" },
     { text: "AI-powered cold outreach drafts" },
     { text: "Priority support" },
+  ];
+
+  const teamsFeatures = [
+    { text: "Everything in Pro" },
+    { text: "Team seat management" },
+    { text: "Volume discounts (up to 50% off)" },
+    { text: "Centralized billing" },
+    { text: "Dedicated onboarding" },
+    { text: "Priority support & SLA" },
+  ];
+
+  const teamsTiers = [
+    { seats: 5, price: 150, perSeat: 30, discount: "25%" },
+    { seats: 10, price: 250, perSeat: 25, discount: "37.5%" },
+    { seats: 20, price: 400, perSeat: 20, discount: "50%" },
   ];
 
   return (
@@ -95,8 +114,8 @@ export default async function PricingPage() {
             </div>
           </ScrollReveal>
 
-          {/* Pricing Cards — 2 columns */}
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {/* Pricing Cards — 3 columns */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Basic Plan */}
             <ScrollReveal delay={0}>
               <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-zinc-200 dark:border-white/10 p-8 h-full flex flex-col">
@@ -177,6 +196,59 @@ export default async function PricingPage() {
               </Card>
             </ScrollReveal>
 
+            {/* Teams Plan */}
+            <ScrollReveal delay={200}>
+              <Card className="bg-zinc-50 dark:bg-zinc-900/30 border-2 border-violet-500/50 dark:border-violet-400/30 p-8 relative h-full flex flex-col">
+                <div className="text-center mb-6">
+                  <Badge variant="secondary" className="mb-4 bg-violet-500/10 dark:bg-violet-400/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 dark:hover:bg-violet-400/10">
+                    <Building2 className="mr-2 h-3 w-3" />
+                    Teams
+                  </Badge>
+                  <div className="flex items-baseline justify-center gap-1 mb-2">
+                    <span className="text-lg text-zinc-500">From</span>
+                    <span className="text-5xl font-bold">$20</span>
+                    <span className="text-zinc-500">/seat/mo</span>
+                  </div>
+                  <p className="text-zinc-500 text-sm">Volume discounts for teams</p>
+                </div>
+
+                {/* Tier breakdown */}
+                <div className="space-y-2 mb-6 p-3 rounded-xl bg-violet-50/50 dark:bg-violet-500/5 border border-violet-200/50 dark:border-violet-500/10">
+                  {teamsTiers.map((tier, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-zinc-700 dark:text-zinc-300">
+                        <span className="font-semibold">{tier.seats} seats</span>
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-zinc-900 dark:text-white">${tier.price}/mo</span>
+                        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500 text-white shrink-0">
+                          {tier.discount} off
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-3 mb-8 flex-1">
+                  {teamsFeatures.map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <CheckCircle2 className={`h-4 w-4 shrink-0 ${i === 0 ? 'text-blue-500' : 'text-violet-500'}`} />
+                      <span className={`text-sm ${i === 0 ? 'text-zinc-500' : 'font-medium'}`}>{feature.text}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <a href="mailto:londo@emailligence.ai?subject=Teams Plan Inquiry">
+                  <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white dark:bg-violet-500 dark:hover:bg-violet-600" size="lg">
+                    Contact Sales <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+                <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-4">
+                  Custom plans available for 20+ seats
+                </p>
+              </Card>
+            </ScrollReveal>
+
           </div>
 
           <p className="text-zinc-400 dark:text-zinc-600 text-xs text-center mt-6">
@@ -198,7 +270,7 @@ export default async function PricingPage() {
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 icon: Mail,
@@ -216,6 +288,16 @@ export default async function PricingPage() {
                 description: "Every AI-generated email goes through you first for approval. Full control, always."
               },
               {
+                icon: CalendarClock,
+                title: "Scheduled Sends (Pro)",
+                description: "Schedule emails to send at the perfect time. BLITZ delivers them automatically."
+              },
+              {
+                icon: Zap,
+                title: "Automations (Pro)",
+                description: "Set up recurring tasks on daily, weekly, or monthly schedules. BLITZ runs them automatically."
+              },
+              {
                 icon: Globe,
                 title: "Web Search (Pro)",
                 description: "Search the web for companies, news, and intel. Powered by Exa.ai neural search."
@@ -226,9 +308,9 @@ export default async function PricingPage() {
                 description: "Deep dive into any company — website, recent news, leadership, and competitive info."
               },
               {
-                icon: Zap,
-                title: "Automations (Pro)",
-                description: "Set up recurring tasks on daily, weekly, or monthly schedules. BLITZ runs them automatically."
+                icon: Building2,
+                title: "Team Management (Teams)",
+                description: "Centralized billing, seat management, and volume discounts for your entire organization."
               },
             ].map((feature, i) => (
               <ScrollReveal key={i} delay={i * 80}>
@@ -271,6 +353,10 @@ export default async function PricingPage() {
               {
                 q: "What email providers do you support?",
                 a: "We currently support Gmail and Microsoft Outlook. More integrations are coming soon."
+              },
+              {
+                q: "Do you offer team or business plans?",
+                a: "Yes! Our Teams plan offers volume discounts starting at $30/seat for 5 seats (25% off Pro), down to $20/seat for 20 seats (50% off). All seats include full Pro features. Contact us for custom plans over 20 seats."
               },
               {
                 q: "Is my data secure?",
