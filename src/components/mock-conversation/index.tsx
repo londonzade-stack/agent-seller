@@ -23,7 +23,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AgentAvatar } from '@/components/blitz-avatar'
+import { BlitzAvatar } from '@/components/blitz-avatar'
 import { MOCK_CONVERSATIONS, type MockToolCall, type MockMessage, type MockApproval } from './data'
 
 // ─── Icon map for tool calls ────────────────────────────────────────
@@ -353,7 +353,7 @@ function MockMessageBubble({
   return (
     <div className="flex justify-start gap-2">
       <div className="shrink-0">
-        <AgentAvatar size="sm" />
+        <BlitzAvatar size="sm" />
       </div>
       <div className="max-w-[85%] rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none">
         {message.toolCalls?.map((tool, i) => {
@@ -402,8 +402,8 @@ function MockConversation({
       <div className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900/30 overflow-hidden">
         {/* Header */}
         <div className="border-b border-zinc-200 dark:border-white/10 px-5 py-3 flex items-center gap-3">
-          <AgentAvatar size="sm" />
-          <span className="font-mono font-bold text-amber-500 text-sm">AGENT</span>
+          <BlitzAvatar size="sm" />
+          <span className="font-mono font-bold text-amber-500 text-sm">BLITZ</span>
           <span className="text-xs text-zinc-400 dark:text-zinc-600">AI Email Agent</span>
           <div className="ml-auto flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -605,7 +605,7 @@ export function MockConversationDropdown({
             <div className="p-1 rounded-lg bg-amber-100 dark:bg-amber-900/30">
               <Sparkles className="h-4 w-4 text-amber-500 dark:text-amber-400" />
             </div>
-            <h3 className="font-semibold text-base sm:text-lg">See What the Agent Can Do</h3>
+            <h3 className="font-semibold text-base sm:text-lg">See What BLITZ Can Do</h3>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-stone-100 dark:hover:bg-zinc-800">
             <X className="h-4 w-4" />

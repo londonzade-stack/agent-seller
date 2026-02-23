@@ -134,10 +134,10 @@ export function CompanyProfileCard({ variant = 'inline' }: CompanyProfileCardPro
             </div>
             <div>
               <h3 className="text-sm font-semibold text-stone-800 dark:text-zinc-200">
-                {hasProfile ? 'Edit Company Profile' : 'Tell the Agent about your company'}
+                {hasProfile ? 'Edit Company Profile' : 'Tell BLITZ about your company'}
               </h3>
               <p className="text-xs text-stone-500 dark:text-zinc-500">
-                {hasProfile ? 'Update your info so the Agent stays in sync' : 'The Agent will use this to personalize every outreach, search, and draft'}
+                {hasProfile ? 'Update your info so BLITZ stays in sync' : 'BLITZ will use this to personalize every outreach, search, and draft'}
               </p>
             </div>
           </div>
@@ -204,7 +204,7 @@ export function CompanyProfileCard({ variant = 'inline' }: CompanyProfileCardPro
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="cp-notes" className="text-xs font-medium text-stone-600 dark:text-zinc-400">Anything else the Agent should know</Label>
+            <Label htmlFor="cp-notes" className="text-xs font-medium text-stone-600 dark:text-zinc-400">Anything else BLITZ should know</Label>
             <textarea
               id="cp-notes"
               value={notes}

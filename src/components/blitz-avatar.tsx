@@ -1,9 +1,9 @@
 'use client'
 
-// ─── Agent Avatar ──────────────────────────────────────────────────────
-// Pixel art avatar used as the AI agent icon throughout the app.
+// ─── BLITZ — The Lightning Bug ──────────────────────────────────────────────
+// Pixel art mascot used as the AI agent avatar throughout the app.
 
-const AGENT_GRID = [
+const BLITZ_GRID = [
   '........YYY........',
   '.......YYYYY.......',
   '......YYYYYYY......',
@@ -22,7 +22,7 @@ const AGENT_GRID = [
   '......GGG.GGG......',
 ]
 
-const AGENT_PALETTE: Record<string, string> = {
+const BLITZ_PALETTE: Record<string, string> = {
   Y: '#FBBF24',
   W: '#FFFFFF',
   K: '#1a1a1a',
@@ -30,7 +30,7 @@ const AGENT_PALETTE: Record<string, string> = {
   '.': '',
 }
 
-const AGENT_BLUE_PALETTE: Record<string, string> = {
+const BLITZ_BLUE_PALETTE: Record<string, string> = {
   Y: '#60A5FA',
   W: '#FFFFFF',
   K: '#1a1a1a',
@@ -76,15 +76,15 @@ function PixelGrid({
   )
 }
 
-interface AgentAvatarProps {
+interface BlitzAvatarProps {
   /** sm = 32px chat bubble avatar, lg = 80px welcome screen */
   size?: 'sm' | 'lg'
   /** Optional color variant — default is amber/yellow, 'blue' for Pro outreach */
   variant?: 'default' | 'blue'
 }
 
-export function AgentAvatar({ size = 'sm', variant = 'default' }: AgentAvatarProps) {
-  const palette = variant === 'blue' ? AGENT_BLUE_PALETTE : AGENT_PALETTE
+export function BlitzAvatar({ size = 'sm', variant = 'default' }: BlitzAvatarProps) {
+  const palette = variant === 'blue' ? BLITZ_BLUE_PALETTE : BLITZ_PALETTE
 
   if (size === 'lg') {
     return (
@@ -93,7 +93,7 @@ export function AgentAvatar({ size = 'sm', variant = 'default' }: AgentAvatarPro
         style={{ imageRendering: 'pixelated' }}
       >
         <div className="scale-[1.1]">
-          <PixelGrid grid={AGENT_GRID} palette={palette} pixelSize={4} />
+          <PixelGrid grid={BLITZ_GRID} palette={palette} pixelSize={4} />
         </div>
       </div>
     )
@@ -106,11 +106,8 @@ export function AgentAvatar({ size = 'sm', variant = 'default' }: AgentAvatarPro
       style={{ imageRendering: 'pixelated' }}
     >
       <div className="scale-[0.55] sm:scale-[0.6]">
-        <PixelGrid grid={AGENT_GRID} palette={palette} pixelSize={4} />
+        <PixelGrid grid={BLITZ_GRID} palette={palette} pixelSize={4} />
       </div>
     </div>
   )
 }
-
-// Backward-compatible alias
-export const BlitzAvatar = AgentAvatar

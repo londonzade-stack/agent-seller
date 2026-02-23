@@ -261,7 +261,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
         </div>
         <h2 className="text-xl font-semibold text-stone-900 dark:text-white mb-2">Automations is a Pro Feature</h2>
         <p className="text-stone-500 dark:text-zinc-400 text-center max-w-md mb-4">
-          Set up recurring tasks that the Agent runs automatically — daily inbox cleanup, weekly stats, monthly unsubscribe sweeps, and more.
+          Set up recurring tasks that BLITZ runs automatically — daily inbox cleanup, weekly stats, monthly unsubscribe sweeps, and more.
         </p>
         <Button
           onClick={onNavigateToBilling}
@@ -320,7 +320,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
               Automations
             </h1>
             <p className="text-sm text-stone-500 dark:text-zinc-400 mt-1">
-              Recurring tasks that the Agent runs automatically
+              Recurring tasks that BLITZ runs automatically
             </p>
           </div>
           <Button onClick={fetchTasks} variant="ghost" size="icon" className="h-9 w-9">
@@ -460,11 +460,11 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
               </div>
               <h3 className="text-lg font-semibold text-stone-900 dark:text-white mb-2">No automations yet</h3>
               <p className="text-stone-500 dark:text-zinc-400 max-w-sm mx-auto mb-4 text-sm">
-                Tell the Agent what to automate and it handles the rest. Here are some ideas:
+                Tell BLITZ what to automate and it handles the rest. Here are some ideas:
               </p>
               <Button onClick={() => onNavigateToAgent()} variant="outline" size="sm">
                 <Zap className="h-4 w-4 mr-2 text-amber-500" />
-                Ask the Agent to create one
+                Ask BLITZ to create one
               </Button>
             </div>
 
@@ -624,7 +624,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
               onClick={() => onNavigateToAgent()}
               className="text-xs text-stone-400 dark:text-zinc-600 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
             >
-              Ask the Agent to create more automations &#8594;
+              Ask BLITZ to create more automations &#8594;
             </button>
           </div>
         )}

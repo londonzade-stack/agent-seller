@@ -111,7 +111,7 @@ export default async function Home() {
                 {/* Sidebar */}
                 <div className="w-48 border-r border-zinc-200/60 dark:border-white/[0.06] p-3 space-y-1 bg-[#faf8f5] dark:bg-[#111113]">
                   <div className="flex items-center gap-2 px-2.5 py-2 bg-stone-200/60 dark:bg-white/[0.06] rounded-lg text-xs font-medium">
-                    <Brain className="h-3.5 w-3.5" /> Agent
+                    <Brain className="h-3.5 w-3.5" /> BLITZ Agent
                   </div>
                   <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-zinc-500 hover:bg-stone-100 dark:hover:bg-white/[0.04] rounded-lg transition-colors">
                     <FileText className="h-3.5 w-3.5" /> Drafts
@@ -152,7 +152,7 @@ export default async function Home() {
                   </div>
                   <div className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-2 border border-zinc-200/60 dark:border-white/10">
                     <Input
-                      placeholder="Ask your Agent anything..."
+                      placeholder="Ask BLITZ anything..."
                       className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                       readOnly
                     />
@@ -221,20 +221,20 @@ export default async function Home() {
           <ScrollReveal>
             <div className="text-center mb-8">
               <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">See Pro Outreach In Action</p>
-              <h3 className="text-3xl md:text-4xl font-bold">Watch Agent Pro research companies, find contacts, and draft personalized outreach</h3>
+              <h3 className="text-3xl md:text-4xl font-bold">Watch BLITZ Pro research companies, find contacts, and draft personalized outreach</h3>
             </div>
             <ProMockConversationDemo />
           </ScrollReveal>
         </div>
       </section>
 
-      {/* Agent Mock Demo */}
+      {/* BLITZ Agent Mock Demo */}
       <section className="py-12 px-6">
         <div className="mx-auto max-w-4xl">
           <ScrollReveal>
             <div className="text-center mb-8">
               <p className="text-zinc-500 text-sm uppercase tracking-wide mb-4">See It In Action</p>
-              <h3 className="text-3xl md:text-4xl font-bold">Let the Agent handle the work</h3>
+              <h3 className="text-3xl md:text-4xl font-bold">Let BLITZ handle the work</h3>
             </div>
             <MockConversationDemo />
           </ScrollReveal>

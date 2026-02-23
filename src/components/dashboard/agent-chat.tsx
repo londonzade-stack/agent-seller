@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-import { AgentAvatar } from '@/components/blitz-avatar'
+import { BlitzAvatar } from '@/components/blitz-avatar'
 import { MockConversationDropdown } from '@/components/mock-conversation'
 import { MarkdownContent } from './markdown-content'
 import {
@@ -250,7 +250,7 @@ function formatBriefingDetails(result: Record<string, unknown>, status: string, 
   return null
 }
 
-// Generate contextual agent prompt for a briefing log entry
+// Generate contextual BLITZ prompt for a briefing log entry
 function getBriefingPrompt(log: { task_title: string; status: string; result: Record<string, unknown> }): string {
   if (log.status === 'failed') {
     return `My "${log.task_title}" automation failed. Can you help me troubleshoot it?`
@@ -1032,9 +1032,9 @@ interface AgentChatInnerProps {
 }
 
 function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome }: AgentChatInnerProps) {
-  // Check if this is a "Send to Agent" context (from contacts/analytics)
-  const isAgentContext = initialPrompt?.startsWith('[Contact:') || initialPrompt?.startsWith('[Sender:')
-  const [agentContext, setAgentContext] = useState<string | null>(isAgentContext ? initialPrompt! : null)
+  // Check if this is a "Send to BLITZ" context (from contacts/analytics)
+  const isBlitzContext = initialPrompt?.startsWith('[Contact:') || initialPrompt?.startsWith('[Sender:')
+  const [blitzContext, setBlitzContext] = useState<string | null>(isBlitzContext ? initialPrompt! : null)
   const [input, setInput] = useState('')
   const [showTips, setShowTips] = useState(false)
   const [isTimedOut, setIsTimedOut] = useState(false)
@@ -1168,14 +1168,14 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
   }, [ensureSession])
 
   // Auto-send initial prompt if provided (e.g. from automations example click)
-  // But NOT for Agent context items — those wait for user input
+  // But NOT for BLITZ context items — those wait for user input
   useEffect(() => {
-    if (initialPrompt && !initialPromptSentRef.current && initialMessages.length === 0 && !isAgentContext) {
+    if (initialPrompt && !initialPromptSentRef.current && initialMessages.length === 0 && !isBlitzContext) {
       initialPromptSentRef.current = true
       sendMessage({ text: initialPrompt })
       saveMessage('user', initialPrompt)
     }
-  }, [initialPrompt, initialMessages.length, sendMessage, saveMessage, isAgentContext])
+  }, [initialPrompt, initialMessages.length, sendMessage, saveMessage, isBlitzContext])
 
   // Save assistant message when streaming completes (including tool call metadata)
   useEffect(() => {
@@ -1248,11 +1248,11 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     e.preventDefault()
     if (!input.trim() || isLoading) return
     setIsTimedOut(false)
-    // If there's agent context, prepend it to the user's message
+    // If there's BLITZ context, prepend it to the user's message
     let text = input
-    if (agentContext) {
-      text = `${agentContext}\n\nUser request: ${input}`
-      setAgentContext(null) // Clear context after sending
+    if (blitzContext) {
+      text = `${blitzContext}\n\nUser request: ${input}`
+      setBlitzContext(null) // Clear context after sending
     }
     sendMessage({ text })
     setInput('')
@@ -1382,13 +1382,24 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
           <div className="h-full overflow-auto">
            <div className="min-h-full flex flex-col items-center justify-center py-6">
             <div className="mb-4 sm:mb-5 relative group cursor-pointer">
-              <AgentAvatar size="lg" />
+              <BlitzAvatar size="lg" />
+              <div className="pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 absolute left-1/2 -translate-x-1/2 top-full mt-3 w-72 sm:w-80 rounded-xl border border-stone-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl dark:shadow-black/40 p-4 z-20">
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-stone-200 dark:border-b-zinc-700" />
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mt-[1px] w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[5px] border-b-white dark:border-b-zinc-900" />
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base font-bold tracking-widest font-mono text-amber-500">BLITZ</span>
+                  <span className="text-[10px] text-stone-400 dark:text-zinc-500 font-mono tracking-wide">The Lightning Bug</span>
+                </div>
+                <p className="text-xs text-stone-500 dark:text-zinc-400 leading-relaxed">
+                  A glowing firefly crackling with electricity. Blitz zaps through your inbox at the speed of light and never burns out.
+                </p>
+              </div>
             </div>
             <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">
               {customWelcome ? customWelcome.title : `Hello, ${userName}`}
             </h2>
             <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
-              {customWelcome ? customWelcome.subtitle : "I'm your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
+              {customWelcome ? customWelcome.subtitle : "I'm BLITZ, your AI email agent. I can search, send, organize, analyze, and unsubscribe — just tell me what you need."}
             </p>
             {!customWelcome && (
               <button onClick={() => setShowTips(true)} className="text-sm text-stone-900 dark:text-white hover:underline mb-6 sm:mb-8 flex items-center gap-1">
@@ -1466,7 +1477,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                                   className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
                                 >
                                   <Sparkles className="h-3.5 w-3.5" />
-                                  Ask Agent
+                                  Ask BLITZ
                                 </button>
                               </div>
                             )}
@@ -1522,7 +1533,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                 <div className={`flex gap-2 sm:gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {message.role === 'assistant' && (
                     <div className="shrink-0">
-                      <AgentAvatar size="sm" />
+                      <BlitzAvatar size="sm" />
                     </div>
                   )}
                   <div className={`max-w-[90%] sm:max-w-[85%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
@@ -1616,7 +1627,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
             {isLoading && !lastMsgHasRunningTool && (
               <div className="flex gap-2 sm:gap-4 justify-start">
                 <div className="shrink-0">
-                  <AgentAvatar size="sm" />
+                  <BlitzAvatar size="sm" />
                 </div>
                 <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm dark:shadow-none">
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -1667,15 +1678,15 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
       {/* Input — Style A bottom bar */}
       <div className="border-t border-stone-200 dark:border-zinc-800 p-3 sm:p-4 bg-[#faf8f5] dark:bg-[#111113] shrink-0">
         <div className="max-w-3xl mx-auto">
-          {/* Agent context banner */}
-          {agentContext && (
+          {/* BLITZ context banner */}
+          {blitzContext && (
             <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
               <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Sent to Agent</p>
-                <p className="text-[11px] text-amber-600/80 dark:text-amber-500/70 truncate">{agentContext.replace(/^\[(Contact|Sender): .*?\]\s*/, '').slice(0, 80)}...</p>
+                <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Sent to BLITZ</p>
+                <p className="text-[11px] text-amber-600/80 dark:text-amber-500/70 truncate">{blitzContext.replace(/^\[(Contact|Sender): .*?\]\s*/, '').slice(0, 80)}...</p>
               </div>
-              <button onClick={() => setAgentContext(null)} className="p-0.5 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/30 text-amber-500 shrink-0">
+              <button onClick={() => setBlitzContext(null)} className="p-0.5 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/30 text-amber-500 shrink-0">
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -1687,7 +1698,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={agentContext ? "What do you want the Agent to do with this?" : "Ask your AI email agent anything..."}
+              placeholder={blitzContext ? "What do you want BLITZ to do with this?" : "Ask your AI email agent anything..."}
               className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-base"
               disabled={isLoading}
             />

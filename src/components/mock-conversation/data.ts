@@ -347,7 +347,7 @@ export const MOCK_CONVERSATIONS: MockConversationData[] = [
   {
     id: 'morning-briefing',
     title: 'Morning Briefing',
-    description: 'See what the Agent did overnight',
+    description: 'See what BLITZ did overnight',
     promptText: 'What did you do overnight?',
     messages: [
       {
