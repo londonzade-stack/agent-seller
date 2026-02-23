@@ -204,23 +204,27 @@ export default async function PricingPage() {
                     <Building2 className="mr-2 h-3 w-3" />
                     Teams
                   </Badge>
-                  <div className="flex items-baseline justify-center gap-1 mb-2">
-                    <span className="text-lg text-zinc-500">From</span>
-                    <span className="text-5xl font-bold">$20</span>
-                    <span className="text-zinc-500">/seat/mo</span>
-                  </div>
-                  <p className="text-zinc-500 text-sm">Volume discounts for teams</p>
+                  <p className="text-zinc-500 text-sm">Volume discounts up to 50% off Pro</p>
                 </div>
 
-                {/* Tier breakdown */}
-                <div className="space-y-2 mb-6 p-3 rounded-xl bg-violet-50/50 dark:bg-violet-500/5 border border-violet-200/50 dark:border-violet-500/10">
+                {/* Tier pricing cards */}
+                <div className="space-y-2.5 mb-6">
                   {teamsTiers.map((tier, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-700 dark:text-zinc-300">
-                        <span className="font-semibold">{tier.seats} seats</span>
-                      </span>
+                    <div
+                      key={i}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-colors ${
+                        i === 2
+                          ? 'border-violet-300 dark:border-violet-500/30 bg-violet-50/70 dark:bg-violet-500/10'
+                          : 'border-zinc-200/80 dark:border-white/10 bg-white/50 dark:bg-white/[0.02]'
+                      }`}
+                    >
+                      <div>
+                        <p className="font-semibold text-sm">{tier.seats} seats</p>
+                        <p className="text-xs text-zinc-500">${tier.perSeat}/seat/mo</p>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-zinc-900 dark:text-white">${tier.price}/mo</span>
+                        <span className="text-lg font-bold">${tier.price}</span>
+                        <span className="text-xs text-zinc-500">/mo</span>
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-violet-500 text-white shrink-0">
                           {tier.discount} off
                         </span>
