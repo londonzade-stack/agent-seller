@@ -1,78 +1,45 @@
 'use client'
 
-// ─── Agent Avatar ──────────────────────────────────────────────────────
-// Pixel art avatar used as the AI agent icon throughout the app.
+import { useState, useEffect } from 'react'
 
-const AGENT_GRID = [
-  '........YYY........',
-  '.......YYYYY.......',
-  '......YYYYYYY......',
-  '......YWWYYWWY.....',
-  '......YWKYYWKY.....',
-  '......YYYYYYY......',
-  '.......YYYYY.......',
-  '......YYYYYYY......',
-  '.....YYYYYYYYY.....',
-  '....YY.YYYYY.YY....',
-  '...YY..YYYYY..YY...',
-  '..YY...YYYYY...YY..',
-  '.......YYYYY.......',
-  '......YY.YY.Y......',
-  '.....YYGGYYGGY.....',
-  '......GGG.GGG......',
+// ─── Agent Avatar ──────────────────────────────────────────────────────
+// Braille Snake spinner used as the AI agent icon throughout the app.
+
+// Braille dot encoding: 2×4 grid, dots 1-8
+// Dot values: d1=1, d2=2, d3=4, d4=8, d5=16, d6=32, d7=64, d8=128
+function dots(...ds: number[]): string {
+  const map = [1, 2, 4, 8, 16, 32, 64, 128]
+  return String.fromCharCode(0x2800 + ds.reduce((s, d) => s + map[d - 1], 0))
+}
+
+const SNAKE_FRAMES = [
+  dots(1), dots(1, 2), dots(1, 2, 3), dots(2, 3, 7),
+  dots(3, 7, 8), dots(7, 8, 6), dots(8, 6, 5), dots(6, 5, 4),
+  dots(5, 4, 1), dots(4, 1, 2),
 ]
 
-const AGENT_PALETTE: Record<string, string> = {
-  Y: '#FBBF24',
-  W: '#FFFFFF',
-  K: '#1a1a1a',
-  G: '#F59E0B',
-  '.': '',
-}
+const SNAKE_SPEED = 80
 
-const AGENT_BLUE_PALETTE: Record<string, string> = {
-  Y: '#60A5FA',
-  W: '#FFFFFF',
-  K: '#1a1a1a',
-  G: '#3B82F6',
-  '.': '',
-}
-
-function PixelGrid({
-  grid,
-  palette,
-  pixelSize,
+function BrailleSnake({
+  fontSize,
+  color,
 }: {
-  grid: string[]
-  palette: Record<string, string>
-  pixelSize: number
+  fontSize: string
+  color: string
 }) {
-  const rows = grid.length
-  const cols = Math.max(...grid.map((r) => r.length))
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % SNAKE_FRAMES.length), SNAKE_SPEED)
+    return () => clearInterval(id)
+  }, [])
+
   return (
-    <svg
-      viewBox={`0 0 ${cols * pixelSize} ${rows * pixelSize}`}
-      width={cols * pixelSize}
-      height={rows * pixelSize}
-      shapeRendering="crispEdges"
+    <span
+      className="font-mono select-none inline-flex items-center justify-center"
+      style={{ fontSize, color, lineHeight: 1 }}
     >
-      {grid.map((row, y) =>
-        row.split('').map((char, x) => {
-          const fill = palette[char]
-          if (!fill) return null
-          return (
-            <rect
-              key={`${x}-${y}`}
-              x={x * pixelSize}
-              y={y * pixelSize}
-              width={pixelSize}
-              height={pixelSize}
-              fill={fill}
-            />
-          )
-        })
-      )}
-    </svg>
+      {SNAKE_FRAMES[idx]}
+    </span>
   )
 }
 
@@ -84,16 +51,17 @@ interface AgentAvatarProps {
 }
 
 export function AgentAvatar({ size = 'sm', variant = 'default' }: AgentAvatarProps) {
-  const palette = variant === 'blue' ? AGENT_BLUE_PALETTE : AGENT_PALETTE
+  const darkColor = variant === 'blue' ? '#60A5FA' : 'rgba(255,255,255,0.7)'
+  const lightColor = variant === 'blue' ? '#3B82F6' : 'rgba(0,0,0,0.55)'
 
   if (size === 'lg') {
     return (
-      <div
-        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-stone-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden"
-        style={{ imageRendering: 'pixelated' }}
-      >
-        <div className="scale-[1.1]">
-          <PixelGrid grid={AGENT_GRID} palette={palette} pixelSize={4} />
+      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-stone-100 dark:bg-zinc-800 flex items-center justify-center relative">
+        <div className="dark:hidden">
+          <BrailleSnake fontSize="3rem" color={lightColor} />
+        </div>
+        <div className="hidden dark:block">
+          <BrailleSnake fontSize="3rem" color={darkColor} />
         </div>
       </div>
     )
@@ -101,12 +69,12 @@ export function AgentAvatar({ size = 'sm', variant = 'default' }: AgentAvatarPro
 
   // sm — message avatar (32×32)
   return (
-    <div
-      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden"
-      style={{ imageRendering: 'pixelated' }}
-    >
-      <div className="scale-[0.55] sm:scale-[0.6]">
-        <PixelGrid grid={AGENT_GRID} palette={palette} pixelSize={4} />
+    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-100 dark:bg-zinc-800 flex items-center justify-center relative">
+      <div className="dark:hidden">
+        <BrailleSnake fontSize="1.25rem" color={lightColor} />
+      </div>
+      <div className="hidden dark:block">
+        <BrailleSnake fontSize="1.25rem" color={darkColor} />
       </div>
     </div>
   )
