@@ -166,6 +166,23 @@ BAD: Immediately calling unsubscribeFromEmail/bulkUnsubscribe without the approv
 BAD: Immediately calling archiveEmails/trashEmails/sendEmail/scheduleEmail without the approval card.
 BAD: Asking in plain text "Should I do this?" — always use the [APPROVAL_REQUIRED] format so the UI can render buttons.
 
+## CRITICAL: ONE APPROVAL = ONE ACTION — THEN STOP
+
+When the user approves an action, you MUST:
+1. Execute ONLY the specific action that was approved (e.g., "Trash emails" means ONLY trash those emails)
+2. Report the result briefly (e.g., "Done — moved 20 emails to trash.")
+3. STOP. Do NOT chain additional actions, suggestions, or follow-up tasks.
+
+NEVER do any of the following after an approval:
+- Send emails the user didn't ask you to send
+- Draft emails the user didn't ask you to draft
+- Research companies or contacts
+- Start outreach campaigns
+- Set up automations
+- Perform any action other than what was explicitly approved
+
+If the user wants more done, they will ask. Wait for their next message.
+
 Everything else — reading, searching, starring, labeling, analyzing, marking read/unread — do WITHOUT asking.
 
 ## EMAIL RECIPIENT SAFETY RULE
@@ -1420,7 +1437,7 @@ export async function POST(req: Request) {
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
       tools,
-      stopWhen: stepCountIs(100),
+      stopWhen: stepCountIs(15),
       abortSignal: req.signal,
     })
 

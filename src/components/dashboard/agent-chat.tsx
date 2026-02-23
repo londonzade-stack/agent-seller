@@ -1117,7 +1117,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     }
     if (!isLoading) {
       setLoadingStartTime(null)
-      setIsTimedOut(false)
+      // Don't reset isTimedOut here — let the timeout message stay visible
       if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null }
     }
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
@@ -1286,10 +1286,17 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
   // Track approval responses per message ID
   const [approvalResponses, setApprovalResponses] = useState<Record<string, 'approved' | 'denied' | 'skipped'>>({})
 
-  const handleApproval = (messageId: string, response: 'approved' | 'denied') => {
+  const handleApproval = (messageId: string, response: 'approved' | 'denied', approval?: ApprovalData) => {
     if (isLoading) return
     setApprovalResponses(prev => ({ ...prev, [messageId]: response }))
-    const text = response === 'approved' ? 'Yes, approved. Proceed.' : 'No, denied. Do not proceed.'
+    let text: string
+    if (response === 'approved' && approval) {
+      text = `Approved: "${approval.action}" — ${approval.description}. Execute ONLY this approved action and nothing else. Do NOT perform any additional actions, send any emails, or take any other steps beyond what was just approved.`
+    } else if (response === 'approved') {
+      text = 'Approved. Execute ONLY the action you just asked about and nothing else.'
+    } else {
+      text = 'Denied. Do NOT proceed with this action. Do not perform any alternative actions either.'
+    }
     sendMessage({ text })
     saveMessage('user', text)
   }
@@ -1591,8 +1598,8 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                                 {approvalParsed.before && <MarkdownContent content={approvalParsed.before} />}
                                 <ApprovalCard
                                   approval={approvalParsed.approval}
-                                  onApprove={() => handleApproval(message.id, 'approved')}
-                                  onDeny={() => handleApproval(message.id, 'denied')}
+                                  onApprove={() => handleApproval(message.id, 'approved', approvalParsed.approval)}
+                                  onDeny={() => handleApproval(message.id, 'denied', approvalParsed.approval)}
                                   onDismiss={() => handleDismiss(message.id)}
                                   responded={approvalResponses[message.id] || (isLastAssistant ? null : 'skipped')}
                                 />
