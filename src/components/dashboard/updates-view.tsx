@@ -19,6 +19,7 @@ import {
   FileText,
   Brain,
   Send,
+  CalendarDays,
 } from 'lucide-react'
 
 type UpdateTier = 'blitz' | 'pro' | 'coming_soon'
@@ -34,6 +35,12 @@ interface UpdateItem {
 
 const UPDATES: UpdateItem[] = [
   // ─── Coming Soon ─────────────────────────────────────────────────
+  {
+    icon: CalendarDays,
+    title: 'Google Calendar Integration',
+    description: 'View your schedule, create events, check availability, and let BLITZ coordinate meetings — all from chat.',
+    tier: 'coming_soon',
+  },
   {
     icon: BarChart3,
     title: 'Advanced Analytics Dashboard',
