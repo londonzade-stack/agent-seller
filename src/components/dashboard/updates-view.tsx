@@ -33,6 +33,52 @@ interface UpdateItem {
 }
 
 const UPDATES: UpdateItem[] = [
+  // ─── Coming Soon ─────────────────────────────────────────────────
+  {
+    icon: BarChart3,
+    title: 'Advanced Analytics Dashboard',
+    description: 'Response time tracking, email sentiment analysis, engagement metrics, and actionable inbox insights.',
+    tier: 'coming_soon',
+  },
+
+  // ─── PRO Features ────────────────────────────────────────────────
+  {
+    icon: Globe,
+    title: 'Web Search Integration',
+    description: 'BLITZ can search the web to find real-time information, research topics, and enrich your email context with live data.',
+    tier: 'pro',
+  },
+  {
+    icon: Users,
+    title: 'Company Discovery',
+    description: 'Find companies by industry, location, and size. Get detailed company profiles for targeted outreach.',
+    tier: 'pro',
+  },
+  {
+    icon: Search,
+    title: 'Deep Company Research',
+    description: 'Research any company — get funding info, tech stack, recent news, key people, and competitive landscape.',
+    tier: 'pro',
+  },
+  {
+    icon: Mail,
+    title: 'Sales Outreach Suite',
+    description: 'Dedicated outreach chat with company context injection. Write personalized cold emails backed by real research.',
+    tier: 'pro',
+  },
+  {
+    icon: Repeat2,
+    title: 'Automations',
+    description: 'Set up recurring tasks that run daily, weekly, or monthly — auto-archive, auto-label, auto-trash, inbox stats, and more.',
+    tier: 'pro',
+  },
+  {
+    icon: FileText,
+    title: 'Company Profiles',
+    description: 'Save your company context — name, description, target customer, industry — and BLITZ injects it into every outreach.',
+    tier: 'pro',
+  },
+
   // ─── BLITZ Features ──────────────────────────────────────────────
   {
     icon: Brain,
@@ -88,52 +134,6 @@ const UPDATES: UpdateItem[] = [
     description: 'Send contacts and analytics data directly to BLITZ chat for collaboration — get AI-powered insights, draft emails, and take action on your data.',
     tier: 'blitz',
     extraTiers: ['pro'],
-  },
-
-  // ─── PRO Features ────────────────────────────────────────────────
-  {
-    icon: Globe,
-    title: 'Web Search Integration',
-    description: 'BLITZ can search the web to find real-time information, research topics, and enrich your email context with live data.',
-    tier: 'pro',
-  },
-  {
-    icon: Users,
-    title: 'Company Discovery',
-    description: 'Find companies by industry, location, and size. Get detailed company profiles for targeted outreach.',
-    tier: 'pro',
-  },
-  {
-    icon: Search,
-    title: 'Deep Company Research',
-    description: 'Research any company — get funding info, tech stack, recent news, key people, and competitive landscape.',
-    tier: 'pro',
-  },
-  {
-    icon: Mail,
-    title: 'Sales Outreach Suite',
-    description: 'Dedicated outreach chat with company context injection. Write personalized cold emails backed by real research.',
-    tier: 'pro',
-  },
-  {
-    icon: Repeat2,
-    title: 'Automations',
-    description: 'Set up recurring tasks that run daily, weekly, or monthly — auto-archive, auto-label, auto-trash, inbox stats, and more.',
-    tier: 'pro',
-  },
-  {
-    icon: FileText,
-    title: 'Company Profiles',
-    description: 'Save your company context — name, description, target customer, industry — and BLITZ injects it into every outreach.',
-    tier: 'pro',
-  },
-
-  // ─── Coming Soon ─────────────────────────────────────────────────
-  {
-    icon: BarChart3,
-    title: 'Advanced Analytics Dashboard',
-    description: 'Response time tracking, email sentiment analysis, engagement metrics, and actionable inbox insights.',
-    tier: 'coming_soon',
   },
 ]
 
