@@ -21,10 +21,16 @@ import {
   MessageCircle,
   Star,
   Wrench,
+  DollarSign,
 } from 'lucide-react'
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -111,7 +117,35 @@ interface FeedbackItem {
   userEmail: string
 }
 
+interface UsageData {
+  period: { days: number; from: string }
+  totals: {
+    costCents: number
+    requests: number
+    inputTokens: number
+    outputTokens: number
+    avgCostPerResponse: number
+    avgCostPerDay: number
+  }
+  dailySpend: { date: string; cost: number; requests: number }[]
+  topUsers: { userId: string; email: string; cost: number; requests: number; inputTokens: number; outputTokens: number }[]
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────
+
+function formatCost(cents: number): string {
+  const dollars = cents / 100
+  if (dollars === 0) return '$0.00'
+  if (dollars < 0.01) return `$${dollars.toFixed(6)}`
+  if (dollars < 1) return `$${dollars.toFixed(4)}`
+  return `$${dollars.toFixed(2)}`
+}
+
+function formatTokens(tokens: number): string {
+  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`
+  if (tokens >= 1_000) return `${(tokens / 1_000).toFixed(1)}K`
+  return tokens.toString()
+}
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
@@ -213,7 +247,7 @@ export function AdminView() {
   const [error, setError] = useState<string | null>(null)
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'overview' | 'chats' | 'feedback'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'chats' | 'feedback' | 'api'>('overview')
 
   // Overview: Users table search
   const [searchQuery, setSearchQuery] = useState('')
@@ -221,6 +255,11 @@ export function AdminView() {
   // Feedback tab state
   const [feedback, setFeedback] = useState<FeedbackItem[]>([])
   const [feedbackLoaded, setFeedbackLoaded] = useState(false)
+
+  // API Usage tab state
+  const [usageData, setUsageData] = useState<UsageData | null>(null)
+  const [usageLoaded, setUsageLoaded] = useState(false)
+  const [usageDays, setUsageDays] = useState(30)
 
   // Chats tab state
   const [chatUsers, setChatUsers] = useState<{ userId: string; email: string; sessions: ChatSession[] }[]>([])
@@ -269,6 +308,24 @@ export function AdminView() {
       setFeedback([])
     } finally {
       setFeedbackLoaded(true)
+    }
+  }
+
+  // Fetch API usage (lazy — only when tab is clicked)
+  const fetchUsage = async (days?: number, force = false) => {
+    const d = days ?? usageDays
+    if (usageLoaded && !force && d === usageDays && usageData) return
+    if (days !== undefined) setUsageDays(days)
+    setUsageLoaded(false)
+    try {
+      const res = await fetch(`/api/admin/usage?days=${d}`)
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      setUsageData(data)
+    } catch {
+      setUsageData(null)
+    } finally {
+      setUsageLoaded(true)
     }
   }
 
@@ -380,12 +437,14 @@ export function AdminView() {
             { id: 'overview' as const, label: 'Overview', icon: BarChart3 },
             { id: 'chats' as const, label: 'Chats', icon: MessageCircle },
             { id: 'feedback' as const, label: 'Feedback', icon: Star },
+            { id: 'api' as const, label: 'API', icon: DollarSign },
           ]).map(tab => (
             <button
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id)
                 if (tab.id === 'feedback') fetchFeedback()
+                if (tab.id === 'api') fetchUsage()
               }}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.id
@@ -824,6 +883,184 @@ export function AdminView() {
                 </div>
               )}
             </Card>
+          </div>
+        </div>
+      ) : activeTab === 'api' ? (
+        /* ═══════════════════════════════════════════════════════════
+           API USAGE TAB
+           ═══════════════════════════════════════════════════════════ */
+        <div className="flex-1 overflow-auto p-4 sm:p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+
+            {/* Period Toggle + Refresh */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {[7, 30, 90].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => fetchUsage(d, true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      usageDays === d
+                        ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                    }`}
+                  >
+                    {d}d
+                  </button>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fetchUsage(usageDays, true)}
+                className="h-7 text-xs border-zinc-200 dark:border-zinc-700"
+              >
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Refresh
+              </Button>
+            </div>
+
+            {!usageLoaded ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+              </div>
+            ) : !usageData || usageData.totals.requests === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <DollarSign className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-3" />
+                <p className="text-sm text-zinc-400">No usage data yet</p>
+                <p className="text-xs text-zinc-400 mt-1">Data will appear after agent requests are made</p>
+              </div>
+            ) : (
+              <>
+                {/* ─── Summary Cards ─── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* Total Spend */}
+                  <Card className="p-4 bg-white dark:bg-black border-zinc-200 dark:border-white/10">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                        <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Total Spend</span>
+                    </div>
+                    <p className="text-2xl font-bold tracking-tight">{formatCost(usageData.totals.costCents)}</p>
+                    <p className="text-[11px] text-zinc-400 mt-1">{formatCost(usageData.totals.avgCostPerDay)}/day avg</p>
+                  </Card>
+
+                  {/* Avg Cost / Response */}
+                  <Card className="p-4 bg-white dark:bg-black border-zinc-200 dark:border-white/10">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                        <Zap className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Avg / Response</span>
+                    </div>
+                    <p className="text-2xl font-bold tracking-tight">{formatCost(usageData.totals.avgCostPerResponse)}</p>
+                    <p className="text-[11px] text-zinc-400 mt-1">{usageData.totals.requests.toLocaleString()} total responses</p>
+                  </Card>
+
+                  {/* Input Tokens */}
+                  <Card className="p-4 bg-white dark:bg-black border-zinc-200 dark:border-white/10">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                        <MessageSquare className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Input Tokens</span>
+                    </div>
+                    <p className="text-2xl font-bold tracking-tight">{formatTokens(usageData.totals.inputTokens)}</p>
+                  </Card>
+
+                  {/* Output Tokens */}
+                  <Card className="p-4 bg-white dark:bg-black border-zinc-200 dark:border-white/10">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="p-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                        <MessageSquare className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+                      </div>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-medium">Output Tokens</span>
+                    </div>
+                    <p className="text-2xl font-bold tracking-tight">{formatTokens(usageData.totals.outputTokens)}</p>
+                  </Card>
+                </div>
+
+                {/* ─── Daily Spend Chart ─── */}
+                <Card className="p-4 bg-white dark:bg-black border-zinc-200 dark:border-white/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-medium text-sm">Daily Spend</h3>
+                    <span className="text-[11px] text-zinc-400">Last {usageDays} days</span>
+                  </div>
+                  <div className="h-[250px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={usageData.dailySpend}>
+                        <CartesianGrid strokeDasharray="3 3" className="[&>line]:stroke-zinc-200 dark:[&>line]:stroke-zinc-800" />
+                        <XAxis
+                          dataKey="date"
+                          tickFormatter={(v: string) => v.slice(5)}
+                          tick={{ fontSize: 10, fill: '#999' }}
+                          interval={Math.max(Math.floor(usageData.dailySpend.length / 10), 0)}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10, fill: '#999' }}
+                          width={55}
+                          tickFormatter={(v: number) => formatCost(v)}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.length) return null
+                            return (
+                              <div className="bg-white dark:bg-zinc-800 rounded-lg px-3 py-2 text-xs shadow-lg border border-zinc-200 dark:border-zinc-700">
+                                <p className="font-medium mb-1">{String(label)}</p>
+                                <p className="text-zinc-500">Cost: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatCost(payload[0].value as number)}</span></p>
+                                <p className="text-zinc-500">Requests: <span className="font-semibold">{payload[0].payload.requests}</span></p>
+                              </div>
+                            )
+                          }}
+                        />
+                        <Bar dataKey="cost" fill="#10b981" radius={[3, 3, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                {/* ─── Top Users Table ─── */}
+                <Card className="p-0 bg-white dark:bg-black border-zinc-200 dark:border-white/10 overflow-hidden">
+                  <div className="p-4 border-b border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
+                    <h3 className="font-medium text-sm">Top Users</h3>
+                    <span className="text-[11px] text-zinc-400">{usageData.topUsers.length} users</span>
+                  </div>
+                  <div className="overflow-auto max-h-[400px]">
+                    <table className="w-full text-xs">
+                      <thead className="bg-zinc-50 dark:bg-zinc-900/50 sticky top-0">
+                        <tr>
+                          <th className="text-left px-4 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 w-10">#</th>
+                          <th className="text-left px-3 py-2.5 font-medium text-zinc-500 dark:text-zinc-400">User</th>
+                          <th className="text-right px-3 py-2.5 font-medium text-zinc-500 dark:text-zinc-400">Cost</th>
+                          <th className="text-right px-3 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 hidden sm:table-cell">Requests</th>
+                          <th className="text-right px-3 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 hidden md:table-cell">Input</th>
+                          <th className="text-right px-4 py-2.5 font-medium text-zinc-500 dark:text-zinc-400 hidden md:table-cell">Output</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {usageData.topUsers.map((user, i) => (
+                          <tr key={user.userId} className="border-b border-zinc-100 dark:border-zinc-800/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
+                            <td className="px-4 py-2.5 text-zinc-400 font-mono">{String(i + 1).padStart(2, '0')}</td>
+                            <td className="px-3 py-2.5">
+                              <span className="font-medium truncate block max-w-[240px]">{user.email}</span>
+                            </td>
+                            <td className="px-3 py-2.5 text-right font-semibold text-emerald-600 dark:text-emerald-400">{formatCost(user.cost)}</td>
+                            <td className="px-3 py-2.5 text-right hidden sm:table-cell">{user.requests}</td>
+                            <td className="px-3 py-2.5 text-right hidden md:table-cell text-zinc-500">{formatTokens(user.inputTokens)}</td>
+                            <td className="px-4 py-2.5 text-right hidden md:table-cell text-zinc-500">{formatTokens(user.outputTokens)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </>
+            )}
           </div>
         </div>
       ) : null}

@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { sanitizeError } from '@/lib/logger'
+import { getAdminClient } from '@/lib/admin'
 import { calculateNextRun, formatSchedule } from '@/lib/recurring-tasks'
 import {
   scanInboxForEmails,
@@ -1432,6 +1433,10 @@ export async function POST(req: Request) {
       systemPrompt += `\n\n## NOTE: No company profile set up yet.\nIf the user's request involves outreach, cold emails, sales prospecting, or company-specific context (e.g., "find companies to sell our product to"), ask ONE brief clarifying question about their company, role, or product before proceeding. Keep it conversational — don't interrogate. Example: "Quick question — what does your company sell? That way I can tailor the outreach perfectly."`
     }
 
+    // Pricing for Gemini 3 Flash via Vercel AI Gateway (per token)
+    const INPUT_PRICE = 0.10 / 1_000_000   // $0.10 per 1M input tokens
+    const OUTPUT_PRICE = 0.40 / 1_000_000  // $0.40 per 1M output tokens
+
     const result = streamText({
       model: 'google/gemini-3-flash',
       system: systemPrompt,
@@ -1439,6 +1444,28 @@ export async function POST(req: Request) {
       tools,
       stopWhen: stepCountIs(15),
       abortSignal: req.signal,
+      onFinish: async ({ totalUsage }) => {
+        // Fire-and-forget: log token usage for admin analytics
+        if (!userId) return
+        try {
+          const inputTokens = totalUsage.inputTokens ?? 0
+          const outputTokens = totalUsage.outputTokens ?? 0
+          const totalTokens = totalUsage.totalTokens ?? (inputTokens + outputTokens)
+          const costCents = ((inputTokens * INPUT_PRICE) + (outputTokens * OUTPUT_PRICE)) * 100
+
+          const adminClient = getAdminClient()
+          await adminClient.from('api_usage').insert({
+            user_id: userId,
+            model: 'gemini-3-flash',
+            input_tokens: inputTokens,
+            output_tokens: outputTokens,
+            total_tokens: totalTokens,
+            cost_cents: costCents,
+          })
+        } catch (err) {
+          sanitizeError('Usage tracking error', err)
+        }
+      },
     })
 
     return result.toUIMessageStreamResponse()
