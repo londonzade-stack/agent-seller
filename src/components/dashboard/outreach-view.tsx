@@ -458,7 +458,7 @@ interface OutreachViewProps {
 const REQUEST_TIMEOUT = 120000
 
 export function OutreachView({ user, isEmailConnected, userPlan, initialSessionId, initialPrompt, onNavigateToBilling, onSessionCreated }: OutreachViewProps) {
-  const isPro = userPlan === 'pro' || userPlan === 'access_code'
+  const isPro = userPlan === 'pro'
   const [ready, setReady] = useState(!initialSessionId)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
 
@@ -518,7 +518,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, initialSessionI
 }
 
 function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId, initialPrompt, initialMessages, onNavigateToBilling, onSessionCreated }: OutreachViewProps & { initialMessages: UIMessage[] }) {
-  const isPro = userPlan === 'pro' || userPlan === 'access_code'
+  const isPro = userPlan === 'pro'
   // Check if this is a "Send to BLITZ Pro" context (from contacts/analytics)
   const isProContext = initialPrompt?.startsWith('[Contact:') || initialPrompt?.startsWith('[Sender:')
   const [proContext, setProContext] = useState<string | null>(isProContext ? initialPrompt! : null)

@@ -15,7 +15,6 @@ import {
   ExternalLink,
   RefreshCw,
   LogOut,
-  Ticket,
   Building2,
   ArrowRight,
 } from 'lucide-react'
@@ -40,9 +39,6 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [accessCode, setAccessCode] = useState('')
-  const [redeemLoading, setRedeemLoading] = useState(false)
-  const [redeemMessage, setRedeemMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -186,37 +182,10 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
     }
   }
 
-  const handleRedeem = async () => {
-    if (!accessCode.trim()) return
-    setRedeemLoading(true)
-    setRedeemMessage(null)
-    try {
-      const res = await fetch('/api/billing/redeem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: accessCode.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setRedeemMessage({ type: 'error', text: data.error || 'Failed to redeem code' })
-        return
-      }
-      setRedeemMessage({ type: 'success', text: 'Access code redeemed! You now have full access.' })
-      setAccessCode('')
-      fetchBillingStatus()
-    } catch {
-      setRedeemMessage({ type: 'error', text: 'Something went wrong. Please try again.' })
-    } finally {
-      setRedeemLoading(false)
-    }
-  }
-
   // User has an active subscription (trialing with Stripe customer, or active)
-  const isSubscribed = billing && billing.hasStripeCustomer && (billing.status === 'active' || billing.status === 'trialing')
-  // User has access code (no Stripe, but active)
-  const isAccessCode = billing && billing.plan === 'access_code' && billing.status === 'active'
+  const isSubscribed = billing && (billing.status === 'active' || billing.status === 'trialing')
   // User needs to subscribe (no subscription, canceled, paused, or past_due)
-  const needsSubscription = billing && !isSubscribed && !isAccessCode
+  const needsSubscription = billing && !isSubscribed
 
   return (
     <div className="flex-1 flex flex-col h-full">
@@ -404,36 +373,6 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
               </>
             )}
 
-            {/* ─── ACCESS CODE VIEW ──── */}
-            {isAccessCode && (
-              <>
-                <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
-                  <div className="flex items-start justify-between mb-4 gap-2">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Plan</p>
-                        <p className="text-base sm:text-lg font-semibold truncate">
-                          Emailligence Pro
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap bg-emerald-500/10 text-emerald-500">
-                      Active
-                    </span>
-                  </div>
-                  <div className="border-t border-zinc-200 dark:border-white/10 pt-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">Price</span>
-                      <span className="font-medium">Free (Access Code)</span>
-                    </div>
-                  </div>
-                </Card>
-              </>
-            )}
-
             {/* ─── NEEDS SUBSCRIPTION VIEW (none, canceled, paused, past_due) ──── */}
             {needsSubscription && (
               <>
@@ -589,46 +528,6 @@ export function BillingView({ onStatusChange, onPlanChange }: BillingViewProps) 
                   </div>
                 </Card>
 
-                {/* Access Code */}
-                <Card className="p-4 sm:p-6 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
-                      <Ticket className="h-5 w-5 text-violet-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Have an access code?</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Enter your code to unlock free access</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 flex-col sm:flex-row">
-                    <input
-                      type="text"
-                      value={accessCode}
-                      onChange={e => setAccessCode(e.target.value.toUpperCase())}
-                      onKeyDown={e => e.key === 'Enter' && handleRedeem()}
-                      placeholder="Enter code"
-                      className="flex-1 px-3 py-2 rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 text-base outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 dark:focus:border-violet-400 transition-all font-mono tracking-wider uppercase placeholder:normal-case placeholder:tracking-normal placeholder:font-sans"
-                      disabled={redeemLoading}
-                    />
-                    <Button
-                      onClick={handleRedeem}
-                      disabled={redeemLoading || !accessCode.trim()}
-                      size="sm"
-                      className="bg-violet-600 hover:bg-violet-700 text-white dark:bg-violet-500 dark:hover:bg-violet-600 px-4"
-                    >
-                      {redeemLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        'Redeem'
-                      )}
-                    </Button>
-                  </div>
-                  {redeemMessage && (
-                    <p className={`text-xs mt-2 ${redeemMessage.type === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {redeemMessage.text}
-                    </p>
-                  )}
-                </Card>
               </>
             )}
 

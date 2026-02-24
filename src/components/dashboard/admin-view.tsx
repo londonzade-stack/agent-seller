@@ -71,7 +71,6 @@ interface AdminStats {
     canceled: number
     none: number
     pastDue: number
-    accessCode: number
   }
   sparklines?: {
     signups: SparklinePoint[]
@@ -165,13 +164,12 @@ function timeAgo(dateStr: string) {
   return formatDate(dateStr)
 }
 
-function planBadge(plan: string, status: string) {
-  if (plan === 'access_code') return { label: 'Access Code', className: 'bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400' }
+function planBadge(_plan: string, status: string) {
   if (status === 'trialing') return { label: 'Trial', className: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' }
   if (status === 'active') return { label: 'Pro', className: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' }
   if (status === 'canceled') return { label: 'Canceled', className: 'bg-red-100 dark:bg-red-500/20 text-red-500 dark:text-red-400' }
   if (status === 'past_due') return { label: 'Past Due', className: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400' }
-  return { label: 'Basic', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400' }
+  return { label: 'Free', className: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400' }
 }
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#f59e0b', '#6b7280']
@@ -407,9 +405,8 @@ export function AdminView() {
   // ─── Subscription pie data ──────────────────────────────────────
   const subPieData = stats ? [
     { name: 'Trial', value: stats.subscriptions.trialing },
-    { name: 'Active', value: stats.subscriptions.active },
+    { name: 'Pro', value: stats.subscriptions.active },
     { name: 'Canceled', value: stats.subscriptions.canceled },
-    { name: 'Access Code', value: stats.subscriptions.accessCode },
     { name: 'Past Due', value: stats.subscriptions.pastDue },
     { name: 'Free', value: stats.subscriptions.none },
   ].filter(d => d.value > 0) : []

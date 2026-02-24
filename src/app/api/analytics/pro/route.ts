@@ -21,7 +21,7 @@ export async function GET() {
       .single()
 
     const plan = sub?.plan || 'basic'
-    const isPro = plan === 'pro' || plan === 'access_code'
+    const isPro = plan === 'pro'
 
     if (!isPro) {
       return Response.json({ error: 'Pro plan required' }, { status: 403 })

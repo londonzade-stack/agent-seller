@@ -41,10 +41,9 @@ export async function GET() {
       .from('subscriptions')
       .select('status, plan')
 
-    const subBreakdown = { trialing: 0, active: 0, canceled: 0, none: 0, pastDue: 0, accessCode: 0 }
+    const subBreakdown = { trialing: 0, active: 0, canceled: 0, none: 0, pastDue: 0 }
     for (const s of subscriptions || []) {
-      if (s.plan === 'access_code') subBreakdown.accessCode++
-      else if (s.status === 'trialing') subBreakdown.trialing++
+      if (s.status === 'trialing') subBreakdown.trialing++
       else if (s.status === 'active') subBreakdown.active++
       else if (s.status === 'canceled') subBreakdown.canceled++
       else if (s.status === 'past_due') subBreakdown.pastDue++

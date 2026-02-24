@@ -104,7 +104,7 @@ function ProLockOverlay({ onNavigateToBilling }: { onNavigateToBilling: () => vo
 
 // ─── Component ───────────────────────────────────────────────────
 export function ProAnalyticsSection({ userPlan, onNavigateToBilling, isEmailConnected }: ProAnalyticsSectionProps) {
-  const isPro = userPlan === 'pro' || userPlan === 'access_code'
+  const isPro = userPlan === 'pro'
   const [data, setData] = useState<ProAnalyticsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     .eq('user_id', user.id)
     .single()
   const plan = subscription?.plan || 'basic'
-  if (plan !== 'pro' && plan !== 'access_code') {
+  if (plan !== 'pro') {
     return NextResponse.json({ error: 'Scheduled emails require a Pro plan.' }, { status: 403 })
   }
 

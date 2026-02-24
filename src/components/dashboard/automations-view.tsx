@@ -253,7 +253,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
   }
 
   // Gate automations to Pro plan only
-  if (userPlan && userPlan !== 'pro' && userPlan !== 'access_code') {
+  if (userPlan && userPlan !== 'pro') {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 bg-[#faf8f5] dark:bg-[#111113]">
         <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30 mb-4">
