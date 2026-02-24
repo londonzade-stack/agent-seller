@@ -316,7 +316,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold text-stone-900 dark:text-white flex items-center gap-2">
-              <Repeat2 className="h-6 w-6 text-amber-500" />
+              <Repeat2 className="h-6 w-6 text-blue-500" />
               Automations
             </h1>
             <p className="text-sm text-stone-500 dark:text-zinc-400 mt-1">
@@ -444,7 +444,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
         {/* Recurring Automations Section Header */}
         {scheduledEmails.length > 0 && (
           <div className="flex items-center gap-2 mb-3">
-            <Repeat2 className="h-4 w-4 text-amber-500" />
+            <Repeat2 className="h-4 w-4 text-blue-500" />
             <h2 className="text-sm font-semibold text-stone-700 dark:text-zinc-300 uppercase tracking-wider">
               Recurring Automations
             </h2>
@@ -455,15 +455,15 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
           /* Empty state with example ideas */
           <div className="py-8">
             <div className="text-center mb-8">
-              <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 mx-auto mb-4">
-                <Zap className="h-8 w-8 text-amber-500" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30 mx-auto mb-4">
+                <Zap className="h-8 w-8 text-blue-500" />
               </div>
               <h3 className="text-lg font-semibold text-stone-900 dark:text-white mb-2">No automations yet</h3>
               <p className="text-stone-500 dark:text-zinc-400 max-w-sm mx-auto mb-4 text-sm">
                 Tell BLITZ what to automate and it handles the rest. Here are some ideas:
               </p>
               <Button onClick={() => onNavigateToAgent()} variant="outline" size="sm">
-                <Zap className="h-4 w-4 mr-2 text-amber-500" />
+                <Zap className="h-4 w-4 mr-2 text-blue-500" />
                 Ask BLITZ to create one
               </Button>
             </div>
@@ -477,13 +477,13 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
                   onClick={() => onNavigateToAgent(example.prompt)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200/40 dark:border-amber-800/20 shrink-0">
-                      <example.icon className="h-4 w-4 text-amber-500" />
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-800/20 shrink-0">
+                      <example.icon className="h-4 w-4 text-blue-500" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-stone-800 dark:text-zinc-200">{example.title}</p>
                       <p className="text-xs text-stone-500 dark:text-zinc-500 mt-0.5">{example.description}</p>
-                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5 font-mono">
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1.5 font-mono">
                         &ldquo;{example.prompt}&rdquo;
                       </p>
                     </div>
@@ -568,7 +568,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
                       disabled={togglingId === task.id}
                       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
                         task.enabled
-                          ? 'bg-amber-500'
+                          ? 'bg-blue-500'
                           : 'bg-stone-300 dark:bg-zinc-700'
                       }`}
                     >
@@ -622,7 +622,7 @@ export function AutomationsView({ isEmailConnected, onConnectEmail, onNavigateTo
           <div className="text-center mt-6">
             <button
               onClick={() => onNavigateToAgent()}
-              className="text-xs text-stone-400 dark:text-zinc-600 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
+              className="text-xs text-stone-400 dark:text-zinc-600 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
             >
               Ask BLITZ to create more automations &#8594;
             </button>
