@@ -4,6 +4,28 @@ import React, { useState, useCallback, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
+// Count table body rows from React children
+function countTableRows(children: React.ReactNode): number {
+  let count = 0
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return
+    // Look for tbody (skip thead)
+    const type = child.type
+    const isBody = type === 'tbody' || (typeof type === 'function' && type !== Object)
+    // If there's no explicit tbody, rows might be direct children
+    if (isBody || type === 'tr') {
+      if (type === 'tr') {
+        count++
+      } else {
+        React.Children.forEach((child.props as { children?: React.ReactNode }).children, (row) => {
+          if (React.isValidElement(row)) count++
+        })
+      }
+    }
+  })
+  return count
+}
+
 // Fullscreen table modal
 function TableModal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   // Close on Escape key
@@ -31,8 +53,15 @@ function TableModal({ children, onClose }: { children: React.ReactNode; onClose:
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/50">
-          <span className="text-xs font-medium text-stone-500 dark:text-zinc-400 uppercase tracking-wider">Table View</span>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-zinc-800 bg-stone-50 dark:bg-zinc-800/50 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-stone-500 dark:text-zinc-400 uppercase tracking-wider">Table View</span>
+            {countTableRows(children) > 0 && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-200 dark:bg-zinc-700 text-stone-500 dark:text-zinc-400">
+                {countTableRows(children)} rows
+              </span>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-colors"
@@ -43,8 +72,8 @@ function TableModal({ children, onClose }: { children: React.ReactNode; onClose:
             </svg>
           </button>
         </div>
-        {/* Table content */}
-        <div className="overflow-auto flex-1 p-4">
+        {/* Table content — min-h-0 is critical for flex overflow scrolling */}
+        <div className="overflow-auto flex-1 min-h-0 p-4">
           <table className="w-full border-collapse text-sm">
             {children}
           </table>
