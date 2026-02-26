@@ -1671,10 +1671,11 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
 
             {/* Show loading only if the last message doesn't already have a running tool visible */}
             {isLoading && !lastMsgHasRunningTool && (
-              <div className="flex gap-2 sm:gap-4 justify-start items-center">
+              <div className="flex gap-2 justify-start items-center">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
                 <ShimmerText
                   text={activeToolInfo ? activeToolInfo.label + '...' : 'Agent is working...'}
-                  className="text-sm font-medium"
+                  className="text-[13px]"
                 />
                 <Button variant="ghost" size="sm" onClick={handleStop} className="h-7 px-2 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500">
                   <StopCircle className="h-3 w-3 mr-1" />Stop

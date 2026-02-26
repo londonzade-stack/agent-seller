@@ -177,23 +177,42 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Shimmer text animation — character wave effect */
-@keyframes shimmer-char {
-  0%, 100% { color: #78716c; }
-  50% { color: #1c1917; }
+/* Shimmer text animation — glassy gradient sweep */
+@keyframes shimmer-sweep {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
 
-.shimmer-char {
-  animation: shimmer-char 1.8s ease-in-out infinite;
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #a8a29e 0%,
+    #a8a29e 35%,
+    #1c1917 50%,
+    #a8a29e 65%,
+    #a8a29e 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-sweep 1.5s ease-in-out infinite;
 }
 
-.dark .shimmer-char {
-  animation-name: shimmer-char-dark;
-}
-
-@keyframes shimmer-char-dark {
-  0%, 100% { color: #71717a; }
-  50% { color: #e4e4e7; }
+.dark .shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #52525b 0%,
+    #52525b 35%,
+    #e4e4e7 50%,
+    #52525b 65%,
+    #52525b 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer-sweep 1.5s ease-in-out infinite;
 }
 
 @layer base {
