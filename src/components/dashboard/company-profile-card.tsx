@@ -24,7 +24,7 @@ interface CompanyProfile {
 }
 
 interface CompanyProfileCardProps {
-  /** 'inline' = compact card on outreach welcome; 'full' = full-width standalone page */
+  /** 'inline' = compact card on agent welcome (Pro); 'full' = full-width standalone page */
   variant?: 'inline' | 'full'
 }
 

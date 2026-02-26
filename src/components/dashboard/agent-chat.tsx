@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge'
 
 import { ShimmerText } from '@/components/shimmer-text'
 import { MockConversationDropdown } from '@/components/mock-conversation'
+import { ProMockConversationDropdown } from '@/components/pro-mock-conversation'
+import { CompanyProfileCard } from './company-profile-card'
 import { MarkdownContent } from './markdown-content'
 import {
   Send,
@@ -38,6 +40,9 @@ import {
   EyeOff,
   Zap,
   Clock,
+  Lock,
+  Building2,
+  Globe,
 } from 'lucide-react'
 
 interface CustomWelcome {
@@ -59,6 +64,8 @@ interface AgentChatProps {
   onOpenCommandPalette?: () => void
   onSessionCreated?: (sessionId: string) => void
   customWelcome?: CustomWelcome
+  userPlan?: string
+  onNavigateToBilling?: () => void
 }
 
 interface SavedMessage {
@@ -560,6 +567,33 @@ function parseApprovalBlock(text: string): { before: string; approval: ApprovalD
   return null
 }
 
+// ─── Pro Upgrade Card — shown when a tool returns requiresProPlan ────
+function ProUpgradeCard({ message, onNavigateToBilling }: { message?: string; onNavigateToBilling?: () => void }) {
+  return (
+    <div className="my-3 rounded-xl border border-blue-200 dark:border-blue-800/40 bg-blue-50/50 dark:bg-blue-950/20 overflow-hidden shadow-sm">
+      <div className="flex items-center gap-2.5 px-4 py-3">
+        <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+          <Lock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">Pro Feature</span>
+          <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+            {message || 'This feature requires a Pro plan.'}
+          </p>
+        </div>
+        {onNavigateToBilling && (
+          <button
+            onClick={onNavigateToBilling}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors"
+          >
+            Upgrade to Pro
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function ApprovalCard({ approval, onApprove, onDeny, onDismiss, responded }: {
   approval: ApprovalData
   onApprove: () => void
@@ -920,7 +954,7 @@ function humanizeToolOutput(toolName: string, output: Record<string, unknown>): 
 const REQUEST_TIMEOUT = 120000
 
 // Wrapper that loads history / creates session before rendering the actual chat
-export function AgentChat({ user, isEmailConnected, initialSessionId, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome }: AgentChatProps) {
+export function AgentChat({ user, isEmailConnected, initialSessionId, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome, userPlan, onNavigateToBilling }: AgentChatProps) {
   const [ready, setReady] = useState(false)
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([])
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
@@ -992,6 +1026,8 @@ export function AgentChat({ user, isEmailConnected, initialSessionId, initialPro
       onOpenCommandPalette={onOpenCommandPalette}
       onSessionCreated={onSessionCreated}
       customWelcome={customWelcome}
+      userPlan={userPlan}
+      onNavigateToBilling={onNavigateToBilling}
     />
   )
 }
@@ -1005,9 +1041,11 @@ interface AgentChatInnerProps {
   onOpenCommandPalette?: () => void
   onSessionCreated?: (sessionId: string) => void
   customWelcome?: CustomWelcome
+  userPlan?: string
+  onNavigateToBilling?: () => void
 }
 
-function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome }: AgentChatInnerProps) {
+function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, initialMessages, initialPrompt, onOpenCommandPalette, onSessionCreated, customWelcome, userPlan, onNavigateToBilling }: AgentChatInnerProps) {
   // Check if this is a "Send to Agent" context (from contacts/analytics)
   const isAgentContext = initialPrompt?.startsWith('[Contact:') || initialPrompt?.startsWith('[Sender:')
   const [agentContext, setAgentContext] = useState<string | null>(isAgentContext ? initialPrompt! : null)
@@ -1295,6 +1333,8 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     }
   }
 
+  const isPro = userPlan === 'pro'
+
   const suggestions = [
     'Show me my unread emails from today',
     'Draft a follow-up email for a prospect',
@@ -1302,6 +1342,13 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
     'Get my inbox stats for this week',
     'Go find all emails with receipt attachments and put them into a new folder called SAP Concur',
     'Make a folder for all emails from today only and then provide me a Gmail URL for it',
+  ]
+
+  const proSuggestions = [
+    { title: 'Find companies to sell to', desc: 'Search for prospects that fit my target market', prompt: 'Find companies that would be a great fit for our product. Research the top results and give me a breakdown of each company, what they do, and who the decision makers are.', icon: Building2 },
+    { title: 'Research & draft cold emails', desc: 'Deep-dive prospects and draft personalized outreach', prompt: 'Research 5 companies in my target market, find what makes each one unique, and draft personalized cold outreach emails for each. Let me review before sending.', icon: Mail },
+    { title: 'Follow up on outreach', desc: 'Check replies and draft follow-ups automatically', prompt: "Check if any of my recent outreach emails got replies. For the ones that didn't respond, draft personalized follow-ups with a new angle. Show me everything in a table.", icon: Users },
+    { title: 'Competitive research', desc: 'Research my competitors before the next pitch', prompt: 'Research our top competitors — what are they doing lately, what are their strengths and weaknesses, and how should we position against them?', icon: BarChart3 },
   ]
 
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
@@ -1350,7 +1397,10 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
               <span className="text-xs font-medium sm:hidden">Examples</span>
               <ChevronDown className={`h-3 w-3 text-stone-400 dark:text-zinc-500 transition-transform duration-200 ${showTips ? 'rotate-180' : ''}`} />
             </button>
-            <MockConversationDropdown isOpen={showTips} onClose={() => setShowTips(false)} onPromptSelect={handleMockPromptSelect} />
+            {isPro
+              ? <ProMockConversationDropdown isOpen={showTips} onClose={() => setShowTips(false)} onPromptSelect={handleMockPromptSelect} />
+              : <MockConversationDropdown isOpen={showTips} onClose={() => setShowTips(false)} onPromptSelect={handleMockPromptSelect} />
+            }
           </div>
           {!isEmailConnected && (
             <div className="hidden sm:flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg text-sm border border-amber-200/60 dark:border-amber-800/30">
@@ -1466,6 +1516,13 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
               </div>
             )}
 
+            {/* Company profile card for Pro users */}
+            {isPro && !customWelcome && (
+              <div className="max-w-2xl w-full px-2 mb-4">
+                <CompanyProfileCard variant="inline" />
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 max-w-2xl w-full px-2">
               {customWelcome ? (
                 customWelcome.suggestions.map((suggestion, i) => (
@@ -1477,14 +1534,29 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                   </Card>
                 ))
               ) : (
-                suggestions.map((suggestion, i) => (
-                  <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion)}>
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                      <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion}</span>
-                    </div>
-                  </Card>
-                ))
+                <>
+                  {suggestions.map((suggestion, i) => (
+                    <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion)}>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                        <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion}</span>
+                      </div>
+                    </Card>
+                  ))}
+                  {isPro && proSuggestions.map((suggestion, i) => (
+                    <Card key={`pro-${i}`} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion.prompt)}>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center shrink-0 mt-0.5">
+                          <suggestion.icon className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium text-stone-700 dark:text-zinc-300">{suggestion.title}</span>
+                          <p className="text-xs text-stone-400 dark:text-zinc-500 mt-0.5">{suggestion.desc}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </>
               )}
             </div>
            </div>
@@ -1569,12 +1641,24 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                           return <MarkdownContent key={group.index} content={part.text} />
                         }
                         if (group.type === 'tools') {
-                          // If only 1 tool call, render the classic single block
-                          if (group.parts.length === 1) {
-                            return <ToolCallBlock key={`tool-${group.startIndex}`} part={group.parts[0]} />
-                          }
-                          // Multiple tool calls → grouped compact view
-                          return <ToolCallGroup key={`toolgroup-${group.startIndex}`} parts={group.parts} />
+                          // Check if any tool output has requiresProPlan
+                          const proGatedPart = group.parts.find(p => {
+                            const out = p.output as Record<string, unknown> | undefined
+                            return out?.requiresProPlan === true
+                          })
+                          const proGatedMessage = proGatedPart ? ((proGatedPart.output as Record<string, unknown>)?.message as string) : undefined
+
+                          return (
+                            <React.Fragment key={`tools-${group.startIndex}`}>
+                              {group.parts.length === 1
+                                ? <ToolCallBlock part={group.parts[0]} />
+                                : <ToolCallGroup parts={group.parts} />
+                              }
+                              {proGatedPart && (
+                                <ProUpgradeCard message={proGatedMessage} onNavigateToBilling={onNavigateToBilling} />
+                              )}
+                            </React.Fragment>
+                          )
                         }
                         return null
                       })

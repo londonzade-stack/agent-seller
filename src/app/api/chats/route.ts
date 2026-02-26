@@ -6,18 +6,24 @@ export async function GET(req: Request) {
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Filter by chat_type if provided (e.g. ?type=outreach)
+  // Optionally filter by chat_type (e.g. ?type=outreach for admin)
+  // When no type param, return ALL sessions (unified chat list)
   const url = new URL(req.url)
-  const chatType = url.searchParams.get('type') || 'agent'
+  const chatType = url.searchParams.get('type')
 
   // Only return sessions that have at least one message
-  const { data, error } = await supabase
+  let query = supabase
     .from('chat_sessions')
     .select('id, title, created_at, updated_at, chat_messages(id)')
     .eq('user_id', user.id)
-    .eq('chat_type', chatType)
     .order('updated_at', { ascending: false })
     .limit(50)
+
+  if (chatType) {
+    query = query.eq('chat_type', chatType)
+  }
+
+  const { data, error } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

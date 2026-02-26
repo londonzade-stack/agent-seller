@@ -293,7 +293,7 @@ function ProMockConversation({
         {/* Header — blue-themed */}
         <div className="border-b border-zinc-200 dark:border-white/10 px-5 py-3 flex items-center gap-3">
           <span className="font-mono font-bold text-stone-800 dark:text-zinc-200 text-sm">Agent</span>
-          <span className="text-xs text-zinc-400 dark:text-zinc-600">Sales Outreach Agent</span>
+          <span className="text-xs text-zinc-400 dark:text-zinc-600">Research & Outreach</span>
           <div className="ml-auto flex items-center gap-1.5">
             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-400/10 dark:text-blue-400">PRO</span>
           </div>
@@ -492,7 +492,7 @@ export function ProMockConversationDropdown({
             <div className="p-1 rounded-lg bg-blue-100 dark:bg-blue-900/30">
               <Globe className="h-4 w-4 text-blue-500 dark:text-blue-400" />
             </div>
-            <h3 className="font-semibold text-base sm:text-lg">Pro Outreach Examples</h3>
+            <h3 className="font-semibold text-base sm:text-lg">Pro Examples</h3>
             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 dark:bg-blue-400/10 dark:text-blue-400">PRO</span>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-stone-100 dark:hover:bg-zinc-800">

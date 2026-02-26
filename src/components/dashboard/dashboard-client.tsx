@@ -10,7 +10,6 @@ import { ContactsView } from './contacts-view'
 import { AnalyticsView } from './analytics-view'
 import { BillingView } from './billing-view'
 import { AutomationsView } from './automations-view'
-import { OutreachView } from './outreach-view'
 import { UpdatesView } from './updates-view'
 import { AdminView } from './admin-view'
 import { CommandPalette } from './command-palette'
@@ -49,8 +48,11 @@ function getInitialViewFromUrl(): DashboardView {
   const params = new URLSearchParams(window.location.search)
   const chatId = params.get('chat')
   if (chatId) return 'agent'
-  const urlView = params.get('view') as DashboardView | null
-  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'automations', 'updates', 'outreach', 'email-connect', 'billing', 'admin'].includes(urlView)) {
+  const rawView = params.get('view')
+  // Map old ?view=outreach to agent for backward compat
+  if (rawView === 'outreach') return 'agent'
+  const urlView = rawView as DashboardView | null
+  if (urlView && ['agent', 'drafts', 'contacts', 'analytics', 'automations', 'updates', 'email-connect', 'billing', 'admin'].includes(urlView)) {
     return urlView
   }
   return 'agent'
@@ -75,9 +77,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
   const [billingLoaded, setBillingLoaded] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [urlChatRestored, setUrlChatRestored] = useState(true)
-  const [outreachSessionId, setOutreachSessionId] = useState<string | undefined>()
-  const [outreachKey, setOutreachKey] = useState(0)
-  const [pendingOutreachPrompt, setPendingOutreachPrompt] = useState<string | undefined>()
 
   // Whether the user has a valid subscription (active or trialing)
   const hasValidBilling = billingStatus === 'active' || billingStatus === 'trialing'
@@ -104,12 +103,6 @@ export function DashboardClient({ user }: DashboardClientProps) {
       setChatSessionId(undefined)
       setPendingPrompt(undefined)
       setChatKey(k => k + 1)
-    }
-    // Clear outreach session when navigating to outreach via sidebar (starts new chat)
-    if (view === 'outreach') {
-      setOutreachSessionId(undefined)
-      setPendingOutreachPrompt(undefined)
-      setOutreachKey(k => k + 1)
     }
     setActiveView(view)
   }, [hasValidBilling, billingLoaded])
@@ -173,19 +166,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
   }, [])
 
   // Handler for "Send to Agent" from contacts/analytics
-  const handleSendToBlitz = useCallback((context: string) => {
+  const handleSendToAgent = useCallback((context: string) => {
     setChatSessionId(undefined)
     setPendingPrompt(context)
     setChatKey(k => k + 1)
     setActiveView('agent')
-  }, [])
-
-  // Handler for "Send to Agent Pro" — navigates to outreach view with context
-  const handleSendToProChat = useCallback((context: string) => {
-    setOutreachSessionId(undefined)
-    setPendingOutreachPrompt(context)
-    setOutreachKey(k => k + 1)
-    setActiveView('outreach')
   }, [])
 
   // Global Cmd+K / Ctrl+K shortcut to toggle command palette
@@ -207,13 +192,11 @@ export function DashboardClient({ user }: DashboardClientProps) {
         activeView={activeView}
         onViewChange={handleViewChange}
         onOpenChat={(sid) => { setChatSessionId(sid); setChatKey(k => k + 1); setActiveView('agent') }}
-        onOpenOutreachChat={(sid) => { setOutreachSessionId(sid); setOutreachKey(k => k + 1) }}
         isEmailConnected={isEmailConnected}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
         billingGated={billingLoaded && !hasValidBilling}
         activeChatId={chatSessionId}
-        activeOutreachChatId={outreachSessionId}
         userPlan={userPlan}
       />
 
@@ -248,6 +231,8 @@ export function DashboardClient({ user }: DashboardClientProps) {
               initialPrompt={pendingPrompt}
               onOpenCommandPalette={() => setCommandPaletteOpen(true)}
               onSessionCreated={(sid) => setChatSessionId(sid)}
+              userPlan={userPlan}
+              onNavigateToBilling={() => setActiveView('billing')}
             />
           )}
           {activeView === 'email' && (
@@ -267,8 +252,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <ContactsView
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
-              onSendToBlitz={handleSendToBlitz}
-              onSendToProChat={handleSendToProChat}
+              onSendToAgent={handleSendToAgent}
               userPlan={userPlan}
             />
           )}
@@ -276,8 +260,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
             <AnalyticsView
               isEmailConnected={isEmailConnected}
               onConnectEmail={() => setActiveView('email')}
-              onSendToBlitz={handleSendToBlitz}
-              onSendToProChat={handleSendToProChat}
+              onSendToAgent={handleSendToAgent}
               userPlan={userPlan}
               onNavigateToBilling={() => setActiveView('billing')}
             />
@@ -294,20 +277,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
           {activeView === 'updates' && (
             <UpdatesView />
           )}
-          {activeView === 'outreach' && (
-            <OutreachView
-              key={`outreach-${outreachKey}`}
-              user={user}
-              isEmailConnected={isEmailConnected}
-              userPlan={userPlan}
-              initialSessionId={outreachSessionId}
-              initialPrompt={pendingOutreachPrompt}
-              onNavigateToBilling={() => setActiveView('billing')}
-              onOpenCommandPalette={() => setCommandPaletteOpen(true)}
-              onSessionCreated={(sid) => setOutreachSessionId(sid)}
-            />
-          )}
-          {activeView === 'billing' && (
+{activeView === 'billing' && (
             <BillingView onStatusChange={(status) => { setBillingStatus(status) }} onPlanChange={(plan) => setUserPlan(plan)} />
           )}
           {activeView === 'admin' && (

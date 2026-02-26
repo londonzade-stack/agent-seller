@@ -26,13 +26,12 @@ import {
   ChevronDown,
   PanelLeftOpen,
   Repeat2,
-  Globe,
   Newspaper,
   Shield,
 } from 'lucide-react'
 import { isAdminEmail } from '@/lib/admin-shared'
 
-export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'automations' | 'updates' | 'outreach' | 'billing' | 'admin'
+export type DashboardView = 'agent' | 'email' | 'drafts' | 'contacts' | 'analytics' | 'automations' | 'updates' | 'billing' | 'admin'
 
 interface ChatSession {
   id: string
@@ -46,13 +45,11 @@ interface DashboardSidebarProps {
   activeView: DashboardView
   onViewChange: (view: DashboardView) => void
   onOpenChat: (sessionId?: string) => void
-  onOpenOutreachChat?: (sessionId?: string) => void
   isEmailConnected: boolean
   mobileOpen?: boolean
   onMobileClose?: () => void
   billingGated?: boolean
   activeChatId?: string
-  activeOutreachChatId?: string
   userPlan?: string
 }
 
@@ -99,13 +96,11 @@ export function DashboardSidebar({
   activeView,
   onViewChange,
   onOpenChat,
-  onOpenOutreachChat,
   isEmailConnected,
   mobileOpen,
   onMobileClose,
   billingGated,
   activeChatId,
-  activeOutreachChatId,
   userPlan,
 }: DashboardSidebarProps) {
   const router = useRouter()
@@ -115,7 +110,7 @@ export function DashboardSidebar({
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   // Manual override: user clicked sidebar toggle to force nav panel while on agent view
   // Default to nav panel (true) unless user has an active chat open
-  const [forceNav, setForceNav] = useState(!activeChatId && !activeOutreachChatId)
+  const [forceNav, setForceNav] = useState(!activeChatId)
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -124,8 +119,8 @@ export function DashboardSidebar({
   }
 
   const handleNavClick = (view: DashboardView) => {
-    // When clicking Agent or Outreach, go straight to chat view with chats sidebar
-    if (view === 'agent' || view === 'outreach') {
+    // When clicking Agent, go straight to chat view with chats sidebar
+    if (view === 'agent') {
       setForceNav(false)
     } else {
       setForceNav(true)
@@ -137,8 +132,7 @@ export function DashboardSidebar({
   const fetchChats = useCallback(async () => {
     setLoadingChats(true)
     try {
-      const chatType = activeView === 'outreach' ? 'outreach' : 'agent'
-      const res = await fetch(`/api/chats?type=${chatType}`)
+      const res = await fetch('/api/chats')
       if (!res.ok) throw new Error('Failed to fetch chats')
       const data = await res.json()
       setChatSessions(data.sessions || [])
@@ -147,7 +141,7 @@ export function DashboardSidebar({
     } finally {
       setLoadingChats(false)
     }
-  }, [activeView])
+  }, [])
 
   const handleDeleteChat = async (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation()
@@ -170,11 +164,7 @@ export function DashboardSidebar({
 
   const handleOpenChat = (sessionId?: string) => {
     setForceNav(false)
-    if (activeView === 'outreach') {
-      onOpenOutreachChat?.(sessionId)
-    } else {
-      onOpenChat(sessionId)
-    }
+    onOpenChat(sessionId)
     onMobileClose?.()
   }
 
@@ -194,17 +184,16 @@ export function DashboardSidebar({
 
   // Reset forceNav when leaving chat views
   useEffect(() => {
-    if (activeView !== 'agent' && activeView !== 'outreach') setForceNav(false)
+    if (activeView !== 'agent') setForceNav(false)
   }, [activeView])
 
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
 
-  // Show chats panel when on agent or outreach view (unless user forced nav open)
-  const showChatsPanel = (activeView === 'agent' || activeView === 'outreach') && !forceNav
+  // Show chats panel when on agent view (unless user forced nav open)
+  const showChatsPanel = activeView === 'agent' && !forceNav
 
   const baseNavItems: { id: DashboardView; label: string; icon: typeof Zap; proBadge?: boolean }[] = [
     { id: 'agent', label: 'Agent', icon: Zap },
-    { id: 'outreach', label: 'Outreach', icon: Globe, proBadge: true },
     { id: 'drafts', label: 'Drafts', icon: FileText },
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -231,9 +220,7 @@ export function DashboardSidebar({
           >
             <PanelLeftOpen className="h-4 w-4" />
           </button>
-          <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">
-            {activeView === 'outreach' ? 'Outreach' : 'Agent'}
-          </span>
+          <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">Agent</span>
         </div>
         <div className="flex items-center gap-1">
           <ThemeToggle />
@@ -290,7 +277,7 @@ export function DashboardSidebar({
                   {!isCollapsed && (
                     <div className="space-y-0.5">
                       {group.sessions.map((session) => {
-                        const isActive = activeChatId === session.id || activeOutreachChatId === session.id
+                        const isActive = activeChatId === session.id
                         return (
                           <button
                             key={session.id}
