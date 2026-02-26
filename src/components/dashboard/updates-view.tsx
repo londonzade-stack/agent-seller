@@ -154,13 +154,13 @@ const TIER_STYLES: Record<UpdateTier, {
   checkColor: string
 }> = {
   blitz: {
-    iconBg: 'bg-amber-50 dark:bg-amber-500/10',
-    iconColor: 'text-amber-500 dark:text-amber-400',
-    badgeBg: 'bg-amber-500/10 dark:bg-amber-400/10',
-    badgeText: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-stone-100 dark:bg-zinc-800',
+    iconColor: 'text-stone-500 dark:text-zinc-400',
+    badgeBg: 'bg-stone-100 dark:bg-zinc-800',
+    badgeText: 'text-stone-600 dark:text-zinc-400',
     badgeLabel: 'AGENT',
     badgeIcon: Zap,
-    checkColor: 'text-amber-400 dark:text-amber-500',
+    checkColor: 'text-stone-400 dark:text-zinc-500',
   },
   pro: {
     iconBg: 'bg-blue-50 dark:bg-blue-500/10',
