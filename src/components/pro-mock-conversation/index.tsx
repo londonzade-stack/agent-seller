@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Send,
-  User as UserIcon,
   Sparkles,
   X,
   Wrench,
@@ -188,7 +187,7 @@ function SimpleMarkdown({ content }: { content: string }) {
   return <div className="space-y-1">{elements}</div>
 }
 
-// ─── ProMockToolCallBlock — blue-themed tool calls ──────────────────
+// ─── ProMockToolCallBlock — clean Neurelect-style ──────────────────
 function ProMockToolCallBlock({
   tool,
   isExpanded,
@@ -198,36 +197,24 @@ function ProMockToolCallBlock({
   isExpanded: boolean
   onToggle: () => void
 }) {
-  const Icon = PRO_TOOL_ICON_MAP[tool.name] || Wrench
-
   return (
-    <div className="my-2 rounded-lg border overflow-hidden border-blue-200/60 dark:border-blue-800/30 bg-blue-50/40 dark:bg-blue-950/15">
+    <div className="my-2">
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-blue-50/60 dark:hover:bg-blue-950/30 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-foreground hover:text-foreground/80 transition-colors cursor-pointer"
       >
-        <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-        <Icon className="h-3.5 w-3.5 text-blue-700/60 dark:text-blue-500/60 shrink-0" />
-        <span className="font-medium text-blue-900 dark:text-blue-200">{tool.label}</span>
-        <span className="text-blue-700/50 dark:text-blue-400/50 truncate max-w-[120px] sm:max-w-[250px]">
-          — {tool.inputSummary}
-        </span>
-        <ChevronRight className={`h-3 w-3 ml-auto text-blue-400 dark:text-blue-600 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+        <span>Agent Pro used 1 tool</span>
+        <ChevronRight className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
       </button>
 
       {isExpanded && (
-        <div className="border-t border-blue-200/60 dark:border-blue-800/20 px-3 py-2 space-y-2 bg-blue-50/20 dark:bg-blue-950/10">
-          <div>
-            <div className="text-[10px] font-medium text-blue-700/60 dark:text-blue-500/50 uppercase tracking-wider mb-1">What it&apos;s doing</div>
-            <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2">
-              {tool.inputSummary}
-            </div>
-          </div>
-          <div>
-            <div className="text-[10px] font-medium text-blue-700/60 dark:text-blue-500/50 uppercase tracking-wider mb-1">Result</div>
-            <div className="text-[11px] text-blue-800/70 dark:text-blue-300/60 bg-white/60 dark:bg-black/30 rounded p-2">
-              {tool.outputSummary}
-            </div>
+        <div className="mt-1.5">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background pl-1 pr-3 py-1 shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1" />
+            <span className="text-xs italic text-muted-foreground truncate">
+              {tool.label} — {tool.inputSummary}
+            </span>
+            <CheckCircle2 className="h-3.5 w-3.5 text-foreground shrink-0" />
           </div>
         </div>
       )}
@@ -249,20 +236,17 @@ function ProMockMessageBubble({
 }) {
   if (message.role === 'user') {
     return (
-      <div className="flex justify-end gap-2">
-        <div className="max-w-[85%] rounded-xl px-3 py-2 bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 text-sm">
+      <div className="flex justify-end">
+        <div className="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 bg-foreground text-background shadow-sm text-sm">
           {message.text}
-        </div>
-        <div className="w-7 h-7 rounded-lg bg-stone-200 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-          <UserIcon className="h-3.5 w-3.5 text-stone-600 dark:text-zinc-400" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex justify-start gap-2">
-      <div className="max-w-[85%] rounded-xl px-3 py-2 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none">
+    <div className="flex justify-start">
+      <div className="max-w-[90%] sm:max-w-[85%] text-[15px] leading-[1.75] text-foreground/90">
         {message.toolCalls?.map((tool, i) => {
           const toolKey = `${conversationId}-${message.id}-${i}`
           return (
@@ -350,14 +334,15 @@ function ProMockConversation({
 
         {/* Static input */}
         <div className="border-t border-zinc-200 dark:border-white/10 px-4 py-3 bg-[#faf8f5] dark:bg-[#111113]">
-          <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2">
-            <span className="flex-1 text-sm text-stone-400 dark:text-zinc-600 italic truncate">
+          <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 border border-black/20 dark:border-white/15 rounded-md px-3 py-2">
+            <span className="flex-1 text-[13px] text-muted-foreground italic truncate">
               Try: &ldquo;{activeConversation.promptText}&rdquo;
             </span>
-            <div className="rounded-lg bg-blue-500 h-7 w-7 flex items-center justify-center opacity-50 shrink-0">
-              <Send className="h-3.5 w-3.5 text-white" />
+            <div className="rounded-md bg-foreground h-7 w-7 flex items-center justify-center opacity-50 shrink-0">
+              <Send className="h-3.5 w-3.5 text-background" />
             </div>
           </div>
+          <p className="text-[11px] text-muted-foreground/70 text-center mt-1.5">Agent can make mistakes. Please double check responses.</p>
         </div>
       </div>
     )
