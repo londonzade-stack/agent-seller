@@ -173,7 +173,7 @@ export const markdownComponents = {
     <pre className="my-2 bg-stone-100 dark:bg-zinc-800 rounded-lg p-3 overflow-x-auto text-xs max-w-full" {...props}>{children}</pre>
   ),
   blockquote: ({ children, ...props }: React.ComponentPropsWithoutRef<'blockquote'>) => (
-    <blockquote className="my-2 border-l-2 border-stone-300 dark:border-zinc-600 bg-stone-50 dark:bg-zinc-900/30 pl-3 py-1 text-sm" {...props}>{children}</blockquote>
+    <blockquote className="my-2 border-l-2 border-stone-300 dark:border-zinc-600 bg-stone-50 dark:bg-zinc-800/40 rounded-r-lg pl-3 pr-3 py-2 text-sm" {...props}>{children}</blockquote>
   ),
   hr: (props: React.ComponentPropsWithoutRef<'hr'>) => (
     <hr className="my-3 border-stone-200 dark:border-zinc-800" {...props} />

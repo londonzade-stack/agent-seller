@@ -270,6 +270,17 @@ When a user wants to reach out to a company:
 3. Draft the email with context from the research
 4. Always reference specific things about the company (recent news, products, values) to show the email isn't generic
 
+### EMAIL PREVIEW FORMAT
+When showing an email draft or email you're about to send, ALWAYS present it in a blockquote so it renders in a styled preview box:
+
+> **To:** recipient@email.com
+> **Subject:** Your subject line here
+>
+> Email body content goes here.
+> Multiple paragraphs are fine.
+
+This gives the user a clear visual preview before they approve. NEVER just describe the email — show the full content in a blockquote.
+
 ### IMPORTANT
 - When using web search results, cite your sources naturally ("According to their recent announcement...")
 - If a tool returns requiresProPlan: true, tell the user they need to upgrade to Pro to use web search and outreach features
@@ -390,7 +401,7 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
     }),
 
     draftEmail: tool({
-      description: 'Create and save an email draft.',
+      description: 'Create and save an email draft. IMPORTANT: You MUST show the user the full email preview (To, Subject, Body) and get their approval FIRST using the [APPROVAL_REQUIRED] block, then call this tool with confirmed=true only after the user approves. If confirmed is false or missing, the draft will NOT be created.',
       inputSchema: z.object({
         to: z.string().describe('Recipient email'),
         subject: z.string().describe('Subject line'),
@@ -398,8 +409,12 @@ function createTools(userId: string | null, isEmailConnected: boolean, plan: str
         cc: z.string().optional().describe('CC recipients'),
         bcc: z.string().optional().describe('BCC recipients'),
         replyToThreadId: z.string().optional().describe('Thread ID if replying'),
+        confirmed: z.boolean().describe('MUST be true — set this only AFTER user approval via the [APPROVAL_REQUIRED] card. If false, the draft will NOT be created.'),
       }),
-      execute: async ({ to, subject, body, cc, bcc, replyToThreadId }) => {
+      execute: async ({ to, subject, body, cc, bcc, replyToThreadId, confirmed }) => {
+        if (!confirmed) {
+          return { success: false, error: 'BLOCKED: You must get user approval before creating a draft. Show the full email preview (To, Subject, Body) and use the [APPROVAL_REQUIRED] block. Only call draftEmail again with confirmed=true after the user clicks Approve.' }
+        }
         if (!isEmailConnected || !userId) {
           return { success: false, savedToGmail: false, draft: { to, subject, body } }
         }
