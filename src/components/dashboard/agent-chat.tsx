@@ -1392,7 +1392,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
               className="inline-flex items-center cursor-pointer px-2.5 py-1.5 sm:px-3 sm:py-1.5 gap-1.5 sm:gap-2 rounded-lg text-stone-600 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800 active:bg-stone-150 dark:active:bg-zinc-700 transition-all duration-150 border border-stone-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/60 shadow-sm hover:shadow"
               onClick={() => setShowTips(!showTips)}
             >
-              <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+              <Lightbulb className="h-3.5 w-3.5 text-blue-500" />
               <span className="text-xs font-medium hidden sm:inline">Examples</span>
               <span className="text-xs font-medium sm:hidden">Examples</span>
               <ChevronDown className={`h-3 w-3 text-stone-400 dark:text-zinc-500 transition-transform duration-200 ${showTips ? 'rotate-180' : ''}`} />
@@ -1403,7 +1403,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
             }
           </div>
           {!isEmailConnected && (
-            <div className="hidden sm:flex items-center gap-2 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg text-sm border border-amber-200/60 dark:border-amber-800/30">
+            <div className="hidden sm:flex items-center gap-2 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg text-sm border border-blue-200/60 dark:border-blue-800/30">
               <Mail className="h-4 w-4" />Connect your email
             </div>
           )}
@@ -1432,11 +1432,11 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
             {/* Morning Briefing — Interactive expandable */}
             {briefingLoaded && briefingLogs.length > 0 && (
               <div className="max-w-2xl w-full px-2 mb-6">
-                <Card className="border-amber-200/60 dark:border-amber-800/30 bg-amber-50/30 dark:bg-amber-950/10 overflow-hidden">
+                <Card className="border-blue-200/60 dark:border-blue-800/30 bg-blue-50/30 dark:bg-blue-950/10 overflow-hidden">
                   {/* Clickable header */}
                   <button
                     onClick={() => setBriefingExpanded(!briefingExpanded)}
-                    className="w-full flex items-center gap-2 p-4 pb-3 cursor-pointer hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors"
+                    className="w-full flex items-center gap-2 p-4 pb-3 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors"
                   >
                     <span className="text-lg">&#9728;&#65039;</span>
                     <span className="text-sm font-semibold text-stone-800 dark:text-zinc-200">Morning Briefing</span>
@@ -1495,7 +1495,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                                     saveMessage('user', prompt)
                                     setExpandedLogIndex(null)
                                   }}
-                                  className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors cursor-pointer"
+                                  className="flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors cursor-pointer"
                                 >
                                   <Sparkles className="h-3.5 w-3.5" />
                                   Ask Agent
@@ -1528,7 +1528,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                 customWelcome.suggestions.map((suggestion, i) => (
                   <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion.prompt)}>
                     <div className="flex items-start gap-2 sm:gap-3">
-                      {suggestion.icon || <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />}
+                      {suggestion.icon || <Sparkles className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />}
                       <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion.label}</span>
                     </div>
                   </Card>
@@ -1538,7 +1538,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                   {suggestions.map((suggestion, i) => (
                     <Card key={i} className="p-3 sm:p-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-zinc-800/50 transition-colors border-stone-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm dark:shadow-none" onClick={() => handleSuggestionClick(suggestion)}>
                       <div className="flex items-start gap-2 sm:gap-3">
-                        <Sparkles className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                        <Sparkles className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
                         <span className="text-sm text-stone-700 dark:text-zinc-300 break-words">{suggestion}</span>
                       </div>
                     </Card>
@@ -1719,13 +1719,13 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
         <div className="max-w-3xl mx-auto">
           {/* Agent context banner */}
           {agentContext && (
-            <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40">
-              <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+            <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40">
+              <Zap className="h-3.5 w-3.5 text-blue-500 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-amber-700 dark:text-amber-400">Sent to Agent</p>
-                <p className="text-[11px] text-amber-600/80 dark:text-amber-500/70 truncate">{agentContext.replace(/^\[(Contact|Sender): .*?\]\s*/, '').slice(0, 80)}...</p>
+                <p className="text-xs font-medium text-blue-700 dark:text-blue-400">Sent to Agent</p>
+                <p className="text-[11px] text-blue-600/80 dark:text-blue-500/70 truncate">{agentContext.replace(/^\[(Contact|Sender): .*?\]\s*/, '').slice(0, 80)}...</p>
               </div>
-              <button onClick={() => setAgentContext(null)} className="p-0.5 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/30 text-amber-500 shrink-0">
+              <button onClick={() => setAgentContext(null)} className="p-0.5 rounded hover:bg-blue-200/50 dark:hover:bg-blue-800/30 text-blue-500 shrink-0">
                 <X className="h-3.5 w-3.5" />
               </button>
             </div>
