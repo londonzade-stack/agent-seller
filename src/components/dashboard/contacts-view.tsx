@@ -344,7 +344,7 @@ export function ContactsView({ isEmailConnected, onConnectEmail, onSendToAgent, 
                                         e.stopPropagation()
                                         onSendToAgent(`[Contact: ${contact.name || contact.email}] Email: "${email.subject || '(No subject)'}" from ${email.from} on ${email.date ? new Date(email.date).toLocaleDateString() : 'unknown date'} — "${email.snippet || ''}"`)
                                       }}
-                                      className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/20 hover:border-amber-400/40 text-amber-600 dark:text-amber-400 transition-colors text-[11px] font-medium"
+                                      className="shimmer-badge flex items-center gap-1 px-2 py-0.5 rounded-full transition-colors text-[11px] font-medium"
                                       title="Send to Agent"
                                     >
                                       <Zap className="h-3 w-3" />

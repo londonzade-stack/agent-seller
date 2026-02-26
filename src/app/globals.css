@@ -215,6 +215,40 @@
   animation: shimmer-sweep 1.5s ease-in-out infinite;
 }
 
+/* Shimmer badge — glassy pill button */
+.shimmer-badge {
+  position: relative;
+  background: linear-gradient(135deg, #fafaf9 0%, #e7e5e4 50%, #fafaf9 100%);
+  background-size: 200% 200%;
+  animation: shimmer-badge-sweep 2s ease-in-out infinite;
+  color: #44403c;
+  border: 1px solid rgba(168, 162, 158, 0.3);
+}
+.shimmer-badge:hover {
+  background: linear-gradient(135deg, #f5f5f4 0%, #d6d3d1 50%, #f5f5f4 100%);
+  background-size: 200% 200%;
+  animation: shimmer-badge-sweep 2s ease-in-out infinite;
+  border-color: rgba(168, 162, 158, 0.5);
+}
+.dark .shimmer-badge {
+  background: linear-gradient(135deg, #18181b 0%, #3f3f46 50%, #18181b 100%);
+  background-size: 200% 200%;
+  animation: shimmer-badge-sweep 2s ease-in-out infinite;
+  color: #d4d4d8;
+  border: 1px solid rgba(113, 113, 122, 0.3);
+}
+.dark .shimmer-badge:hover {
+  background: linear-gradient(135deg, #27272a 0%, #52525b 50%, #27272a 100%);
+  background-size: 200% 200%;
+  animation: shimmer-badge-sweep 2s ease-in-out infinite;
+  border-color: rgba(113, 113, 122, 0.5);
+}
+@keyframes shimmer-badge-sweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

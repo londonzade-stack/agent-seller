@@ -317,8 +317,8 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail, onSendToAgent,
               </Card>
               <Card className="p-3 sm:p-4 border-zinc-200 dark:border-white/10 bg-white dark:bg-black">
                 <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-500/10 flex items-center justify-center">
+                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-500" />
                   </div>
                   <span className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">Starred</span>
                 </div>
@@ -541,7 +541,7 @@ export function AnalyticsView({ isEmailConnected, onConnectEmail, onSendToAgent,
                                             e.stopPropagation()
                                             onSendToAgent(`[Sender: ${sender.sender}] Email: "${email.subject}" from ${email.from} on ${new Date(email.date).toLocaleDateString()} — "${email.snippet}"`)
                                           }}
-                                          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/20 hover:border-amber-400/40 text-amber-600 dark:text-amber-400 transition-colors text-[11px] font-medium"
+                                          className="shimmer-badge flex items-center gap-1 px-2 py-0.5 rounded-full transition-colors text-[11px] font-medium"
                                           title="Send to Agent"
                                         >
                                           <Zap className="h-3 w-3" />
