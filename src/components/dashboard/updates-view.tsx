@@ -29,7 +29,7 @@ interface UpdateItem {
   title: string
   description: string
   tier: UpdateTier
-  /** Show multiple tier badges (e.g., both BLITZ and PRO) */
+  /** Show multiple tier badges (e.g., both AGENT and PRO) */
   extraTiers?: UpdateTier[]
 }
 
@@ -38,7 +38,7 @@ const UPDATES: UpdateItem[] = [
   {
     icon: CalendarDays,
     title: 'Google Calendar Integration',
-    description: 'View your schedule, create events, check availability, and let BLITZ coordinate meetings — all from chat.',
+    description: 'View your schedule, create events, check availability, and let Agent coordinate meetings — all from chat.',
     tier: 'coming_soon',
   },
   {
@@ -52,7 +52,7 @@ const UPDATES: UpdateItem[] = [
   {
     icon: Globe,
     title: 'Web Search Integration',
-    description: 'BLITZ can search the web to find real-time information, research topics, and enrich your email context with live data.',
+    description: 'Agent can search the web to find real-time information, research topics, and enrich your email context with live data.',
     tier: 'pro',
   },
   {
@@ -82,14 +82,14 @@ const UPDATES: UpdateItem[] = [
   {
     icon: FileText,
     title: 'Company Profiles',
-    description: 'Save your company context — name, description, target customer, industry — and BLITZ injects it into every outreach.',
+    description: 'Save your company context — name, description, target customer, industry — and Agent injects it into every outreach.',
     tier: 'pro',
   },
 
-  // ─── BLITZ Features ──────────────────────────────────────────────
+  // ─── AGENT Features ──────────────────────────────────────────────
   {
     icon: Brain,
-    title: 'BLITZ AI Email Agent',
+    title: 'AI Email Agent',
     description: 'Your intelligent email assistant that can search, read, compose, and manage your entire inbox through natural conversation.',
     tier: 'blitz',
   },
@@ -126,7 +126,7 @@ const UPDATES: UpdateItem[] = [
   {
     icon: FileText,
     title: 'Draft Management',
-    description: 'Create, update, send, and delete email drafts. BLITZ can prepare drafts for your review before sending.',
+    description: 'Create, update, send, and delete email drafts. Agent can prepare drafts for your review before sending.',
     tier: 'blitz',
   },
   {
@@ -137,8 +137,8 @@ const UPDATES: UpdateItem[] = [
   },
   {
     icon: Send,
-    title: 'Send to BLITZ',
-    description: 'Send contacts and analytics data directly to BLITZ chat for collaboration — get AI-powered insights, draft emails, and take action on your data.',
+    title: 'Send to Agent',
+    description: 'Send contacts and analytics data directly to Agent chat for collaboration — get AI-powered insights, draft emails, and take action on your data.',
     tier: 'blitz',
     extraTiers: ['pro'],
   },
@@ -158,7 +158,7 @@ const TIER_STYLES: Record<UpdateTier, {
     iconColor: 'text-amber-500 dark:text-amber-400',
     badgeBg: 'bg-amber-500/10 dark:bg-amber-400/10',
     badgeText: 'text-amber-600 dark:text-amber-400',
-    badgeLabel: 'BLITZ',
+    badgeLabel: 'AGENT',
     badgeIcon: Zap,
     checkColor: 'text-amber-400 dark:text-amber-500',
   },

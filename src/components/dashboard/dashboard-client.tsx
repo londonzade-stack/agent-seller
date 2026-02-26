@@ -172,7 +172,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
     checkEmailStatus()
   }, [])
 
-  // Handler for "Send to BLITZ" from contacts/analytics
+  // Handler for "Send to Agent" from contacts/analytics
   const handleSendToBlitz = useCallback((context: string) => {
     setChatSessionId(undefined)
     setPendingPrompt(context)
@@ -180,7 +180,7 @@ export function DashboardClient({ user }: DashboardClientProps) {
     setActiveView('agent')
   }, [])
 
-  // Handler for "Send to BLITZ Pro" — navigates to outreach view with context
+  // Handler for "Send to Agent Pro" — navigates to outreach view with context
   const handleSendToProChat = useCallback((context: string) => {
     setOutreachSessionId(undefined)
     setPendingOutreachPrompt(context)

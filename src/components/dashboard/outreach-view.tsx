@@ -7,7 +7,7 @@ import { DefaultChatTransport, type UIMessage } from 'ai'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { BlitzAvatar } from '@/components/blitz-avatar'
+import { ShimmerText } from '@/components/shimmer-text'
 import { MarkdownContent } from './markdown-content'
 import {
   Globe,
@@ -519,7 +519,7 @@ export function OutreachView({ user, isEmailConnected, userPlan, initialSessionI
 
 function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId, initialPrompt, initialMessages, onNavigateToBilling, onSessionCreated }: OutreachViewProps & { initialMessages: UIMessage[] }) {
   const isPro = userPlan === 'pro'
-  // Check if this is a "Send to BLITZ Pro" context (from contacts/analytics)
+  // Check if this is a "Send to Agent Pro" context (from contacts/analytics)
   const isProContext = initialPrompt?.startsWith('[Contact:') || initialPrompt?.startsWith('[Sender:')
   const [proContext, setProContext] = useState<string | null>(isProContext ? initialPrompt! : null)
   const [input, setInput] = useState('')
@@ -858,12 +858,10 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
           /* Welcome screen with outreach suggestions */
           <div className="h-full overflow-auto">
           <div className="min-h-full flex flex-col items-center justify-center py-6">
-            <div className="mb-4 sm:mb-5">
-              <BlitzAvatar size="lg" variant="blue" />
-            </div>
+            <div className="mb-4 sm:mb-5" />
             <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-stone-900 dark:text-white">Sales Outreach</h2>
             <p className="text-stone-500 dark:text-zinc-400 mb-2 text-center max-w-md text-sm sm:text-base px-4">
-              Search the web, research companies, and draft personalized outreach — all powered by BLITZ.
+              Search the web, research companies, and draft personalized outreach — all powered by Agent.
             </p>
             <button onClick={() => setShowExamples(true)} className="text-sm text-blue-600 dark:text-blue-400 hover:underline mb-6 sm:mb-8 flex items-center gap-1">
               <Lightbulb className="h-3.5 w-3.5" />See outreach examples
@@ -922,7 +920,7 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
                 <div>
                   <p className="text-sm font-medium mb-1">Pro Tip</p>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Click any card above or type your own prompt below. BLITZ will research, draft, and present everything for your review before any emails go out.
+                    Click any card above or type your own prompt below. Agent will research, draft, and present everything for your review before any emails go out.
                   </p>
                 </div>
               </div>
@@ -934,11 +932,6 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
           <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
             {messages.map((message) => (
               <div key={message.id} className={`flex gap-2 sm:gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {message.role === 'assistant' && (
-                  <div className="shrink-0">
-                    <BlitzAvatar size="sm" variant="blue" />
-                  </div>
-                )}
                 <div className={`max-w-[90%] sm:max-w-[85%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
                   message.role === 'user'
                     ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
@@ -1016,21 +1009,14 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
 
             {/* Loading indicator */}
             {isLoading && !lastMsgHasRunningTool && (
-              <div className="flex gap-2 sm:gap-4 justify-start">
-                <div className="shrink-0">
-                  <BlitzAvatar size="sm" variant="blue" />
-                </div>
-                <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm dark:shadow-none">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <Loader2 className="h-4 w-4 animate-spin text-stone-800 dark:text-white" />
-                    <span className="text-sm text-stone-500 dark:text-zinc-400">
-                      {activeToolInfo ? activeToolInfo.label + '...' : status === 'streaming' ? 'Working...' : 'Thinking...'}
-                    </span>
-                    <Button variant="ghost" size="sm" onClick={handleStop} className="h-7 px-2 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500">
-                      <StopCircle className="h-3 w-3 mr-1" />Stop
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex gap-2 sm:gap-4 justify-start items-center">
+                <ShimmerText
+                  text={activeToolInfo ? activeToolInfo.label + '...' : 'Agent is working...'}
+                  className="text-sm font-medium"
+                />
+                <Button variant="ghost" size="sm" onClick={handleStop} className="h-7 px-2 text-xs hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500">
+                  <StopCircle className="h-3 w-3 mr-1" />Stop
+                </Button>
               </div>
             )}
 
@@ -1074,7 +1060,7 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
             <div className="mb-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40">
               <Zap className="h-3.5 w-3.5 text-blue-500 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-blue-700 dark:text-blue-400">Sent to BLITZ Pro</p>
+                <p className="text-xs font-medium text-blue-700 dark:text-blue-400">Sent to Agent Pro</p>
                 <p className="text-[11px] text-blue-600/80 dark:text-blue-500/70 truncate">{proContext.replace(/^\[(Contact|Sender): .*?\]\s*/, '').slice(0, 80)}...</p>
               </div>
               <button onClick={() => setProContext(null)} className="p-0.5 rounded hover:bg-blue-200/50 dark:hover:bg-blue-800/30 text-blue-500 shrink-0">
@@ -1100,7 +1086,7 @@ function OutreachViewInner({ user, isEmailConnected, userPlan, initialSessionId,
                   handleSubmit(e)
                 }
               }}
-              placeholder={proContext ? "What do you want BLITZ Pro to do with this?" : "Search for companies, draft outreach, or ask BLITZ anything..."}
+              placeholder={proContext ? "What do you want Agent Pro to do with this?" : "Search for companies, draft outreach, or ask Agent anything..."}
               className="flex-1 bg-transparent border-0 focus-visible:outline-none resize-none text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-base min-h-[36px] max-h-[150px] py-1.5 px-2"
               rows={1}
               disabled={isLoading}
