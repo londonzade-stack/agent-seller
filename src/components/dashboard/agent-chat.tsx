@@ -16,7 +16,6 @@ import {
   Sparkles,
   AlertCircle,
   Loader2,
-  User as UserIcon,
   Mail,
   Lightbulb,
   X,
@@ -38,7 +37,6 @@ import {
   Eye,
   EyeOff,
   Zap,
-  Circle,
   Clock,
 } from 'lucide-react'
 
@@ -274,13 +272,13 @@ function getBriefingPrompt(log: { task_title: string; status: string; result: Re
 // ─── Tool call block — Style A amber-tinted card ────────────────────
 function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const [expanded, setExpanded] = useState(false)
+  const [detailExpanded, setDetailExpanded] = useState(false)
   const partType = part.type as string
   const toolName = partType === 'dynamic-tool'
     ? (part.toolName as string) || 'unknown'
     : partType.startsWith('tool-') ? partType.slice(5) : (part.toolName as string) || 'unknown'
   const state = part.state as string
   const meta = getToolMeta(toolName)
-  const Icon = meta.icon
   const input = part.input as Record<string, unknown> | undefined
   const output = part.output as Record<string, unknown> | undefined
   const errorText = part.errorText as string | undefined
@@ -292,53 +290,57 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   const inputSummary = input ? summarizeToolInput(toolName, input) : null
 
   return (
-    <div className={`my-2 rounded-lg border overflow-hidden transition-colors max-w-full ${
-      isRunning
-        ? 'border-amber-300 dark:border-amber-700/40 bg-amber-50/60 dark:bg-amber-950/20'
-        : isError
-          ? 'border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-900/10'
-          : 'border-amber-200/60 dark:border-amber-800/30 bg-amber-50/40 dark:bg-amber-950/15'
-    }`}>
+    <div className="my-2">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-amber-50/60 dark:hover:bg-amber-950/30 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-foreground hover:text-foreground/80 transition-colors cursor-pointer"
       >
-        {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />}
-        {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />}
-        {isError && <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />}
-        <Icon className="h-3.5 w-3.5 text-amber-700/60 dark:text-amber-500/60 shrink-0" />
-        <span className="font-medium text-amber-900 dark:text-amber-200">{meta.label}</span>
-        {inputSummary && (
-          <span className="text-amber-700/50 dark:text-amber-400/50 truncate max-w-[120px] sm:max-w-[250px]">— {inputSummary}</span>
-        )}
-        {isRunning && <span className="text-[10px] text-amber-600 dark:text-amber-400 ml-1 animate-pulse">running</span>}
-        <ChevronRight className={`h-3 w-3 ml-auto text-amber-400 dark:text-amber-600 transition-transform shrink-0 ${expanded ? 'rotate-90' : ''}`} />
+        <span>Agent used 1 tool</span>
+        <ChevronRight className={`h-4 w-4 transition-transform ${expanded ? 'rotate-90' : ''}`} />
       </button>
 
       {expanded && (
-        <div className="border-t border-amber-200/60 dark:border-amber-800/20 px-3 py-2 space-y-2 bg-amber-50/20 dark:bg-amber-950/10">
-          {input && Object.keys(input).length > 0 && (
-            <div>
-              <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">What it&apos;s doing</div>
-              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5 break-words overflow-hidden">
-                {humanizeToolInput(toolName, input).map((line, i) => (
-                  <div key={i} className="break-words">{line}</div>
-                ))}
-              </div>
+        <div className="mt-1.5 space-y-1">
+          <button
+            onClick={() => setDetailExpanded(!detailExpanded)}
+            className="inline-flex w-full sm:inline-flex sm:w-auto sm:max-w-full min-w-0 items-center gap-2 overflow-hidden rounded-full border border-border bg-background pl-1 pr-3 py-1 text-left shadow-sm transition-colors hover:bg-accent"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1" />
+            <span className="text-xs italic min-w-0 flex-1 truncate text-muted-foreground">
+              {meta.label}{inputSummary ? ` — ${inputSummary}` : ''}
+            </span>
+            <ChevronRight className={`h-3 w-3 text-muted-foreground shrink-0 transition-transform ${detailExpanded ? 'rotate-90' : ''}`} />
+            {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-foreground shrink-0" />}
+            {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />}
+            {isError && <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />}
+          </button>
+
+          {detailExpanded && (
+            <div className="ml-2 mt-1 pl-3 border-l-2 border-border space-y-2">
+              {input && Object.keys(input).length > 0 && (
+                <div>
+                  <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Input</div>
+                  <div className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 space-y-0.5 break-words overflow-hidden">
+                    {humanizeToolInput(toolName, input).map((line, i) => (
+                      <div key={i} className="break-words">{line}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {isDone && output && (
+                <div>
+                  <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Result</div>
+                  <div className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 space-y-0.5 break-words overflow-hidden">
+                    {humanizeToolOutput(toolName, output).map((line, i) => (
+                      <div key={i} className="break-words">{line}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {isError && errorText && (
+                <div className="text-xs text-red-500">{errorText}</div>
+              )}
             </div>
-          )}
-          {isDone && output && (
-            <div>
-              <div className="text-[10px] font-medium text-amber-700/60 dark:text-amber-500/50 uppercase tracking-wider mb-1">Result</div>
-              <div className="text-[11px] text-amber-800/70 dark:text-amber-300/60 bg-white/60 dark:bg-black/30 rounded p-2 space-y-0.5 break-words overflow-hidden">
-                {humanizeToolOutput(toolName, output).map((line, i) => (
-                  <div key={i} className="break-words">{line}</div>
-                ))}
-              </div>
-            </div>
-          )}
-          {isError && errorText && (
-            <div className="text-xs text-red-500">{errorText}</div>
           )}
         </div>
       )}
@@ -346,7 +348,7 @@ function ToolCallBlock({ part }: { part: Record<string, unknown> }) {
   )
 }
 
-// ─── Grouped Tool Calls — ultra-compact: 1 active line, collapsed when done ──
+// ─── Grouped Tool Calls — clean Neurelect-style: text header + pill items ──
 function ToolCallGroup({ parts }: { parts: Record<string, unknown>[] }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
@@ -373,84 +375,59 @@ function ToolCallGroup({ parts }: { parts: Record<string, unknown>[] }) {
   const errorCount = tools.filter(t => t.isError).length
   const runningTool = tools.find(t => t.isRunning)
   const allDone = tools.every(t => t.isDone || t.isError)
+  const totalDone = completedCount + errorCount
 
-  // While running: show header + just the current tool
-  // When done: show collapsed "X tools completed" — click to expand full list
   return (
-    <div className={`my-1.5 rounded-lg border overflow-hidden transition-colors max-w-full ${
-      runningTool
-        ? 'border-amber-300/60 dark:border-amber-700/30 bg-amber-50/40 dark:bg-amber-950/15'
-        : errorCount > 0
-          ? 'border-red-200/60 dark:border-red-500/20 bg-red-50/20 dark:bg-red-900/10'
-          : 'border-amber-200/40 dark:border-amber-800/20 bg-amber-50/30 dark:bg-amber-950/10'
-    }`}>
-      {/* Single-line header — always visible */}
+    <div className="my-2">
+      {/* Header text — "Agent used N tools >" */}
       <button
         onClick={() => allDone ? setIsExpanded(!isExpanded) : undefined}
-        className={`w-full flex items-center gap-2 px-3 py-2 text-xs ${allDone ? 'cursor-pointer hover:bg-amber-50/40 dark:hover:bg-amber-950/20' : 'cursor-default'}`}
+        className={`flex items-center gap-1.5 text-sm text-foreground transition-colors ${allDone ? 'cursor-pointer hover:text-foreground/80' : 'cursor-default'}`}
       >
-        {runningTool ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
-        ) : allDone && errorCount === 0 ? (
-          <CheckCircle2 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-        ) : allDone && errorCount > 0 ? (
-          <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
-        ) : (
-          <Wrench className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-        )}
-
-        <span className="font-medium text-amber-900 dark:text-amber-200 truncate">
+        <span>
           {allDone
-            ? `${completedCount} tool${completedCount !== 1 ? 's' : ''} completed${errorCount > 0 ? ` · ${errorCount} failed` : ''}`
+            ? `Agent used ${totalDone} tool${totalDone !== 1 ? 's' : ''}${errorCount > 0 ? ` (${errorCount} failed)` : ''}`
             : runningTool
               ? runningTool.meta.label + (runningTool.inputSummary ? ` — ${runningTool.inputSummary}` : '')
               : 'Running tools…'
           }
         </span>
-
-        {/* Progress counter while running */}
         {runningTool && (
-          <span className="ml-auto text-[10px] tabular-nums text-amber-600/70 dark:text-amber-400/60 shrink-0">
+          <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
             {completedCount + 1}/{tools.length}
           </span>
         )}
-
-        {/* Expand chevron when done */}
         {allDone && (
-          <ChevronRight className={`h-3 w-3 ml-auto text-amber-400/60 dark:text-amber-600/50 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+          <ChevronRight className={`h-4 w-4 transition-transform shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
         )}
       </button>
 
-      {/* Expanded detail list — only shown when user clicks after completion */}
+      {/* Expanded pill list */}
       {isExpanded && allDone && (
-        <div className="border-t border-amber-200/30 dark:border-amber-800/15 px-3 py-1.5 space-y-0.5">
+        <div className="mt-1.5 space-y-1">
           {tools.map((tool, i) => {
-            const Icon = tool.meta.icon
             const isDetailExpanded = expandedIndex === i
             return (
               <div key={i}>
                 <button
                   onClick={() => setExpandedIndex(isDetailExpanded ? null : i)}
-                  className="w-full flex items-center gap-2 py-1 text-xs hover:bg-amber-50/40 dark:hover:bg-amber-950/20 rounded transition-colors"
+                  className="inline-flex w-full sm:inline-flex sm:w-auto sm:max-w-full min-w-0 items-center gap-2 overflow-hidden rounded-full border border-border bg-background pl-1 pr-3 py-1 text-left shadow-sm transition-colors hover:bg-accent"
                 >
-                  {tool.isDone && <CheckCircle2 className="h-3 w-3 text-amber-500 dark:text-amber-400 shrink-0" />}
-                  {tool.isError && <XCircle className="h-3 w-3 text-red-500 shrink-0" />}
-                  <Icon className="h-3 w-3 text-amber-700/40 dark:text-amber-500/40 shrink-0" />
-                  <span className="truncate text-amber-700/70 dark:text-amber-400/60">
-                    {tool.meta.label}
+                  <Sparkles className="h-3.5 w-3.5 text-muted-foreground shrink-0 ml-1" />
+                  <span className="text-xs italic min-w-0 flex-1 truncate text-muted-foreground">
+                    {tool.meta.label}{tool.inputSummary ? ` — ${tool.inputSummary}` : ''}
                   </span>
-                  {tool.inputSummary && (
-                    <span className="text-amber-600/30 dark:text-amber-500/25 truncate max-w-[100px] sm:max-w-[180px]">— {tool.inputSummary}</span>
-                  )}
-                  <ChevronRight className={`h-2.5 w-2.5 ml-auto text-amber-400/50 dark:text-amber-600/50 transition-transform shrink-0 ${isDetailExpanded ? 'rotate-90' : ''}`} />
+                  <ChevronRight className={`h-3 w-3 text-muted-foreground shrink-0 transition-transform ${isDetailExpanded ? 'rotate-90' : ''}`} />
+                  {tool.isDone && <CheckCircle2 className="h-3.5 w-3.5 text-foreground shrink-0" />}
+                  {tool.isError && <XCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />}
                 </button>
 
                 {isDetailExpanded && (
-                  <div className="ml-5 mb-1 px-2 py-1.5 rounded bg-amber-50/30 dark:bg-amber-950/10 border border-amber-200/30 dark:border-amber-800/15 space-y-1.5">
+                  <div className="ml-2 mt-1 pl-3 border-l-2 border-border space-y-1.5 mb-1">
                     {tool.input && Object.keys(tool.input).length > 0 && (
                       <div>
-                        <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Input</div>
-                        <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
+                        <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Input</div>
+                        <div className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 space-y-0.5 break-words">
                           {humanizeToolInput(tool.toolName, tool.input).map((line, j) => (
                             <div key={j} className="break-words">{line}</div>
                           ))}
@@ -459,8 +436,8 @@ function ToolCallGroup({ parts }: { parts: Record<string, unknown>[] }) {
                     )}
                     {tool.isDone && tool.output && (
                       <div>
-                        <div className="text-[9px] font-medium text-amber-700/50 dark:text-amber-500/40 uppercase tracking-wider mb-0.5">Result</div>
-                        <div className="text-[11px] text-amber-800/60 dark:text-amber-300/50 space-y-0.5 break-words">
+                        <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Result</div>
+                        <div className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 space-y-0.5 break-words">
                           {humanizeToolOutput(tool.toolName, tool.output).map((line, j) => (
                             <div key={j} className="break-words">{line}</div>
                           ))}
@@ -1524,11 +1501,11 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                     <div className="flex-1 h-px bg-stone-200 dark:bg-zinc-800" />
                   </div>
                 )}
-                <div className={`flex gap-2 sm:gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[90%] sm:max-w-[85%] rounded-xl px-3 py-2 sm:px-4 sm:py-3 ${
+                <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`${
                     message.role === 'user'
-                      ? 'bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
-                      : 'bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 shadow-sm dark:shadow-none text-stone-700 dark:text-zinc-300'
+                      ? 'max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 bg-foreground text-background shadow-sm'
+                      : 'max-w-[90%] sm:max-w-[85%] text-[15px] leading-[1.75] text-foreground/90'
                   }`}>
                     {(() => {
                       // Group consecutive tool call parts together
@@ -1603,11 +1580,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                       })
                     })()}
                   </div>
-                  {message.role === 'user' && (
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-stone-200 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                      <UserIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-stone-600 dark:text-zinc-400" />
-                    </div>
-                  )}
+                  {/* No user icon — clean bubble only */}
                 </div>
               </React.Fragment>
             ))}
@@ -1675,7 +1648,7 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
           )}
         </div>
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-xl p-1.5 sm:p-2 shadow-sm dark:shadow-none">
+          <div className="flex items-end gap-2 sm:gap-3 bg-white dark:bg-zinc-900 border border-black/20 dark:border-white/15 rounded-md p-1.5 sm:p-2 shadow-sm">
             <textarea
               ref={inputRef}
               value={input}
@@ -1691,15 +1664,16 @@ function AgentChatInner({ user, isEmailConnected, sessionId: initialSessionId, i
                   handleSubmit(e)
                 }
               }}
-              placeholder={agentContext ? "What do you want Agent to do with this?" : "Ask your AI email agent anything..."}
-              className="flex-1 bg-transparent border-0 focus-visible:outline-none resize-none text-stone-800 dark:text-zinc-200 placeholder:text-stone-400 dark:placeholder:text-zinc-600 text-base min-h-[36px] max-h-[150px] py-1.5 px-2"
+              placeholder={agentContext ? "What do you want Agent to do with this?" : "What can I help with?"}
+              className="flex-1 bg-transparent border-0 focus-visible:outline-none resize-none text-foreground placeholder:text-muted-foreground text-[13px] min-h-[36px] max-h-[150px] py-1.5 px-2"
               rows={1}
               disabled={isLoading}
             />
-            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="rounded-lg bg-stone-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-stone-700 dark:hover:bg-zinc-300 h-8 w-8 sm:h-9 sm:w-9 shrink-0 mb-0.5">
+            <Button type="submit" size="icon" disabled={isLoading || !input.trim()} className="rounded-md bg-foreground text-background hover:bg-foreground/90 h-8 w-8 shrink-0 mb-0.5">
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
+          <p className="text-[11px] text-muted-foreground/70 text-center mt-1.5">Agent can make mistakes. Please double check responses.</p>
         </form>
       </div>
     </div>
