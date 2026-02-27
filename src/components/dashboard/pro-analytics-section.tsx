@@ -13,6 +13,8 @@ import {
   ArrowRight,
   Loader2,
   Zap,
+  Check,
+  X,
 } from 'lucide-react'
 import {
   LineChart,
@@ -108,6 +110,30 @@ export function ProAnalyticsSection({ userPlan, onNavigateToBilling, isEmailConn
   const [data, setData] = useState<ProAnalyticsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [unsubscribing, setUnsubscribing] = useState<Record<string, 'loading' | 'success' | 'error'>>({})
+
+  async function handleUnsubscribe(emailId: string, sender: string) {
+    if (unsubscribing[emailId]) return
+    setUnsubscribing(prev => ({ ...prev, [emailId]: 'loading' }))
+    try {
+      const res = await fetch('/api/email/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailId }),
+      })
+      const result = await res.json()
+      if (result.success) {
+        setUnsubscribing(prev => ({ ...prev, [emailId]: 'success' }))
+      } else {
+        setUnsubscribing(prev => ({ ...prev, [emailId]: 'error' }))
+        // Reset error state after 3s
+        setTimeout(() => setUnsubscribing(prev => { const n = { ...prev }; delete n[emailId]; return n }), 3000)
+      }
+    } catch {
+      setUnsubscribing(prev => ({ ...prev, [emailId]: 'error' }))
+      setTimeout(() => setUnsubscribing(prev => { const n = { ...prev }; delete n[emailId]; return n }), 3000)
+    }
+  }
 
   useEffect(() => {
     if (!isPro || !isEmailConnected) return
@@ -311,22 +337,49 @@ export function ProAnalyticsSection({ userPlan, onNavigateToBilling, isEmailConn
             </div>
             <div className="space-y-2">
               {(isPro && data ? data.unsubscribeSuggestions : [
-                { sender: 'Marketing Newsletter', count: 28, canAutoUnsubscribe: true },
-                { sender: 'Daily Digest', count: 22, canAutoUnsubscribe: true },
-                { sender: 'Promo Alerts', count: 15, canAutoUnsubscribe: false },
-              ]).map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate">{typeof item.sender === 'string' ? item.sender.split('<')[0].trim() : item.sender}</p>
-                    <p className="text-xs text-zinc-400">{item.count} emails this month</p>
+                { sender: 'Marketing Newsletter', count: 28, emailId: '', canAutoUnsubscribe: true },
+                { sender: 'Daily Digest', count: 22, emailId: '', canAutoUnsubscribe: true },
+                { sender: 'Promo Alerts', count: 15, emailId: '', canAutoUnsubscribe: false },
+              ]).map((item, i) => {
+                const emailId = 'emailId' in item ? (item as { emailId: string }).emailId : ''
+                const status = unsubscribing[emailId]
+                return (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm truncate ${status === 'success' ? 'line-through text-zinc-400' : ''}`}>
+                        {typeof item.sender === 'string' ? item.sender.split('<')[0].trim() : item.sender}
+                      </p>
+                      <p className="text-xs text-zinc-400">{item.count} emails this month</p>
+                    </div>
+                    {item.canAutoUnsubscribe && (
+                      status === 'success' ? (
+                        <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-full shrink-0">
+                          <Check className="h-3 w-3" />
+                          Unsubscribed
+                        </span>
+                      ) : status === 'error' ? (
+                        <span className="flex items-center gap-1 text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full shrink-0">
+                          <X className="h-3 w-3" />
+                          Failed
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleUnsubscribe(emailId, item.sender)}
+                          disabled={status === 'loading' || !emailId}
+                          className="flex items-center gap-1 text-xs text-red-500 hover:text-white bg-red-50 hover:bg-red-500 dark:bg-red-900/20 dark:hover:bg-red-600 px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {status === 'loading' ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <MailMinus className="h-3 w-3" />
+                          )}
+                          {status === 'loading' ? 'Unsubscribing...' : 'Unsubscribe'}
+                        </button>
+                      )
+                    )}
                   </div>
-                  {item.canAutoUnsubscribe && (
-                    <span className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full shrink-0">
-                      Can unsubscribe
-                    </span>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           </Card>
         </div>
